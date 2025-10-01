@@ -1,0 +1,53 @@
+{
+	"framework": "nextjs",
+	"buildCommand": "npm run build",
+	"outputDirectory": ".next",
+	"installCommand": "npm ci",
+	"devCommand": "npm run dev",
+	"env": {
+		"NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
+		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
+		"SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+		"GOOGLE_CLIENT_ID": "@google_client_id",
+		"GOOGLE_CLIENT_SECRET": "@google_client_secret",
+		"TRUELAYER_CLIENT_ID": "@truelayer_client_id",
+		"TRUELAYER_CLIENT_SECRET": "@truelayer_client_secret",
+		"TRUELAYER_API_URL": "@truelayer_api_url",
+		"TRUELAYER_ENVIRONMENT": "@truelayer_environment",
+		"ENCRYPTION_KEY": "@encryption_key",
+		"ENCRYPTION_SALT": "@encryption_salt",
+		"CRON_SECRET": "@cron_secret"
+	},
+	"build": {
+		"env": {
+			"NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
+			"NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
+			"SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key"
+		}
+	},
+	"functions": {
+		"src/app/api/**/*.ts": {
+			"runtime": "nodejs18.x"
+		},
+		"src/app/api/accounts/sync-all/route.ts": {
+			"maxDuration": 300
+		}
+	},
+	"crons": [
+		{
+			"path": "/api/cron/cleanup-oauth-states",
+			"schedule": "0 2 * * *"
+		},
+		{
+			"path": "/api/cron/sync-accounts",
+			"schedule": "0 */6 * * *"
+		}
+	],
+	"regions": ["iad1"],
+	"rewrites": [
+		{
+			"source": "/api/(.*)",
+			"destination": "/api/$1"
+		}
+	]
+}

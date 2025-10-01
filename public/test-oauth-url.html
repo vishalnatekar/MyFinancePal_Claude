@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test OAuth URL</title>
+</head>
+<body>
+    <h1>Test OAuth URL Generation</h1>
+    <button id="testBtn">Click to see OAuth URL</button>
+    <div id="output" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        const supabaseUrl = 'https://raxgonvktrkpwvxlumou.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJheGdvbnZrdHJrcHd2eGx1bW91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4NzE3NjEsImV4cCI6MjA3NDQ0Nzc2MX0.MpL-4Odo6QhYhMSutA4OMr_LaH3RY5a7HawfV95nU-g'
+
+        const supabase = createClient(supabaseUrl, supabaseKey)
+
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/api/auth/callback`,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
+                },
+            })
+
+            const output = document.getElementById('output')
+            output.innerHTML = `
+                <h3>OAuth Response:</h3>
+                <pre>${JSON.stringify({ data, error }, null, 2)}</pre>
+                ${data?.url ? `<p><strong>OAuth URL:</strong> <a href="${data.url}" target="_blank">${data.url}</a></p>` : ''}
+            `
+        })
+    </script>
+</body>
+</html>
