@@ -122,11 +122,9 @@ export class OAuthStateManager {
 	private store: OAuthStateStore;
 
 	constructor() {
-		// Use database storage in production, memory storage in development
-		this.store =
-			process.env.NODE_ENV === "production"
-				? new DatabaseOAuthStateStore()
-				: new MemoryOAuthStateStore();
+		// Always use database storage for persistence
+		// Memory storage can lose state during dev server hot reloads
+		this.store = new DatabaseOAuthStateStore();
 	}
 
 	/**

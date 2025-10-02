@@ -71,10 +71,12 @@ export async function POST(request: NextRequest) {
 		const { providerId, institutionName } = validationResult.data;
 
 		// Generate secure state token
+		console.log("🔐 Generating OAuth state token for user:", userId);
 		const state = await oauthStateManager.generateState(userId, providerId);
+		console.log("✅ State token generated and stored:", state.substring(0, 10) + "...");
 
 		// Generate TrueLayer OAuth URL
-		// Try the callback path that matches your existing TrueLayer setup
+		// Use /callback page which will then call the API endpoint
 		const redirectUri = `${config.app.url}/callback`;
 		const authUrl = trueLayerService.generateAuthUrl(
 			providerId,
@@ -86,7 +88,7 @@ export async function POST(request: NextRequest) {
 		console.log("- User ID:", userId);
 		console.log("- Provider ID:", providerId);
 		console.log("- Redirect URI:", redirectUri);
-		console.log("- State:", state.substring(0, 8) + "...");
+		console.log("- State:", state.substring(0, 10) + "...");
 		console.log("- Full Auth URL:", authUrl);
 		console.log("");
 		console.log(

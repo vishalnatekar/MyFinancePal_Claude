@@ -1,6 +1,8 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { getValidAccessToken } from "@/lib/token-refresh-utils";
 import type { FinancialAccount } from "@/types/account";
+import { dataValidationService } from "./data-validation-service";
+import { trueLayerDataProcessor } from "./truelayer-data-processor";
 import { TrueLayerServiceError, trueLayerService } from "./truelayer-service";
 
 export interface SyncResult {
@@ -113,8 +115,22 @@ export class AccountSyncService {
 					accessToken,
 				);
 
+				// Validate balance data
+				const balanceValidation =
+					dataValidationService.validateBalance(balance);
+				if (!balanceValidation.valid) {
+					throw new Error(
+						`Invalid balance data: ${balanceValidation.errors.map((e) => e.message).join(", ")}`,
+					);
+				}
+
+				// Process balance with data processor
+				const normalizedBalance = trueLayerDataProcessor.normalizeAmount(
+					balance.current,
+				);
+
 				const oldBalance = account.current_balance;
-				const newBalance = balance.current;
+				const newBalance = normalizedBalance;
 				const balanceUpdated = Math.abs(oldBalance - newBalance) > 0.001; // Handle floating point precision
 
 				// Update account with fresh data
@@ -252,7 +268,7 @@ export class AccountSyncService {
 
 			// Process accounts sequentially to avoid rate limits
 			for (const account of accounts) {
-				const result = await this.syncAccount(account.id);
+				const result = await AccountSyncService.syncAccount(account.id);
 				results.push(result);
 
 				if (result.success) {
@@ -331,7 +347,7 @@ export class AccountSyncService {
 			// Sync accounts for each user
 			const results: BulkSyncResult[] = [];
 			for (const userId of uniqueUserIds) {
-				const userResult = await this.syncUserAccounts(userId);
+				const userResult = await AccountSyncService.syncUserAccounts(userId);
 				results.push(userResult);
 
 				console.log(

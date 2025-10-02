@@ -8,6 +8,7 @@ import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
 
 export interface AuthResult {
+	authenticated: boolean;
 	success: boolean;
 	userId?: string;
 	user?: any;
@@ -61,12 +62,14 @@ export async function authenticateRequest(
 		if (error || !user) {
 			console.error("Authentication failed:", error);
 			return {
+				authenticated: false,
 				success: false,
 				error: "Invalid or missing authentication token",
 			};
 		}
 
 		return {
+			authenticated: true,
 			success: true,
 			userId: user.id,
 			user,
@@ -74,6 +77,7 @@ export async function authenticateRequest(
 	} catch (error) {
 		console.error("Authentication error:", error);
 		return {
+			authenticated: false,
 			success: false,
 			error: "Authentication system error",
 		};

@@ -12,7 +12,7 @@ export default function TrueLayerCallbackPage() {
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		const handleCallback = async () => {
+		const handleCallback = () => {
 			try {
 				// Log all URL parameters for debugging
 				const allParams = Object.fromEntries(searchParams.entries());
@@ -45,15 +45,12 @@ export default function TrueLayerCallbackPage() {
 				console.log("- Code:", code.substring(0, 10) + "...");
 				console.log("- State:", state?.substring(0, 10) + "...");
 
-				// Here you would normally:
-				// 1. Send the code to your backend to exchange for tokens
-				// 2. Store the connection details
-				// 3. Redirect to accounts page
+				// Redirect to the API callback endpoint which will process everything server-side
+				console.log("Redirecting to API callback for server-side processing...");
+				const callbackUrl = `/api/accounts/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || "")}`;
 
-				// For now, just redirect to accounts page
-				setTimeout(() => {
-					router.push("/accounts");
-				}, 2000);
+				// Use window.location to let the server handle the redirect
+				window.location.href = callbackUrl;
 			} catch (err) {
 				console.error("Unexpected error in TrueLayer callback:", err);
 				setError("An unexpected error occurred");
@@ -62,7 +59,7 @@ export default function TrueLayerCallbackPage() {
 		};
 
 		handleCallback();
-	}, [searchParams, router]);
+	}, [searchParams]);
 
 	if (isLoading) {
 		return (

@@ -47,7 +47,8 @@
       "Bash(npm view:*)",
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:supabase.com)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(head:*)"
     ],
     "deny": [],
     "ask": []
