@@ -4,7 +4,6 @@ import {
 	withAuth,
 } from "@/lib/auth-middleware";
 import { supabaseAdmin } from "@/lib/supabase";
-import { moneyHubService } from "@/services/moneyhub-service";
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -15,7 +14,7 @@ interface RouteParams {
 }
 
 export const GET = withAuth(
-	async (request: NextRequest, user: User, { params }: RouteParams) => {
+	async (request: NextRequest, user: User, context?: RouteParams) => {
 		try {
 			// Rate limiting check
 			if (!checkRateLimit(user.id, 50, 60000)) {
@@ -23,10 +22,19 @@ export const GET = withAuth(
 				return createAuthErrorResponse("Too many requests", 429);
 			}
 
+			if (!context?.params?.id) {
+				return NextResponse.json(
+					{ error: "Account ID is required" },
+					{ status: 400 },
+				);
+			}
+
+			const accountId = context.params.id;
+
 			const { data: account, error } = await supabaseAdmin
 				.from("financial_accounts")
 				.select("*")
-				.eq("id", params.id)
+				.eq("id", accountId)
 				.eq("user_id", user.id)
 				.single();
 
@@ -60,7 +68,7 @@ export const GET = withAuth(
 );
 
 export const DELETE = withAuth(
-	async (request: NextRequest, user: User, { params }: RouteParams) => {
+	async (request: NextRequest, user: User, context?: RouteParams) => {
 		try {
 			// Rate limiting check for deletion (stricter)
 			if (!checkRateLimit(`delete_account_${user.id}`, 10, 300000)) {
@@ -68,11 +76,20 @@ export const DELETE = withAuth(
 				return createAuthErrorResponse("Too many deletion attempts", 429);
 			}
 
+			if (!context?.params?.id) {
+				return NextResponse.json(
+					{ error: "Account ID is required" },
+					{ status: 400 },
+				);
+			}
+
+			const accountId = context.params.id;
+
 			// First, fetch the account to verify ownership and get connection info
 			const { data: account, error: fetchError } = await supabaseAdmin
 				.from("financial_accounts")
 				.select("*")
-				.eq("id", params.id)
+				.eq("id", accountId)
 				.eq("user_id", user.id)
 				.single();
 
@@ -83,43 +100,73 @@ export const DELETE = withAuth(
 				);
 			}
 
-			// If it's a connected account (not manual), try to disconnect from MoneyHub
-			if (!account.is_manual && account.moneyhub_connection_id) {
-				try {
-					await moneyHubService.deleteConnection(
-						account.moneyhub_connection_id,
-					);
-				} catch (moneyHubError) {
-					// Log the error but don't fail the deletion - the account might already be
-					// disconnected on MoneyHub's side or the service might be temporarily unavailable
-					console.warn("Failed to delete MoneyHub connection:", moneyHubError);
-				}
+			// If it's a connected account (not manual), we're using TrueLayer
+			// TrueLayer connections are managed via access tokens which we'll delete with the account
+			// No need to call TrueLayer API to disconnect
+			if (!account.is_manual) {
+				console.log(
+					`Deleting TrueLayer-connected account: ${account.id}`,
+				);
 			}
 
-			// Delete sync history (cascade should handle this, but let's be explicit)
-			await supabaseAdmin
+			// Delete related data (cascade should handle this, but let's be explicit)
+			// Delete balance history
+			const { error: balanceHistoryError } = await supabaseAdmin
+				.from("account_balance_history")
+				.delete()
+				.eq("account_id", account.id);
+
+			if (balanceHistoryError) {
+				console.error("Error deleting balance history:", balanceHistoryError);
+			}
+
+			// Delete sync history
+			const { error: syncHistoryError } = await supabaseAdmin
 				.from("account_sync_history")
 				.delete()
 				.eq("account_id", account.id);
+
+			if (syncHistoryError) {
+				console.error("Error deleting sync history:", syncHistoryError);
+			}
+
+			// Delete transactions
+			const { error: transactionsError } = await supabaseAdmin
+				.from("transactions")
+				.delete()
+				.eq("account_id", account.id);
+
+			if (transactionsError) {
+				console.error("Error deleting transactions:", transactionsError);
+			}
 
 			// Delete the account from our database
 			const { error: deleteError } = await supabaseAdmin
 				.from("financial_accounts")
 				.delete()
-				.eq("id", params.id)
+				.eq("id", accountId)
 				.eq("user_id", user.id);
 
 			if (deleteError) {
 				console.error("Error deleting account:", deleteError);
+				console.error("Delete error details:", {
+					message: deleteError.message,
+					details: deleteError.details,
+					hint: deleteError.hint,
+					code: deleteError.code,
+				});
 				return NextResponse.json(
-					{ error: "Failed to delete account" },
+					{
+						error: "Failed to delete account",
+						details: deleteError.message,
+					},
 					{ status: 500 },
 				);
 			}
 
 			return NextResponse.json({
 				message: "Account deleted successfully",
-				deletedAccountId: params.id,
+				deletedAccountId: accountId,
 			});
 		} catch (error) {
 			console.error("Error in DELETE /api/accounts/[id]:", error);

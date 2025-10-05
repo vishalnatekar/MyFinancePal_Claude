@@ -11,7 +11,7 @@ function LoginPageContent() {
 	const { user, loading, error, signInWithGoogle } = useAuthStore();
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+	const redirectTo = searchParams.get("redirectTo") || "/";
 
 	useEffect(() => {
 		if (user && !loading) {

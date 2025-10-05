@@ -7,6 +7,7 @@ export interface FinancialAccount {
 	account_name: string;
 	institution_name: string;
 	current_balance: number;
+	currency?: string;
 	is_shared: boolean;
 	last_synced?: string;
 	is_manual: boolean;

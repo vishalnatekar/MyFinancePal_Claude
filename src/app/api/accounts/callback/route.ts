@@ -4,6 +4,7 @@ import { CryptoService } from "@/lib/crypto";
 import { oauthStateManager } from "@/lib/oauth-state";
 import { supabaseAdmin } from "@/lib/supabase";
 import { accountCategorizationService } from "@/services/account-categorization-service";
+import { HistoricalDataService } from "@/services/historical-data-service";
 import { trueLayerDataProcessor } from "@/services/truelayer-data-processor";
 import {
 	TRUELAYER_ERROR_MESSAGES,
@@ -217,6 +218,20 @@ export async function GET(request: NextRequest) {
 				await supabaseAdmin
 					.from("account_sync_history")
 					.insert(syncHistoryEntries);
+
+				// Record initial balance snapshots for historical tracking
+				console.log("📊 Recording initial balance snapshots...");
+				try {
+					await HistoricalDataService.recordBalanceSnapshotBatch(
+						createdAccounts,
+					);
+					console.log(
+						`✅ Recorded ${createdAccounts.length} balance snapshots`,
+					);
+				} catch (error) {
+					console.error("Failed to record balance snapshots:", error);
+					// Don't fail the whole flow if history recording fails
+				}
 			}
 
 			// Successful connection - redirect to accounts page with success message

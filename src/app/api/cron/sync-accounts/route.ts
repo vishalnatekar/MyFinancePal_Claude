@@ -10,13 +10,8 @@ import { type NextRequest, NextResponse } from 'next/server';
  *
  * SECURITY: Protected by CRON_SECRET environment variable
  *
- * Vercel cron configuration (vercel.json):
- * {
- *   "crons": [{
- *     "path": "/api/cron/sync-accounts",
- *     "schedule": "0 */6 * * *"
- *   }]
- * }
+ * Vercel cron configuration in vercel.json should have:
+ * crons array with path /api/cron/sync-accounts and schedule 0 star-slash-6 star star star
  */
 export async function GET(request: NextRequest) {
   try {

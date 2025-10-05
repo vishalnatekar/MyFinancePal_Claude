@@ -82,8 +82,8 @@ export default function AuthCallbackPage() {
 						console.warn("Error refreshing session:", err);
 					}
 
-					// Redirect to dashboard
-					router.push("/dashboard");
+					// Redirect to dashboard (root path due to route group)
+					router.push("/");
 					return;
 				}
 
@@ -156,8 +156,8 @@ export default function AuthCallbackPage() {
 								return;
 							}
 
-							// Redirect to dashboard
-							router.push("/dashboard");
+							// Redirect to dashboard (root path due to route group)
+							router.push("/");
 							return;
 						}
 					}
@@ -170,7 +170,7 @@ export default function AuthCallbackPage() {
 							"Found existing session for user:",
 							data.session.user.id,
 						);
-						router.push("/dashboard");
+						router.push("/");
 						return;
 					}
 				}

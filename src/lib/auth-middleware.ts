@@ -94,13 +94,14 @@ export async function authenticateRequest(
 }
 
 // Middleware wrapper for API routes
-export function withAuth(
+export function withAuth<T = any>(
 	handler: (
 		request: NextRequest,
 		user: User,
+		context?: T,
 	) => Promise<NextResponse> | NextResponse,
 ) {
-	return async (request: NextRequest): Promise<NextResponse> => {
+	return async (request: NextRequest, context?: T): Promise<NextResponse> => {
 		const authResult = await authenticateRequest(request);
 
 		if (!authResult.success || !authResult.user) {
@@ -110,7 +111,7 @@ export function withAuth(
 			);
 		}
 
-		return handler(request, authResult.user);
+		return handler(request, authResult.user, context);
 	};
 }
 

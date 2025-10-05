@@ -10,14 +10,14 @@ interface BreadcrumbItem {
 }
 
 const pathLabels: Record<string, string> = {
-	"/": "Home",
-	"/dashboard": "Dashboard",
+	"/": "Dashboard",
 	"/profile": "Profile",
 	"/settings": "Settings",
 	"/finances": "My Finances",
 	"/household": "Household",
 	"/household/create": "Create Household",
 	"/reports": "Reports",
+	"/accounts": "Accounts",
 };
 
 export function Breadcrumb() {
@@ -29,8 +29,8 @@ export function Breadcrumb() {
 		const breadcrumbs: BreadcrumbItem[] = [];
 
 		// Always start with Dashboard, but only if we're not already on dashboard
-		if (pathname !== "/dashboard") {
-			breadcrumbs.push({ label: "Dashboard", href: "/dashboard" });
+		if (pathname !== "/") {
+			breadcrumbs.push({ label: "Dashboard", href: "/" });
 		}
 
 		let currentPath = "";
@@ -47,7 +47,7 @@ export function Breadcrumb() {
 		}
 
 		// Don't show breadcrumb if we're on the dashboard
-		if (pathname === "/dashboard") {
+		if (pathname === "/") {
 			return [];
 		}
 
@@ -63,7 +63,7 @@ export function Breadcrumb() {
 	return (
 		<nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
 			<Link
-				href="/dashboard"
+				href="/"
 				className="flex items-center hover:text-foreground transition-colors"
 			>
 				<Home className="w-4 h-4" />
