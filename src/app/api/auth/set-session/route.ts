@@ -1,5 +1,5 @@
 import { config } from "@/lib/config";
-import { AuthService } from "@/services/auth-service";
+import { supabaseAdmin } from "@/lib/supabase";
 import type { Database } from "@/types/database";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -72,11 +72,24 @@ export async function POST(request: NextRequest) {
 
 		console.log("✅ Server-side session created for user:", data.session.user.id);
 
-		// Create or update user profile
-		const profileResult = await AuthService.handleOAuthCallback(data.session.user);
+		// Create or update user profile using the service role client to bypass RLS
+		const user = data.session.user;
+		const { error: profileError } = await supabaseAdmin
+			.from("profiles")
+			.upsert({
+				id: user.id,
+				email: user.email,
+				full_name:
+					user.user_metadata?.full_name || user.user_metadata?.name || null,
+				avatar_url:
+					user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+				updated_at: new Date().toISOString(),
+			})
+			.select()
+			.single();
 
-		if (!profileResult.success) {
-			console.error("Error handling OAuth callback:", profileResult.error);
+		if (profileError) {
+			console.error("Error upserting user profile:", profileError);
 			// Continue anyway - user can still access the app
 		}
 

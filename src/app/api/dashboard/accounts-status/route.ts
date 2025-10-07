@@ -25,10 +25,7 @@ export async function GET(request: NextRequest) {
         institution_name,
         account_type,
         connection_status,
-        current_balance,
-        currency,
-        last_synced_at,
-        sync_error
+        current_balance
       `)
       .eq('user_id', user.id)
       .order('account_name', { ascending: true });
@@ -48,10 +45,10 @@ export async function GET(request: NextRequest) {
     const syncStatus = accounts.map(account => ({
       accountId: account.id,
       accountName: account.account_name,
-      lastSynced: account.last_synced_at,
-      nextSync: calculateNextSync(account.last_synced_at, account.connection_status),
-      status: determineSyncStatus(account.connection_status, account.sync_error),
-      error: account.sync_error,
+      lastSynced: null, // Field not available in DB
+      nextSync: null, // Field not available in DB
+      status: determineSyncStatus(account.connection_status, null),
+      error: null,
     }));
 
     // Build managed accounts response
@@ -62,7 +59,7 @@ export async function GET(request: NextRequest) {
       institution: account.institution_name || 'Unknown',
       connectionStatus: account.connection_status as 'active' | 'expired' | 'error',
       currentBalance: account.current_balance || 0,
-      currency: account.currency || 'GBP',
+      currency: 'GBP', // Default to GBP
     }));
 
     return NextResponse.json({

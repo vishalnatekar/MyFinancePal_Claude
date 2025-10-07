@@ -5,6 +5,22 @@ import { supabase } from "@/lib/supabase";
 import { AlertCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
+
+const REDIRECT_STORAGE_KEY = "auth:redirectTo";
+
+function consumeStoredRedirect(): string {
+	try {
+		const stored = window.localStorage.getItem(REDIRECT_STORAGE_KEY);
+		if (stored) {
+			window.localStorage.removeItem(REDIRECT_STORAGE_KEY);
+			return stored;
+		}
+	} catch (error) {
+		console.warn("Failed to read stored redirect target:", error);
+	}
+	return "/";
+}
 
 export default function AuthCallbackPage() {
 	const router = useRouter();
@@ -38,52 +54,82 @@ export default function AuthCallbackPage() {
 					console.log("Code:", code.substring(0, 10) + "...");
 
 					// Exchange code for session
-					const { data, error: sessionError } =
+					const { data, error: exchangeError } =
 						await supabase.auth.exchangeCodeForSession(code);
 
 					console.log("Exchange result:", {
 						hasSession: !!data.session,
 						hasUser: !!data.session?.user,
-						error: sessionError,
+						error: exchangeError,
 					});
 
-					if (sessionError) {
-						console.error("❌ Error exchanging code for session:", sessionError);
-						setError("Failed to complete authentication");
-						setIsLoading(false);
-						return;
-					}
+					let session: Session | null = data.session;
 
-					if (!data.session?.user) {
-						console.error("❌ No session created after code exchange");
-						setError("Failed to create session");
-						setIsLoading(false);
-						return;
+					if (exchangeError || !session?.user) {
+						console.warn(
+							"⚠️ Issue exchanging code for session, checking existing session",
+							exchangeError,
+						);
+
+						const {
+							data: existing,
+							error: existingError,
+						} = await supabase.auth.getSession();
+
+						if (existingError) {
+							console.error("❌ Failed to get existing session:", existingError);
+							setError("Failed to complete authentication");
+							setIsLoading(false);
+							return;
+						}
+
+						session = existing.session ?? null;
+
+						if (!session?.user) {
+							console.error("❌ No session available after code exchange");
+							setError("Failed to create session");
+							setIsLoading(false);
+							return;
+						}
 					}
 
 					console.log(
 						"✅ PKCE flow authentication successful for user:",
-						data.session.user.id,
+						session.user.id,
 					);
-					console.log("Session expires at:", data.session.expires_at);
+					console.log("Session expires at:", session.expires_at);
 
-					// Force a server-side session refresh by calling the API route
-					// This ensures the middleware can read the session
-					try {
-						const response = await fetch("/api/auth/refresh", {
-							method: "POST",
-							credentials: "include",
-						});
+					// CRITICAL: Set server-side cookies by sending tokens to the API
+					if (session.access_token && session.refresh_token) {
+						try {
+							const response = await fetch("/api/auth/set-session", {
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								credentials: "include",
+								body: JSON.stringify({
+									access_token: session.access_token,
+									refresh_token: session.refresh_token,
+								}),
+							});
 
-						if (!response.ok) {
-							console.warn("Session refresh failed, but continuing anyway");
+							console.log("Server-side session setup:", {
+								ok: response.ok,
+								status: response.status,
+							});
+
+							if (!response.ok) {
+								console.warn("Server session setup failed, but client session is set");
+							}
+						} catch (err) {
+							console.warn("Error setting up server session:", err);
 						}
-					} catch (err) {
-						console.warn("Error refreshing session:", err);
 					}
 
-					// Redirect to dashboard (root path due to route group)
-					router.push("/");
+					const redirectTarget = consumeStoredRedirect();
+					console.log("✅ Sessions created, redirecting to:", redirectTarget);
+					window.location.href = redirectTarget;
 					return;
 				}
 
@@ -100,7 +146,7 @@ export default function AuthCallbackPage() {
 					if (accessToken && refreshToken) {
 						console.log("Setting session from implicit flow tokens");
 
-						// Set the session using the tokens
+						// FIRST: Set the session on the client-side Supabase instance
 						const { data, error: sessionError } =
 							await supabase.auth.setSession({
 								access_token: accessToken,
@@ -109,7 +155,7 @@ export default function AuthCallbackPage() {
 
 						if (sessionError) {
 							console.error(
-								"Error setting session from implicit flow:",
+								"Error setting client session from implicit flow:",
 								sessionError,
 							);
 							setError("Failed to complete authentication");
@@ -117,49 +163,48 @@ export default function AuthCallbackPage() {
 							return;
 						}
 
-						if (data.session?.user) {
-							console.log(
-								"Implicit flow authentication successful for user:",
-								data.session.user.id,
-							);
-
-							// Send tokens to server to set proper cookies
-							try {
-								const response = await fetch("/api/auth/set-session", {
-									method: "POST",
-									headers: {
-										"Content-Type": "application/json",
-									},
-									body: JSON.stringify({
-										access_token: accessToken,
-										refresh_token: refreshToken,
-									}),
-									credentials: "include",
-								});
-
-								console.log("Server-side session setup:", {
-									ok: response.ok,
-									status: response.status,
-								});
-
-								if (!response.ok) {
-									const errorData = await response.json();
-									console.error("Session setup failed:", errorData);
-									setError("Failed to complete authentication");
-									setIsLoading(false);
-									return;
-								}
-							} catch (err) {
-								console.error("Error setting up session:", err);
-								setError("Failed to complete authentication");
-								setIsLoading(false);
-								return;
-							}
-
-							// Redirect to dashboard (root path due to route group)
-							router.push("/");
+						if (!data.session?.user) {
+							console.error("No session created after setting tokens");
+							setError("Failed to create session");
+							setIsLoading(false);
 							return;
 						}
+
+						console.log(
+							"Implicit flow authentication successful for user:",
+							data.session.user.id,
+						);
+
+						// SECOND: Also set server-side cookies for SSR/middleware
+						try {
+							const response = await fetch("/api/auth/set-session", {
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									access_token: accessToken,
+									refresh_token: refreshToken,
+								}),
+								credentials: "include",
+							});
+
+							console.log("Server-side session setup:", {
+								ok: response.ok,
+								status: response.status,
+							});
+
+							if (!response.ok) {
+								console.warn("Server session setup failed, but client session is set");
+							}
+						} catch (err) {
+							console.warn("Error setting up server session:", err);
+						}
+
+						const redirectTarget = consumeStoredRedirect();
+						console.log("✅ Sessions created, redirecting to:", redirectTarget);
+						window.location.href = redirectTarget;
+						return;
 					}
 
 					// Fallback: try getting existing session

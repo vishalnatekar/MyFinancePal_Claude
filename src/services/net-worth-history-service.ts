@@ -3,11 +3,13 @@ import { config } from '@/lib/config';
 import type { NetWorthHistoryPoint, DateRange } from '@/types/dashboard';
 import { NetWorthCalculationService } from './net-worth-calculation-service';
 import { HistoricalDataService } from './historical-data-service';
+import { TransactionBasedHistoryService } from './transaction-based-history-service';
 
 export class NetWorthHistoryService {
   private supabase = createClient(config.supabase.url, config.supabase.anonKey);
   private netWorthService = new NetWorthCalculationService();
   private historicalDataService = new HistoricalDataService();
+  private transactionHistoryService = new TransactionBasedHistoryService();
 
   async getNetWorthTrend(userId: string, dateRange: DateRange): Promise<NetWorthHistoryPoint[]> {
     const endDate = new Date();
@@ -25,8 +27,29 @@ export class NetWorthHistoryService {
       throw new Error(`Failed to fetch balance history dates: ${error.message}`);
     }
 
-    if (!balanceDates || balanceDates.length === 0) {
-      // No historical data, return current net worth only
+    // If we have insufficient balance snapshots (less than 3 data points),
+    // use transaction-based backfill to generate historical trend
+    if (!balanceDates || balanceDates.length < 3) {
+      console.log('Insufficient balance snapshots, using transaction-based backfill');
+      const daysBack = this.getDaysFromDateRange(dateRange);
+      const intervalDays = TransactionBasedHistoryService.getIntervalForRange(daysBack);
+
+      try {
+        const transactionBasedHistory = await this.transactionHistoryService.generateHistoricalTrend(
+          userId,
+          daysBack,
+          intervalDays
+        );
+
+        // If we got meaningful data, return it
+        if (transactionBasedHistory.length > 1) {
+          return transactionBasedHistory;
+        }
+      } catch (error) {
+        console.error('Transaction-based backfill failed, falling back to current balance:', error);
+      }
+
+      // Fallback: return current net worth only
       const currentNetWorth = await this.netWorthService.calculateNetWorth(userId);
       return [{
         date: endDate.toISOString().split('T')[0],
@@ -78,6 +101,23 @@ export class NetWorthHistoryService {
     }
 
     return startDate;
+  }
+
+  private getDaysFromDateRange(dateRange: DateRange): number {
+    switch (dateRange) {
+      case '1M':
+        return 30;
+      case '3M':
+        return 90;
+      case '6M':
+        return 180;
+      case '1Y':
+        return 365;
+      case 'ALL':
+        return 3650; // 10 years
+      default:
+        return 180; // Default to 6 months
+    }
   }
 
   private sampleDates(dates: string[], maxPoints: number): string[] {

@@ -4,7 +4,6 @@ import { type NextRequest, NextResponse } from "next/server";
 
 // Define which paths require authentication
 const protectedPaths = [
-	"/dashboard",
 	"/profile",
 	"/settings",
 	"/finances",
@@ -87,15 +86,10 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.redirect(redirectUrl);
 	}
 
-	// For the root path, redirect based on authentication state
-	if (pathname === "/") {
-		if (session) {
-			// User is authenticated, redirect to dashboard route
-			return NextResponse.redirect(new URL("/dashboard", request.url));
-		} else {
-			// User is not authenticated, show login page
-			return response;
-		}
+	// For the root path, just check authentication - don't redirect
+	// The (dashboard) route group handles rendering at /
+	if (pathname === "/" && !session) {
+		return NextResponse.redirect(new URL("/login", request.url));
 	}
 
 	return response;

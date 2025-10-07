@@ -3,11 +3,12 @@ import {
 	createAuthErrorResponse,
 	withAuth,
 } from "@/lib/auth-middleware";
+import { CryptoService } from "@/lib/crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
-	MoneyHubServiceError,
-	moneyHubService,
-} from "@/services/moneyhub-service";
+	TrueLayerService,
+	TrueLayerServiceError,
+} from "@/services/truelayer-service";
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -53,90 +54,107 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 			);
 		}
 
-		if (!account.moneyhub_connection_id) {
+		if (!account.truelayer_account_id || !account.encrypted_access_token) {
 			return NextResponse.json(
-				{ error: "Account not connected to MoneyHub" },
+				{ error: "Account not connected to TrueLayer" },
 				{ status: 400 },
 			);
 		}
 
-		// Check if sync is already in progress
-		const { data: inProgressSync } = await supabaseAdmin
-			.from("account_sync_history")
-			.select("id")
-			.eq("account_id", account.id)
-			.eq("sync_status", "in_progress")
-			.limit(1)
-			.single();
+		const trueLayerService = new TrueLayerService();
 
-		if (inProgressSync) {
-			return NextResponse.json(
-				{ error: "Sync already in progress for this account" },
-				{ status: 409 },
-			);
-		}
-
-		// Create sync history entry (in_progress)
-		const { data: syncHistory, error: syncHistoryError } = await supabaseAdmin
-			.from("account_sync_history")
-			.insert({
-				account_id: account.id,
-				sync_status: "in_progress",
-				synced_at: new Date().toISOString(),
-			})
-			.select()
-			.single();
-
-		if (syncHistoryError || !syncHistory) {
-			console.error("Error creating sync history:", syncHistoryError);
-			return NextResponse.json(
-				{ error: "Failed to initiate sync" },
-				{ status: 500 },
-			);
-		}
+		// Decrypt and parse token data
+		let accessToken: string;
+		let tokenData: {
+			access_token: string;
+			refresh_token: string;
+			expires_at: number;
+		};
 
 		try {
-			// Fetch fresh account data from MoneyHub
-			const moneyHubAccounts = await moneyHubService.getAccounts(
-				account.moneyhub_connection_id,
-			);
+			const decrypted = CryptoService.decrypt(account.encrypted_access_token);
+			tokenData = JSON.parse(decrypted);
 
-			const moneyHubAccount = moneyHubAccounts.find(
-				(acc) => acc.id === account.moneyhub_account_id,
-			);
+			// Check if token is expired (with 5 minute buffer)
+			const now = Date.now();
+			const isExpired = tokenData.expires_at <= now + 5 * 60 * 1000;
 
-			if (!moneyHubAccount) {
-				// Account not found in MoneyHub - mark connection as failed
-				await supabaseAdmin
+			if (isExpired && tokenData.refresh_token) {
+				console.log(`Access token expired for account ${account.id}, refreshing...`);
+
+				// Refresh the access token
+				const refreshedToken = await trueLayerService.refreshToken(
+					tokenData.refresh_token,
+				);
+
+				// Update token data
+				tokenData = {
+					access_token: refreshedToken.access_token,
+					refresh_token: refreshedToken.refresh_token || tokenData.refresh_token,
+					expires_at: Date.now() + refreshedToken.expires_in * 1000,
+				};
+
+				// Store updated token in database
+				const { error: updateTokenError } = await supabaseAdmin
 					.from("financial_accounts")
 					.update({
-						connection_status: "failed",
+						encrypted_access_token: CryptoService.encrypt(
+							JSON.stringify(tokenData),
+						),
 						updated_at: new Date().toISOString(),
 					})
 					.eq("id", account.id);
 
-				await supabaseAdmin
-					.from("account_sync_history")
-					.update({
-						sync_status: "failed",
-						error_message: "Account not found in MoneyHub",
-					})
-					.eq("id", syncHistory.id);
-
-				return NextResponse.json(
-					{ error: "Account no longer exists in MoneyHub" },
-					{ status: 404 },
-				);
+				if (updateTokenError) {
+					console.error("Failed to update refreshed token:", updateTokenError);
+				} else {
+					console.log(`✅ Token refreshed successfully for account ${account.id}`);
+				}
 			}
 
-			// Update account with fresh data
+			accessToken = tokenData.access_token;
+		} catch (error) {
+			console.error("Failed to decrypt or refresh access token:", error);
+			return NextResponse.json(
+				{ error: "Invalid access token - please reconnect account" },
+				{ status: 401 },
+			);
+		}
+
+		try {
+			console.log(
+				`Starting sync for account ${account.id} (${account.account_name})`,
+			);
+
+			// Fetch balance from TrueLayer
+			const balance = await trueLayerService.getAccountBalance(
+				account.truelayer_account_id,
+				accessToken,
+			);
+
+			// Fetch transactions from TrueLayer (last 3 months)
+			const threeMonthsAgo = new Date();
+			threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+			const from = threeMonthsAgo.toISOString().split("T")[0];
+
+			const transactions = await trueLayerService.getAccountTransactions(
+				account.truelayer_account_id,
+				accessToken,
+				from,
+				undefined,
+				500, // Get up to 500 transactions
+			);
+
+			console.log(
+				`Fetched ${transactions.length} transactions for account ${account.account_name}`,
+			);
+
+			// Update account balance
 			const { error: updateError } = await supabaseAdmin
 				.from("financial_accounts")
 				.update({
-					current_balance: moneyHubAccount.balance.amount,
-					account_name: moneyHubAccount.accountName,
-					connection_status:
-						moneyHubAccount.status === "active" ? "active" : "failed",
+					current_balance: balance.current,
+					connection_status: "active",
 					last_synced: new Date().toISOString(),
 					updated_at: new Date().toISOString(),
 				})
@@ -144,70 +162,76 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 
 			if (updateError) {
 				console.error("Error updating account:", updateError);
-				await supabaseAdmin
-					.from("account_sync_history")
-					.update({
-						sync_status: "failed",
-						error_message: "Failed to update account data",
-					})
-					.eq("id", syncHistory.id);
-
 				return NextResponse.json(
 					{ error: "Failed to update account data" },
 					{ status: 500 },
 				);
 			}
 
-			// Mark sync as successful
-			await supabaseAdmin
-				.from("account_sync_history")
-				.update({
-					sync_status: "success",
-				})
-				.eq("id", syncHistory.id);
+			// Save transactions to database
+			if (transactions.length > 0) {
+				const transactionsToInsert = transactions.map((txn) => ({
+					account_id: account.id,
+					truelayer_transaction_id: txn.transaction_id,
+					date: txn.timestamp.split("T")[0], // Extract date part
+					amount: Math.abs(txn.amount),
+					currency: txn.currency || balance.currency || "GBP", // Use transaction currency, fallback to account currency
+					transaction_type: txn.transaction_type,
+					description: txn.description || "",
+					merchant_name: txn.merchant_name || null,
+					category: txn.transaction_category || "uncategorized",
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
+				}));
+
+				// Use upsert to avoid duplicates based on truelayer_transaction_id
+				const { error: txnError } = await supabaseAdmin
+					.from("transactions")
+					.upsert(transactionsToInsert, {
+						onConflict: "truelayer_transaction_id",
+						ignoreDuplicates: false,
+					});
+
+				if (txnError) {
+					console.error("Error saving transactions:", txnError);
+					// Don't fail the whole sync if transactions fail
+				} else {
+					console.log(
+						`Saved ${transactions.length} transactions for account ${account.account_name}`,
+					);
+				}
+			}
 
 			return NextResponse.json({
 				message: "Account synced successfully",
 				account: {
 					id: account.id,
-					current_balance: moneyHubAccount.balance.amount,
+					current_balance: balance.current,
 					last_synced: new Date().toISOString(),
-					connection_status:
-						moneyHubAccount.status === "active" ? "active" : "failed",
+					connection_status: "active",
+					transactions_synced: transactions.length,
 				},
 			});
 		} catch (serviceError) {
-			console.error("MoneyHub sync error:", serviceError);
+			console.error("TrueLayer sync error:", serviceError);
 
-			let errorMessage = "Failed to sync with MoneyHub";
+			let errorMessage = "Failed to sync with TrueLayer";
 			let connectionStatus = "failed";
 
-			if (MoneyHubServiceError.isRateLimitError(serviceError)) {
+			if (TrueLayerServiceError.isRateLimitError(serviceError)) {
 				errorMessage = "Rate limit exceeded - try again later";
 				connectionStatus = "active"; // Don't mark as failed for rate limits
-			} else if (
-				serviceError instanceof MoneyHubServiceError &&
-				serviceError.statusCode === 401
-			) {
+			} else if (TrueLayerServiceError.isExpiredTokenError(serviceError)) {
 				errorMessage = "Connection expired - please reconnect account";
 				connectionStatus = "expired";
 			}
-
-			// Update sync history with error
-			await supabaseAdmin
-				.from("account_sync_history")
-				.update({
-					sync_status: "failed",
-					error_message: errorMessage,
-				})
-				.eq("id", syncHistory.id);
 
 			// Update account connection status if needed
 			if (connectionStatus !== "active") {
 				await supabaseAdmin
 					.from("financial_accounts")
 					.update({
-						connection_status: connectionStatus,
+						connection_status: connectionStatus as "active" | "expired" | "failed",
 						updated_at: new Date().toISOString(),
 					})
 					.eq("id", account.id);
@@ -217,7 +241,7 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 				{ error: errorMessage },
 				{
 					status:
-						serviceError instanceof MoneyHubServiceError
+						serviceError instanceof TrueLayerServiceError
 							? serviceError.statusCode
 							: 500,
 				},

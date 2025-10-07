@@ -22,7 +22,7 @@ function LoginPageContent() {
 	const handleSignIn = async () => {
 		console.log("Sign in button clicked");
 		try {
-			await signInWithGoogle();
+			await signInWithGoogle(redirectTo);
 			console.log("Sign in function completed");
 		} catch (error) {
 			console.error("Sign in error:", error);

@@ -163,22 +163,25 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 	},
 }));
 
-// Initialize auth and subscribe to auth state changes
+// Initialize auth and subscribe to auth state changes only on client side
 if (typeof window !== "undefined") {
-	// Initialize auth on store creation
-	useAuthStore.getState().initializeAuth();
+	// Delay initialization to avoid SSR issues
+	Promise.resolve().then(() => {
+		// Initialize auth on store creation
+		useAuthStore.getState().initializeAuth();
 
-	// Subscribe to auth state changes
-	AuthService.onAuthStateChange(async (user) => {
-		const store = useAuthStore.getState();
-		store.setUser(user);
+		// Subscribe to auth state changes
+		AuthService.onAuthStateChange(async (user) => {
+			const store = useAuthStore.getState();
+			store.setUser(user);
 
-		if (user) {
-			// Load user profile when user signs in
-			await store.loadUserProfile(user.id);
-		} else {
-			// Clear profile when user signs out
-			store.setProfile(null);
-		}
+			if (user) {
+				// Load user profile when user signs in
+				await store.loadUserProfile(user.id);
+			} else {
+				// Clear profile when user signs out
+				store.setProfile(null);
+			}
+		});
 	});
 }

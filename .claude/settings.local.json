@@ -48,7 +48,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:supabase.com)",
       "Bash(git log:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(xargs -r kill -9)"
     ],
     "deny": [],
     "ask": []

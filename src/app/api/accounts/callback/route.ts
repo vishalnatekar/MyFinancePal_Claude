@@ -183,9 +183,13 @@ export async function GET(request: NextRequest) {
 				})),
 			);
 
+			// Use upsert with ignoreDuplicates to update existing accounts
 			const { data: createdAccounts, error: dbError } = await supabaseAdmin
 				.from("financial_accounts")
-				.insert(financialAccounts)
+				.upsert(financialAccounts, {
+					onConflict: "truelayer_account_id",
+					ignoreDuplicates: false,
+				})
 				.select();
 
 			if (dbError) {

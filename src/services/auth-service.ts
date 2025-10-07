@@ -24,7 +24,7 @@ export class AuthService {
 	// Sign in with Google OAuth
 	static async signInWithGoogle(redirectTo?: string): Promise<AuthResponse> {
 		try {
-			await signInWithGoogle();
+			await signInWithGoogle(redirectTo);
 			return { success: true };
 		} catch (error) {
 			console.error("Google sign-in error:", error);

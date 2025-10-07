@@ -1,5 +1,5 @@
 import { config } from "@/lib/config";
-import { AuthService } from "@/services/auth-service";
+import { supabaseAdmin } from "@/lib/supabase";
 import type { Database } from "@/types/database";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -91,19 +91,30 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		// Create or update user profile
-		const profileResult = await AuthService.handleOAuthCallback(
-			data.session.user,
-		);
+		// Create or update user profile using the service role to bypass RLS
+		const user = data.session.user;
+		const { error: profileError } = await supabaseAdmin
+			.from("profiles")
+			.upsert({
+				id: user.id,
+				email: user.email,
+				full_name:
+					user.user_metadata?.full_name || user.user_metadata?.name || null,
+				avatar_url:
+					user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+				updated_at: new Date().toISOString(),
+			})
+			.select()
+			.single();
 
-		if (!profileResult.success) {
-			console.error("Error handling OAuth callback:", profileResult.error);
+		if (profileError) {
+			console.error("Error handling OAuth callback:", profileError);
 			// Continue to redirect even if profile creation fails
 			// The user can still access the app, but profile might be incomplete
 		}
 
 		// Successful authentication - redirect to dashboard
-		return NextResponse.redirect(new URL("/household", request.url));
+		return NextResponse.redirect(new URL("/", request.url));
 	} catch (error) {
 		console.error("Unexpected error in OAuth callback:", error);
 		return NextResponse.redirect(

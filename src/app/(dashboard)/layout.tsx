@@ -22,7 +22,7 @@ export default function DashboardLayout({
 					<LoadingSpinner fullScreen text="Authenticating..." size="lg" />
 				}
 				redirectTo="/login"
-				requireProfile={true}
+				requireProfile={false}
 			>
 				<div className="min-h-screen bg-background">
 					<Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

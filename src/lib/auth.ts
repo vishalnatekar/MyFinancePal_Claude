@@ -62,36 +62,60 @@ export async function upsertUserProfile(
 }
 
 // Sign in with Google
-export async function signInWithGoogle() {
-	const redirectTo = `${window.location.origin}/auth/callback`;
-	console.log("🔐 Starting Google OAuth flow with redirect:", redirectTo);
+export async function signInWithGoogle(redirectPath: string = "/") {
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    console.log("🔐 Starting Google OAuth flow with redirect:", redirectTo);
 
-	const { data, error } = await supabase.auth.signInWithOAuth({
-		provider: "google",
-		options: {
-			redirectTo,
-			queryParams: {
-				access_type: "offline",
-				prompt: "consent",
-			},
-		},
-	});
+    try {
+        window.localStorage.setItem("auth:redirectTo", redirectPath);
+    } catch (storageError) {
+        console.warn("Unable to persist redirect target:", storageError);
+    }
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+            redirectTo,
+            queryParams: {
+                access_type: "offline",
+                prompt: "consent",
+            },
+        },
+    });
 
 	if (error) {
 		console.error("❌ Error signing in with Google:", error);
 		throw error;
 	}
 
-	console.log("✅ OAuth initiated successfully. URL:", data.url);
-	return data;
+    console.log("✅ OAuth initiated successfully. URL:", data.url);
+    return data;
 }
 
 // Sign out
 export async function signOut() {
+	try {
+		window.localStorage.removeItem("auth:redirectTo");
+	} catch (storageError) {
+		console.warn("Failed to clear stored redirect target:", storageError);
+	}
+
+	try {
+		await fetch("/api/auth/signout", {
+			method: "POST",
+			credentials: "include",
+		});
+	} catch (apiError) {
+		console.warn("Failed to clear server session during sign out:", apiError);
+	}
+
 	const { error } = await supabase.auth.signOut();
 	if (error) {
-		console.error("Error signing out:", error);
-		throw error;
+		// Supabase throws AuthSessionMissingError when the client session is already gone
+		if ((error as any).name !== "AuthSessionMissingError") {
+			console.error("Error signing out:", error);
+			throw error;
+		}
 	}
 }
 
