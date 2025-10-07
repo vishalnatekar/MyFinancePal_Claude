@@ -15,9 +15,8 @@ so that we can start managing shared expenses together.
 4. Household member list with roles (creator, member)
 5. Household settings page for managing basic information
 6. Leave household functionality with data cleanup
-7. Maximum household size limits (e.g., 6 members for performance)
-8. Household invitation expiry and resend functionality
-9. Email templates for invitations and household updates
+7. Household invitation expiry and resend functionality
+8. Email templates for invitations and household updates
 
 ## Story 3.2: Account Sharing Privacy Controls
 

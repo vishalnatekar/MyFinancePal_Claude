@@ -122,3 +122,6 @@ next-env.d.ts
 # Testing
 .nyc_output/
 # BMAD (local only)
+# BMAD (local only)
+.bmad-core/
+.bmad-*/

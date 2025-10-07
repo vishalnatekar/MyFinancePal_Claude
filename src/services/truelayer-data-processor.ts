@@ -4,6 +4,7 @@ import type {
 	TrueLayerBalance,
 	TrueLayerTransaction,
 } from "@/types/truelayer";
+import { TransactionCategorizationService } from "./transaction-categorization-service";
 
 /**
  * TrueLayerDataProcessor
@@ -43,15 +44,22 @@ export class TrueLayerDataProcessor {
 		rawTransaction: TrueLayerTransaction,
 		accountId: string,
 	): Promise<ProcessedTransaction> {
+		const normalizedAmount = this.normalizeTransactionAmount(
+			rawTransaction.amount,
+			rawTransaction.transaction_type,
+		);
+
 		return {
 			account_id: accountId,
 			truelayer_transaction_id: rawTransaction.transaction_id,
-			amount: this.normalizeTransactionAmount(
-				rawTransaction.amount,
-				rawTransaction.transaction_type,
-			),
+			amount: normalizedAmount,
 			merchant_name: rawTransaction.merchant_name || null,
-			category: this.normalizeCategory(rawTransaction.transaction_category),
+			category: this.normalizeCategory(
+				rawTransaction.transaction_category,
+				rawTransaction.merchant_name,
+				normalizedAmount,
+				rawTransaction.description,
+			),
 			date: this.normalizeDate(rawTransaction.timestamp),
 			description: rawTransaction.description,
 			currency: rawTransaction.currency,
@@ -115,14 +123,33 @@ export class TrueLayerDataProcessor {
 
 	/**
 	 * Normalize transaction category
+	 * Uses TrueLayer category if available, falls back to our categorization service
 	 */
-	private normalizeCategory(category: string): string {
-		if (!category) return "Uncategorized";
-		// Clean up category string
-		return category
-			.split("_")
-			.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-			.join(" ");
+	private normalizeCategory(
+		category: string,
+		merchantName?: string,
+		amount?: number,
+		description?: string,
+	): string {
+		// If TrueLayer provided a category, use it
+		if (category && category !== "UNCATEGORIZED") {
+			// Clean up category string
+			return category
+				.split("_")
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+				.join(" ");
+		}
+
+		// Fallback: Use our categorization service for transactions without TrueLayer category
+		if (merchantName && amount !== undefined) {
+			return TransactionCategorizationService.categorizeTransaction(
+				merchantName,
+				amount,
+				description,
+			);
+		}
+
+		return "other";
 	}
 
 	/**

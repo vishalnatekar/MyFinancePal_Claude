@@ -20,8 +20,6 @@ export default function DashboardPage() {
 	const { netWorth, accounts, history, loading, error, refetchAll, updateDateRange } = useDashboardData();
 	const { syncStatus, managedAccounts, loading: accountsLoading, handleRefresh, handleRemoveAccount } = useAccountManagement();
 
-	console.log('DashboardPage render - accounts:', accounts.length, 'loading:', loading, 'error:', error);
-
 	const hasAccounts = accounts.length > 0;
 
 	const handleAddAccount = () => {

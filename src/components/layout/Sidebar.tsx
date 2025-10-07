@@ -13,6 +13,7 @@ import {
 	Users,
 	Wallet,
 	X,
+	Receipt,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,6 +36,12 @@ const navigation = [
 		href: "/accounts",
 		icon: Wallet,
 		description: "Connected bank and investment accounts",
+	},
+	{
+		name: "Transactions",
+		href: "/transactions",
+		icon: Receipt,
+		description: "View and manage transaction history",
 	},
 	{
 		name: "My Finances",

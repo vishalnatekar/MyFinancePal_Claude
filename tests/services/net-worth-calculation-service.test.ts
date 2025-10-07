@@ -2,35 +2,26 @@ import { NetWorthCalculationService } from '@/services/net-worth-calculation-ser
 import { CurrencyService } from '@/services/currency-service';
 import type { FinancialAccount } from '@/types/account';
 
-// Mock Supabase client
-const mockSupabase = {
-  from: jest.fn().mockReturnThis(),
-  select: jest.fn().mockReturnThis(),
-  eq: jest.fn().mockReturnThis(),
-  lte: jest.fn().mockReturnThis(),
-  order: jest.fn().mockReturnThis(),
-};
+// Mock the supabase module
+jest.mock('@/lib/supabase', () => ({
+  supabaseAdmin: {
+    from: jest.fn()
+  }
+}));
 
 // Mock currency service
 jest.mock('@/services/currency-service');
+
+// Get the mocked modules
+import { supabaseAdmin } from '@/lib/supabase';
+
+// Mock currency service instance
 const mockCurrencyService = {
   normalizeToGBP: jest.fn().mockResolvedValue(1000)
 };
 
-// Mock config
-jest.mock('@/lib/config', () => ({
-  config: {
-    supabase: {
-      url: 'test-url',
-      anonKey: 'test-key'
-    }
-  }
-}));
-
-// Mock Supabase client creation
-jest.mock('@supabase/supabase-js', () => ({
-  createClient: jest.fn(() => mockSupabase)
-}));
+// Get the mocked from function for easier reference in tests
+const mockFrom = supabaseAdmin.from as jest.Mock;
 
 describe('NetWorthCalculationService', () => {
   let service: NetWorthCalculationService;
@@ -95,7 +86,7 @@ describe('NetWorthCalculationService', () => {
     ];
 
     it('should calculate net worth correctly', async () => {
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({
             data: mockAccounts,
@@ -119,7 +110,7 @@ describe('NetWorthCalculationService', () => {
     });
 
     it('should handle empty accounts list', async () => {
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({
             data: [],
@@ -136,7 +127,7 @@ describe('NetWorthCalculationService', () => {
     });
 
     it('should categorize assets correctly', async () => {
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({
             data: mockAccounts,
@@ -164,7 +155,7 @@ describe('NetWorthCalculationService', () => {
     });
 
     it('should handle database errors', async () => {
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({
             data: null,
@@ -184,7 +175,7 @@ describe('NetWorthCalculationService', () => {
         }
       ];
 
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({
             data: zeroBalanceAccounts,
@@ -215,7 +206,7 @@ describe('NetWorthCalculationService', () => {
         }
       ];
 
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({
             data: multiCurrencyAccounts,
@@ -253,7 +244,7 @@ describe('NetWorthCalculationService', () => {
         }
       ];
 
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({
             data: mockAccounts,
@@ -294,7 +285,7 @@ describe('NetWorthCalculationService', () => {
         }
       ];
 
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             lte: jest.fn().mockReturnValue({
@@ -317,7 +308,7 @@ describe('NetWorthCalculationService', () => {
     });
 
     it('should return 0 for no historical data', async () => {
-      mockSupabase.from.mockReturnValue({
+      mockFrom.mockReturnValue({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             lte: jest.fn().mockReturnValue({

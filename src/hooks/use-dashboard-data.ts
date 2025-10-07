@@ -22,8 +22,6 @@ export function useDashboardData(initialDateRange: DateRange = '6M'): UseDashboa
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>(initialDateRange);
 
-  console.log('useDashboardData initialized');
-
   const fetchNetWorth = async () => {
     const response = await fetch('/api/dashboard/net-worth', {
       credentials: 'same-origin',
@@ -74,7 +72,6 @@ export function useDashboardData(initialDateRange: DateRange = '6M'): UseDashboa
         console.error('Failed to fetch accounts:', err);
         return [];
       });
-      console.log('Dashboard - Fetched accounts:', accountsData.length, accountsData);
       setAccounts(accountsData);
 
       // Fetch net worth and history in parallel (less critical)
@@ -119,8 +116,8 @@ export function useDashboardData(initialDateRange: DateRange = '6M'): UseDashboa
   };
 
   useEffect(() => {
-    console.log('useDashboardData useEffect triggered');
     fetchAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

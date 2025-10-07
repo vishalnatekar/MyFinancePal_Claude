@@ -10,13 +10,6 @@ export class NetWorthCalculationService {
   async calculateNetWorth(userId: string): Promise<NetWorthSummary> {
     const accounts = await this.getProcessedAccounts(userId);
 
-    console.log('Net Worth Calculation - Accounts:', accounts.map(a => ({
-      name: a.account_name,
-      type: a.account_type,
-      balance: a.current_balance,
-      currency: a.currency
-    })));
-
     // Calculate assets (positive values for checking, savings, investment)
     const assets = accounts
       .filter(account => ['checking', 'savings', 'investment'].includes(account.account_type))
@@ -26,8 +19,6 @@ export class NetWorthCalculationService {
     const liabilities = accounts
       .filter(account => ['credit', 'loan'].includes(account.account_type))
       .reduce((sum, account) => sum + Math.abs(account.current_balance), 0);
-
-    console.log('Net Worth Calculation - Assets:', assets, 'Liabilities:', liabilities, 'Net Worth:', assets - liabilities);
 
     const assetBreakdown = this.categorizeAssets(accounts);
 
