@@ -121,26 +121,11 @@ export async function verifyHouseholdAccess(
 	householdId: string,
 ): Promise<boolean> {
 	try {
-		const cookieStore = cookies();
-		const supabase = createServerClient<Database>(
-			config.supabase.url,
-			config.supabase.anonKey,
-			{
-				cookies: {
-					get(name: string) {
-						return cookieStore.get(name)?.value;
-					},
-					set(name: string, value: string, options: Record<string, unknown>) {
-						cookieStore.set({ name, value, ...options });
-					},
-					remove(name: string, options: Record<string, unknown>) {
-						cookieStore.set({ name, value: "", ...options });
-					},
-				},
-			},
-		);
+		// Import supabaseAdmin dynamically to avoid circular dependencies
+		const { supabaseAdmin } = await import("@/lib/supabase");
 
-		const { data, error } = await supabase
+		// Use admin client to bypass RLS and avoid infinite recursion
+		const { data, error } = await supabaseAdmin
 			.from("household_members")
 			.select("id")
 			.eq("household_id", householdId)
@@ -160,16 +145,17 @@ export async function verifyHouseholdAccess(
 }
 
 // Middleware wrapper for household-specific API routes
-export function withHouseholdAuth(
+export function withHouseholdAuth<T = any>(
 	handler: (
 		request: NextRequest,
 		user: User,
 		householdId: string,
+		context?: T,
 	) => Promise<NextResponse> | NextResponse,
 ) {
 	return async (
 		request: NextRequest,
-		{ params }: { params: { id: string } },
+		context: any,
 	): Promise<NextResponse> => {
 		const authResult = await authenticateRequest(request);
 
@@ -180,7 +166,7 @@ export function withHouseholdAuth(
 			);
 		}
 
-		const householdId = params.id;
+		const householdId = context.params.id;
 
 		// Verify user has access to this household
 		const hasAccess = await verifyHouseholdAccess(
@@ -195,7 +181,7 @@ export function withHouseholdAuth(
 			);
 		}
 
-		return handler(request, authResult.user, householdId);
+		return handler(request, authResult.user, householdId, context);
 	};
 }
 

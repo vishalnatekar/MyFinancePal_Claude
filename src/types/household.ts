@@ -55,3 +55,38 @@ export interface HouseholdResponse {
 
 // Household role enum
 export type HouseholdRole = "creator" | "member";
+
+// Database types for household invitations
+export type HouseholdInvitation =
+	Database["public"]["Tables"]["household_invitations"]["Row"];
+export type HouseholdInvitationInsert =
+	Database["public"]["Tables"]["household_invitations"]["Insert"];
+export type HouseholdInvitationUpdate =
+	Database["public"]["Tables"]["household_invitations"]["Update"];
+
+// Extended types with relationships
+export interface HouseholdInvitationWithDetails extends HouseholdInvitation {
+	households: {
+		name: string;
+	} | null;
+	inviter: {
+		email: string;
+		full_name: string | null;
+	} | null;
+}
+
+// Invitation status enum
+export type InvitationStatus = "pending" | "accepted" | "declined" | "expired";
+
+// Invitation form types
+export interface SendInvitationData {
+	email: string;
+}
+
+export interface InvitationResponse {
+	invitation: HouseholdInvitation;
+}
+
+export interface InvitationsResponse {
+	invitations: HouseholdInvitationWithDetails[];
+}

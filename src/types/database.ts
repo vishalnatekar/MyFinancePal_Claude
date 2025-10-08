@@ -415,6 +415,76 @@ export type Database = {
 					},
 				];
 			};
+			account_balance_history: {
+				Row: {
+					id: string;
+					account_id: string;
+					balance: number;
+					recorded_at: string;
+					created_at: string;
+				};
+				Insert: {
+					id?: string;
+					account_id: string;
+					balance: number;
+					recorded_at?: string;
+					created_at?: string;
+				};
+				Update: {
+					id?: string;
+					account_id?: string;
+					balance?: number;
+					recorded_at?: string;
+					created_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "account_balance_history_account_id_fkey";
+						columns: ["account_id"];
+						isOneToOne: false;
+						referencedRelation: "financial_accounts";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			transactions: {
+				Row: {
+					id: string;
+					account_id: string;
+					amount: number;
+					description: string;
+					transaction_date: string;
+					category: string | null;
+					created_at: string;
+				};
+				Insert: {
+					id?: string;
+					account_id: string;
+					amount: number;
+					description: string;
+					transaction_date: string;
+					category?: string | null;
+					created_at?: string;
+				};
+				Update: {
+					id?: string;
+					account_id?: string;
+					amount?: number;
+					description?: string;
+					transaction_date?: string;
+					category?: string | null;
+					created_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "transactions_account_id_fkey";
+						columns: ["account_id"];
+						isOneToOne: false;
+						referencedRelation: "financial_accounts";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			oauth_states: {
 				Row: {
 					id: string;
@@ -444,6 +514,60 @@ export type Database = {
 					{
 						foreignKeyName: "oauth_states_user_id_fkey";
 						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			household_invitations: {
+				Row: {
+					id: string;
+					household_id: string;
+					invited_by: string;
+					email: string;
+					token: string;
+					status: "pending" | "accepted" | "declined" | "expired";
+					resend_count: number;
+					expires_at: string;
+					created_at: string;
+					accepted_at: string | null;
+				};
+				Insert: {
+					id?: string;
+					household_id: string;
+					invited_by: string;
+					email: string;
+					token: string;
+					status?: "pending" | "accepted" | "declined" | "expired";
+					resend_count?: number;
+					expires_at: string;
+					created_at?: string;
+					accepted_at?: string | null;
+				};
+				Update: {
+					id?: string;
+					household_id?: string;
+					invited_by?: string;
+					email?: string;
+					token?: string;
+					status?: "pending" | "accepted" | "declined" | "expired";
+					resend_count?: number;
+					expires_at?: string;
+					created_at?: string;
+					accepted_at?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "household_invitations_household_id_fkey";
+						columns: ["household_id"];
+						isOneToOne: false;
+						referencedRelation: "households";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "household_invitations_invited_by_fkey";
+						columns: ["invited_by"];
 						isOneToOne: false;
 						referencedRelation: "users";
 						referencedColumns: ["id"];

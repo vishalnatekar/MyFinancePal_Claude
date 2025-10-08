@@ -31,16 +31,7 @@ export const GET = withHouseholdAuth(
 			// Fetch household details (access already verified by withHouseholdAuth)
 			const { data: household, error } = await supabaseAdmin
 				.from("households")
-				.select(`
-        *,
-        household_members(
-          id,
-          user_id,
-          role,
-          joined_at,
-          profiles(email, full_name, avatar_url)
-        )
-      `)
+				.select("*")
 				.eq("id", householdId)
 				.single();
 
@@ -52,7 +43,43 @@ export const GET = withHouseholdAuth(
 				);
 			}
 
-			return NextResponse.json({ household });
+			// Fetch household members separately
+			const { data: members, error: membersError } = await supabaseAdmin
+				.from("household_members")
+				.select("id, user_id, role, joined_at")
+				.eq("household_id", householdId);
+
+			if (membersError) {
+				console.error("Error fetching household members:", membersError);
+				return NextResponse.json(
+					{ error: "Failed to fetch household members" },
+					{ status: 500 },
+				);
+			}
+
+			// Fetch profiles for all members
+			const userIds = members?.map((m) => m.user_id) || [];
+			const { data: profiles, error: profilesError } = await supabaseAdmin
+				.from("profiles")
+				.select("id, email, full_name, avatar_url")
+				.in("id", userIds);
+
+			if (profilesError) {
+				console.error("Error fetching profiles:", profilesError);
+			}
+
+			// Combine members with their profiles
+			const householdMembers = members?.map((member) => ({
+				...member,
+				profiles: profiles?.find((p) => p.id === member.user_id) || null,
+			}));
+
+			return NextResponse.json({
+				household: {
+					...household,
+					household_members: householdMembers,
+				},
+			});
 		} catch (error) {
 			console.error("Error in GET /api/households/[id]:", error);
 			return NextResponse.json(

@@ -83,23 +83,97 @@ export class HouseholdService {
 	}
 
 	// Leave a household
-	static async leaveHousehold(householdId: string): Promise<void> {
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
+	static async leaveHousehold(
+		householdId: string,
+		userId: string,
+	): Promise<void> {
+		const response = await fetch(
+			`/api/households/${householdId}/members/${userId}`,
+			{
+				method: "DELETE",
+			},
+		);
 
-		if (!user) {
-			throw new Error("User not authenticated");
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || "Failed to leave household");
+		}
+	}
+
+	// Send household invitation
+	static async sendInvitation(
+		householdId: string,
+		email: string,
+	): Promise<{ invitation: any }> {
+		const response = await fetch(`/api/households/${householdId}/invite`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ email }),
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || "Failed to send invitation");
 		}
 
-		const { error } = await supabase
-			.from("household_members")
-			.delete()
-			.eq("household_id", householdId)
-			.eq("user_id", user.id);
+		return response.json();
+	}
 
-		if (error) {
-			throw new Error("Failed to leave household");
+	// Resend household invitation
+	static async resendInvitation(
+		householdId: string,
+		invitationId: string,
+	): Promise<void> {
+		const response = await fetch(
+			`/api/households/${householdId}/invite/${invitationId}/resend`,
+			{
+				method: "POST",
+			},
+		);
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || "Failed to resend invitation");
+		}
+	}
+
+	// Get invitation details by token
+	static async getInvitationByToken(token: string): Promise<any> {
+		const response = await fetch(`/api/households/invite/${token}`);
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || "Failed to fetch invitation");
+		}
+
+		return response.json();
+	}
+
+	// Accept household invitation
+	static async acceptInvitation(token: string): Promise<{ household_id: string }> {
+		const response = await fetch(`/api/households/invite/${token}/accept`, {
+			method: "POST",
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || "Failed to accept invitation");
+		}
+
+		return response.json();
+	}
+
+	// Decline household invitation
+	static async declineInvitation(token: string): Promise<void> {
+		const response = await fetch(`/api/households/invite/${token}/decline`, {
+			method: "POST",
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || "Failed to decline invitation");
 		}
 	}
 

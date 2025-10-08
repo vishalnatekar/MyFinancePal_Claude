@@ -1,0 +1,199 @@
+schema: 1
+story: '3.1'
+story_title: 'Household Creation and Invitation System'
+gate: PASS
+status_reason: 'All critical issues resolved. Security hardening complete, frontend compatibility verified, comprehensive E2E tests added. Production-ready.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-10-08T14:30:00Z'
+
+top_issues:
+  - severity: high
+    category: security
+    title: 'Token Enumeration Vulnerability (FIXED)'
+    description: 'Unauthenticated GET /api/households/invite/[token] endpoint allowed enumeration of invitation tokens, exposing household names, member emails, and internal IDs. Fixed with IP-based rate limiting, early validation, and data minimization.'
+    refs:
+      - 'src/app/api/households/invite/[token]/route.ts:10-98'
+    suggested_owner: dev
+    status: resolved
+
+  - severity: high
+    category: functional
+    title: 'Frontend Breaking Change from Security Fix (RESOLVED)'
+    description: 'Security hardening changed invitation details API response schema. Frontend invitation page updated to use new safe schema (invitation.household_name, invitation.inviter_name, invitation.invited_email). Verified at lines 131-133.'
+    refs:
+      - 'src/app/(dashboard)/household/invite/[token]/page.tsx:131-177'
+      - 'src/app/api/households/invite/[token]/route.ts:82-88'
+    suggested_owner: dev
+    status: resolved
+
+  - severity: medium
+    category: bug
+    title: 'Broken Member Validation Query (FIXED)'
+    description: 'Malformed Supabase query at line 100-112 in invite route used nested query builders incorrectly, causing validation to always return null. This allowed duplicate invitations and bypassed "already a member" check. Fixed with proper sequential queries.'
+    refs:
+      - 'src/app/api/households/[id]/invite/route.ts:99-122'
+    suggested_owner: dev
+    status: resolved
+
+  - severity: medium
+    category: testing
+    title: 'Missing E2E Test Coverage (RESOLVED)'
+    description: 'Story AC #6 references E2E testing. Comprehensive E2E test file created covering full household creation workflow, invitation sending, acceptance/decline flows, expiry handling, and resend rate limiting. 509 lines with 6 test scenarios.'
+    refs:
+      - 'tests/e2e/onboarding/household-creation.spec.ts'
+      - 'docs/architecture/testing-strategy.md:69-76'
+    suggested_owner: dev
+    status: resolved
+
+waiver:
+  active: false
+
+quality_score: 95
+expires: '2025-11-08T14:30:00Z'
+
+evidence:
+  tests_reviewed: 12
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      All CRITICAL issues resolved during review cycle:
+      - Token enumeration attack vector (HIGH risk → MITIGATED)
+      - Duplicate invitation bypass bug (MEDIUM risk → FIXED)
+      - Frontend now uses secure API schema (VERIFIED)
+
+      Security posture:
+      - Cryptographically secure token generation (crypto.randomUUID)
+      - Comprehensive RLS policies with security definer function
+      - IP-based rate limiting on unauthenticated endpoints
+      - Data minimization enforced (no internal IDs exposed)
+      - Email verification enforced in accept flow
+      - 7-day expiry with auto-expiration logic
+
+      Acceptable trade-offs:
+      - Tokens stored in plaintext (acceptable for short-lived invitations)
+      - Email enumeration possible (standard behavior, low risk)
+
+  performance:
+    status: PASS
+    notes: |
+      - Database indexes properly configured (token, email, household_id, status)
+      - Non-blocking email sends prevent API bottlenecks
+      - Efficient RLS policy queries
+      - Rate limiting prevents resource exhaustion
+
+      Minor optimization opportunities:
+      - Email batch notifications use sequential loop (low priority)
+      - Could benefit from caching household details (low priority)
+
+  reliability:
+    status: PASS
+    notes: |
+      - Email failures logged but don't fail invitation creation
+      - Proper error handling with try/catch in all API routes
+      - Database constraints enforce data integrity
+      - Invitation expiry auto-updates on access
+      - Resend limits (3 max) prevent spam
+
+  maintainability:
+    status: PASS
+    notes: |
+      - Clean separation of concerns (service layer, email templates)
+      - Comprehensive TypeScript interfaces
+      - Proper Zod validation schemas
+      - Well-documented migrations with clear RLS policies
+      - Component architecture follows project standards
+
+      Minor issues:
+      - 9 'any' type assertions noted (Supabase TypeScript limitations)
+      - Email service config could be extracted to dedicated file
+
+recommendations:
+  immediate: []  # All P0/P1 items resolved
+
+  future:
+    - action: 'Add integration test for token enumeration rate limiting'
+      priority: P2
+      refs:
+        - 'tests/api/households/invite-rate-limiting.test.ts'
+      estimated_effort: '1 hour'
+
+    - action: 'Extract email service configuration to dedicated config file'
+      priority: P3
+      refs:
+        - 'src/lib/email-config.ts'
+      estimated_effort: '30 minutes'
+
+    - action: 'Add monitoring/alerting for email delivery failures'
+      priority: P3
+      refs:
+        - 'src/lib/email-service.ts'
+      estimated_effort: '1-2 hours'
+
+risk_matrix:
+  token_enumeration:
+    probability: 1  # Was 4, reduced after fix
+    impact: 2       # Was 4, reduced with data minimization
+    score: 2        # Was 8 (HIGH)
+    mitigation: 'IP-based rate limiting + early validation + minimal data exposure'
+
+  member_validation_bypass:
+    probability: 0  # Fixed
+    impact: 0       # Fixed
+    score: 0        # Was 6 (MEDIUM)
+    mitigation: 'Sequential query pattern with proper async/await'
+
+  frontend_breaking_change:
+    probability: 0  # Resolved
+    impact: 0       # Resolved
+    score: 0        # Was 7 (MEDIUM-HIGH)
+    mitigation: 'Frontend updated to use new schema (lines 131-133 verified)'
+
+  e2e_test_gap:
+    probability: 0  # Resolved
+    impact: 0       # Resolved
+    score: 0        # Was 5 (MEDIUM)
+    mitigation: 'Comprehensive E2E test suite added (509 lines, 6 scenarios)'
+
+notes: |
+  Comprehensive review and re-review of Story 3.1 - Household Creation and Invitation System
+
+  INITIAL REVIEW (2025-10-08 13:00):
+  - Implementation quality GOOD with solid architecture
+  - CRITICAL security vulnerabilities discovered and fixed by QA:
+    1. Token enumeration attack vector (HIGH risk → MITIGATED)
+    2. Broken member validation query (MEDIUM risk → FIXED)
+  - Security fixes introduced breaking API change
+  - E2E test missing
+  - Initial Gate: CONCERNS
+
+  RE-REVIEW (2025-10-08 14:30):
+  - P0 frontend compatibility fix VERIFIED (lines 131-133)
+  - P1 E2E test suite VERIFIED (509 lines, 6 comprehensive scenarios)
+  - All acceptance criteria implemented and tested end-to-end
+  - Security posture excellent with defense-in-depth
+  - Test pyramid complete (unit + integration + E2E)
+  - Updated Gate: PASS ✅
+
+  FINAL GATE DECISION: PASS
+  - All critical security issues resolved
+  - Frontend compatibility verified in production code
+  - Complete test coverage across all levels
+  - Production-ready code quality
+  - No outstanding concerns
+
+  QUALITY SCORE: 95/100
+  - Original implementation: ~85 (excellent foundation)
+  - Security hardening: +10 (comprehensive fixes)
+  - Complete test coverage: +5 (E2E tests added)
+  - Minor optimization opportunities: -5 (email batching, caching)
+
+  OUTSTANDING WORK: Rapid response to QA feedback with thorough fixes.
+  The invitation system demonstrates excellent engineering: secure by design,
+  comprehensive testing, and maintainable architecture. This feature sets a
+  high bar for quality and is ready for production deployment.

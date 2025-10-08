@@ -37,7 +37,7 @@ export default function TransactionsPage() {
   } = useTransactions(filters);
 
   // Flatten paginated data into single array
-  const transactions = data?.pages.flatMap((page) => page.transactions) ?? [];
+  const transactions = data?.pages.flatMap((page: any) => page.transactions) ?? [];
 
   // Fetch user accounts for display
   useEffect(() => {
