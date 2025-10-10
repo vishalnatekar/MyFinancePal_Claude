@@ -25,6 +25,9 @@ export interface Transaction {
   date: string;
   description?: string;
   is_shared_expense: boolean;
+  shared_with_household_id?: string; // NEW: which household sees this transaction
+  shared_at?: string; // NEW: when it was shared
+  shared_by?: string; // NEW: who shared it
   splitting_rule_id?: string;
   manual_override: boolean;
   created_at: string;
@@ -53,4 +56,47 @@ export interface TransactionUpdateData {
   merchant_name?: string;
   category?: TransactionCategory;
   description?: string;
+}
+
+// Transaction sharing types
+export interface TransactionSharingHistory {
+  id: string;
+  transaction_id: string;
+  household_id: string;
+  action: 'shared' | 'unshared';
+  changed_by: string;
+  changed_at: string;
+}
+
+// Extended type for household view with owner info
+export interface SharedTransactionWithOwner extends Transaction {
+  owner_name: string;
+  owner_email: string;
+}
+
+export interface UpdateTransactionSharingRequest {
+  household_id: string | null;
+  is_shared: boolean;
+}
+
+export interface BulkTransactionSharingRequest {
+  transaction_ids: string[];
+  household_id: string | null;
+  is_shared: boolean;
+}
+
+export interface BulkTransactionSharingResponse {
+  success_count: number;
+  failed_count: number;
+  errors: Array<{
+    transaction_id: string;
+    error: string;
+  }>;
+}
+
+export interface TransactionSharingHistoryFilters {
+  household_id?: string;
+  start_date?: string;
+  end_date?: string;
+  action?: 'shared' | 'unshared';
 }

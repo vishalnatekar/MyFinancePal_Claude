@@ -12,6 +12,12 @@ interface TransactionListProps {
   onLoadMore: () => void;
   onTransactionEdit: (transaction: Transaction) => void;
   accountsMap?: Map<string, string>;
+  showSharing?: boolean;
+  households?: Array<{ id: string; name: string }>;
+  onSharingChange?: () => void;
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (transactionId: string) => void;
 }
 
 /**
@@ -24,6 +30,12 @@ export function TransactionList({
   onLoadMore,
   onTransactionEdit,
   accountsMap,
+  showSharing = false,
+  households = [],
+  onSharingChange,
+  selectable = false,
+  selectedIds = new Set(),
+  onToggleSelect,
 }: TransactionListProps) {
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -104,6 +116,12 @@ export function TransactionList({
               transaction={transaction}
               onEdit={onTransactionEdit}
               accountName={accountsMap?.get(transaction.account_id)}
+              showSharing={showSharing}
+              households={households}
+              onSharingChange={onSharingChange}
+              selectable={selectable}
+              selected={selectedIds.has(transaction.id)}
+              onToggleSelect={onToggleSelect}
             />
           ))}
         </div>

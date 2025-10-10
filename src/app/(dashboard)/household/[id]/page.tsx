@@ -3,6 +3,7 @@
 import { HouseholdMemberList } from "@/components/household/HouseholdMemberList";
 import { InviteMemberModal } from "@/components/household/InviteMemberModal";
 import { PendingInvitations } from "@/components/household/PendingInvitations";
+import { SharedTransactionsList } from "@/components/household/SharedTransactionsList";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { HouseholdService } from "@/services/household-service";
@@ -118,12 +119,7 @@ export default function HouseholdDetailPage({
 
 			<div className="grid gap-6 md:grid-cols-3">
 				<div className="md:col-span-2 space-y-6">
-					<div className="bg-card border rounded-lg p-6">
-						<h2 className="text-xl font-semibold mb-4">Recent Expenses</h2>
-						<p className="text-muted-foreground">
-							No expenses yet. Add your first expense to get started.
-						</p>
-					</div>
+					<SharedTransactionsList householdId={params.id} />
 				</div>
 
 				<div className="space-y-6">

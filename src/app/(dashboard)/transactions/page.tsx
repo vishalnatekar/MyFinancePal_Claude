@@ -9,6 +9,8 @@ import { TransactionSearchBar } from '@/components/transactions/TransactionSearc
 import { TransactionFilterBar } from '@/components/transactions/TransactionFilterBar';
 import { TransactionFiltersDialog } from '@/components/transactions/TransactionFiltersDialog';
 import { TransactionDetailModal } from '@/components/transactions/TransactionDetailModal';
+import { BulkTransactionSharingControls } from '@/components/transactions/BulkTransactionSharingControls';
+import { SharingStatusFilter, SharingStatus } from '@/components/transactions/SharingStatusFilter';
 import { Transaction, TransactionFilter } from '@/types/transaction';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -26,6 +28,9 @@ export default function TransactionsPage() {
   const [filtersDialogOpen, setFiltersDialogOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [accountsMap, setAccountsMap] = useState<Map<string, string>>(new Map());
+  const [households, setHouseholds] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedTransactionIds, setSelectedTransactionIds] = useState<Set<string>>(new Set());
+  const [sharingStatus, setSharingStatus] = useState<SharingStatus>('all');
   const queryClient = useQueryClient();
 
   const {
@@ -39,9 +44,10 @@ export default function TransactionsPage() {
   // Flatten paginated data into single array
   const transactions = data?.pages.flatMap((page: any) => page.transactions) ?? [];
 
-  // Fetch user accounts for display
+  // Fetch user accounts and households for display
   useEffect(() => {
-    async function fetchAccounts() {
+    async function fetchData() {
+      // Fetch accounts
       const { data: accounts } = await supabase
         .from('financial_accounts')
         .select('id, account_name');
@@ -52,8 +58,24 @@ export default function TransactionsPage() {
         );
         setAccountsMap(map);
       }
+
+      // Fetch households
+      const { data: householdsData } = await supabase
+        .from('household_members')
+        .select('household_id, households(id, name)');
+
+      if (householdsData) {
+        const uniqueHouseholds = Array.from(
+          new Map(
+            householdsData
+              .filter((hm: any) => hm.households)
+              .map((hm: any) => [hm.households.id, { id: hm.households.id, name: hm.households.name }])
+          ).values()
+        );
+        setHouseholds(uniqueHouseholds);
+      }
     }
-    fetchAccounts();
+    fetchData();
   }, []);
 
   const handleLoadMore = () => {
@@ -114,6 +136,27 @@ export default function TransactionsPage() {
     }
   };
 
+  const handleToggleSelect = useCallback((transactionId: string) => {
+    setSelectedTransactionIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(transactionId)) {
+        newSet.delete(transactionId);
+      } else {
+        newSet.add(transactionId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedTransactionIds(new Set());
+  }, []);
+
+  const handleSharingComplete = useCallback(() => {
+    // Refresh transactions after sharing change
+    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+  }, [queryClient]);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6 flex items-center justify-between">
@@ -132,12 +175,20 @@ export default function TransactionsPage() {
       {/* Search and filters */}
       <div className="space-y-4 mb-6">
         <TransactionSearchBar onSearch={handleSearch} />
-        <TransactionFilterBar
-          filters={filters}
-          onRemoveFilter={removeFilter}
-          onClearAll={clearFilters}
-          onOpenFilters={() => setFiltersDialogOpen(true)}
-        />
+        <div className="flex items-center justify-between gap-4">
+          <TransactionFilterBar
+            filters={filters}
+            onRemoveFilter={removeFilter}
+            onClearAll={clearFilters}
+            onOpenFilters={() => setFiltersDialogOpen(true)}
+          />
+          {households.length > 0 && (
+            <SharingStatusFilter
+              currentStatus={sharingStatus}
+              onStatusChange={setSharingStatus}
+            />
+          )}
+        </div>
       </div>
 
       {/* Transaction list */}
@@ -148,7 +199,23 @@ export default function TransactionsPage() {
         onLoadMore={handleLoadMore}
         onTransactionEdit={handleTransactionEdit}
         accountsMap={accountsMap}
+        showSharing={households.length > 0}
+        households={households}
+        onSharingChange={handleSharingComplete}
+        selectable={households.length > 0}
+        selectedIds={selectedTransactionIds}
+        onToggleSelect={handleToggleSelect}
       />
+
+      {/* Bulk sharing controls */}
+      {households.length > 0 && (
+        <BulkTransactionSharingControls
+          selectedTransactionIds={Array.from(selectedTransactionIds)}
+          households={households}
+          onClearSelection={handleClearSelection}
+          onComplete={handleSharingComplete}
+        />
+      )}
 
       {/* Filters dialog */}
       <TransactionFiltersDialog
