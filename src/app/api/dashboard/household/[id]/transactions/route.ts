@@ -1,5 +1,6 @@
 import { config } from "@/lib/config";
 import type { SharedTransactionWithOwner } from "@/types/transaction";
+import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -32,23 +33,15 @@ export async function GET(
 		);
 
 		// Service role client for bypassing RLS when fetching account/profile info
-		const supabaseAdmin = createServerClient(
+		// IMPORTANT: Use createClient (not createServerClient) for service role
+		// Service role should NOT use cookies - it authenticates via the key itself
+		const supabaseAdmin = createClient(
 			config.supabase.url,
 			config.supabase.serviceRoleKey,
 			{
-				cookies: {
-					getAll() {
-						return cookieStore.getAll();
-					},
-					setAll(cookiesToSet) {
-						try {
-							for (const { name, value, options } of cookiesToSet) {
-								cookieStore.set(name, value, options);
-							}
-						} catch {
-							// Server component - ignore
-						}
-					},
+				auth: {
+					autoRefreshToken: false,
+					persistSession: false,
 				},
 			},
 		);
@@ -119,26 +112,96 @@ export async function GET(
 			...new Set(data.map((t: any) => t.account_id).filter(Boolean)),
 		];
 
+		console.log("[Household Transactions] Account IDs from transactions:", accountIds);
+
 		// Fetch financial accounts to get user IDs (using admin client to bypass RLS)
-		const { data: accounts } = await supabaseAdmin
+		let { data: accounts, error: accountsError } = await supabaseAdmin
 			.from("financial_accounts")
 			.select("id, user_id")
 			.in("id", accountIds);
 
+		console.log("[Household Transactions] Accounts fetched with admin:", accounts);
+		console.log("[Household Transactions] Accounts fetch error:", accountsError);
+
+		// If admin client returns empty (service role not working), try regular client
+		if (!accounts || accounts.length === 0) {
+			console.log("[Household Transactions] Admin fetch returned empty, trying regular client...");
+			const { data: accountsFallback, error: accountsFallbackError } = await supabase
+				.from("financial_accounts")
+				.select("id, user_id")
+				.in("id", accountIds);
+
+			console.log("[Household Transactions] Accounts fetched with regular client:", accountsFallback);
+			console.log("[Household Transactions] Accounts fallback error:", accountsFallbackError);
+
+			accounts = accountsFallback;
+		}
+
 		const accountMap = new Map(accounts?.map((a) => [a.id, a.user_id]) || []);
+		console.log("[Household Transactions] Account map:", Array.from(accountMap.entries()));
 
 		// Get unique user IDs
 		const userIds = [...new Set(Array.from(accountMap.values()))];
 
 		// Fetch profiles for all unique users (using admin client to bypass RLS)
+		console.log("[Household Transactions] Fetching profiles for user IDs:", userIds);
 		const { data: profiles, error: profilesError } = await supabaseAdmin
 			.from("profiles")
 			.select("id, email, full_name")
 			.in("id", userIds);
 
+		console.log("[Household Transactions] Profiles fetched:", profiles);
+		console.log("[Household Transactions] Profile fetch error:", profilesError);
+
 		if (profilesError) {
-			console.error("Error fetching profiles:", profilesError);
-			// Continue anyway - we'll just show "Unknown" for owners
+			console.error("Error fetching profiles with admin client:", profilesError);
+			console.log("Service role key configured:", config.supabase.serviceRoleKey !== "dummy-key");
+			// Try with regular client (will use RLS policy for household members)
+			const { data: profilesFallback, error: profilesFallbackError } = await supabase
+				.from("profiles")
+				.select("id, email, full_name")
+				.in("id", userIds);
+
+			if (profilesFallbackError) {
+				console.error("Error fetching profiles with fallback:", profilesFallbackError);
+			} else {
+				console.log("Successfully fetched profiles using fallback (RLS policy)");
+				// Use fallback profiles
+				const profileMap = new Map(
+					profilesFallback?.map((p) => [p.id, p]) || [],
+				);
+
+				const transactionsWithOwner: SharedTransactionWithOwner[] = data.map(
+					(transaction: any) => {
+						const userId = accountMap.get(transaction.account_id);
+						const profile = profileMap.get(userId);
+
+						return {
+							...transaction,
+							owner_name: profile?.full_name || profile?.email || "Unknown",
+							owner_email: profile?.email || "",
+						};
+					},
+				);
+
+				const { count, error: countError } = await supabase
+					.from("transactions")
+					.select("id", { count: "exact", head: true })
+					.eq("shared_with_household_id", householdId)
+					.eq("is_shared_expense", true);
+
+				if (countError) {
+					console.error("Error counting household transactions:", countError);
+				}
+
+				return NextResponse.json({
+					transactions: transactionsWithOwner,
+					total_count: count || 0,
+					page,
+					limit,
+					has_more: (count || 0) > offset + limit,
+				});
+			}
 		}
 
 		// Create a map of user_id to profile

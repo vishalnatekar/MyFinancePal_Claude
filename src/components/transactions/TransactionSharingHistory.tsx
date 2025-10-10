@@ -1,9 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { transactionSharingService } from "@/services/transaction-sharing-service";
 import type { TransactionSharingHistory } from "@/types/transaction";
-import { Clock, Lock, Users } from "lucide-react";
+import { Clock, Download, Lock, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface TransactionSharingHistoryProps {
@@ -44,6 +45,35 @@ export function TransactionSharingHistoryComponent({
 			dateStyle: "medium",
 			timeStyle: "short",
 		}).format(date);
+	};
+
+	const handleExportCSV = () => {
+		if (history.length === 0) return;
+
+		// Create CSV header
+		const headers = ["Action", "Household ID", "Changed By", "Changed At"];
+		const csvRows = [headers.join(",")];
+
+		// Add data rows
+		for (const entry of history) {
+			const row = [
+				entry.action,
+				entry.household_id,
+				entry.changed_by,
+				new Date(entry.changed_at).toISOString(),
+			];
+			csvRows.push(row.join(","));
+		}
+
+		// Create blob and download
+		const csvContent = csvRows.join("\n");
+		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = `transaction-${transactionId}-sharing-history.csv`;
+		link.click();
+		URL.revokeObjectURL(url);
 	};
 
 	if (isLoading) {
@@ -89,8 +119,17 @@ export function TransactionSharingHistoryComponent({
 
 	return (
 		<Card>
-			<CardHeader>
+			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
 				<CardTitle className="text-sm">Sharing History</CardTitle>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={handleExportCSV}
+					className="h-8"
+				>
+					<Download className="h-3 w-3 mr-1" />
+					Export CSV
+				</Button>
 			</CardHeader>
 			<CardContent>
 				<div className="space-y-3">

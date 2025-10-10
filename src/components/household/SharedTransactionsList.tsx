@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
 import type { SharedTransactionWithOwner } from "@/types/transaction";
 import { Clock, User } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -49,6 +50,44 @@ export function SharedTransactionsList({
 		};
 
 		fetchSharedTransactions();
+
+		// Set up real-time subscription for transaction sharing updates
+		const channel = supabase
+			.channel(`household-${householdId}-transactions`)
+			.on(
+				"postgres_changes",
+				{
+					event: "UPDATE",
+					schema: "public",
+					table: "transactions",
+					filter: `shared_with_household_id=eq.${householdId}`,
+				},
+				(payload) => {
+					console.log("Transaction shared with household:", payload);
+					// Refetch transactions to get updated list with owner info
+					fetchSharedTransactions();
+				},
+			)
+			.on(
+				"postgres_changes",
+				{
+					event: "INSERT",
+					schema: "public",
+					table: "transactions",
+					filter: `shared_with_household_id=eq.${householdId}`,
+				},
+				(payload) => {
+					console.log("New shared transaction:", payload);
+					// Refetch transactions to get updated list with owner info
+					fetchSharedTransactions();
+				},
+			)
+			.subscribe();
+
+		// Cleanup subscription on unmount
+		return () => {
+			supabase.removeChannel(channel);
+		};
 	}, [householdId]);
 
 	const formatCurrency = (amount: number) => {
