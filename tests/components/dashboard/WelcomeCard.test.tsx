@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
 import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
 import { useAuthStore } from "@/stores/auth-store";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 // Mock Next.js Link component
@@ -12,13 +12,15 @@ jest.mock("next/link", () => {
 
 // Mock the auth store
 jest.mock("@/stores/auth-store");
-const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
+const mockUseAuthStore = useAuthStore as jest.MockedFunction<
+	typeof useAuthStore
+>;
 
 describe("WelcomeCard Component", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		// Mock Date to ensure consistent time-based greetings in tests
-		jest.spyOn(Date.prototype, 'getHours').mockReturnValue(14); // 2 PM
+		jest.spyOn(Date.prototype, "getHours").mockReturnValue(14); // 2 PM
 	});
 
 	afterEach(() => {
@@ -59,7 +61,9 @@ describe("WelcomeCard Component", () => {
 		render(<WelcomeCard />);
 
 		expect(screen.getByText("Good afternoon, John!")).toBeInTheDocument();
-		expect(screen.getByText("Welcome back to MyFinancePal")).toBeInTheDocument();
+		expect(
+			screen.getByText("Welcome back to MyFinancePal"),
+		).toBeInTheDocument();
 	});
 
 	it("uses fallback name when full_name is not provided", () => {
@@ -112,7 +116,7 @@ describe("WelcomeCard Component", () => {
 		expect(screen.getByText("Good afternoon, John!")).toBeInTheDocument();
 
 		// Test morning greeting
-		jest.spyOn(Date.prototype, 'getHours').mockReturnValue(9); // 9 AM
+		jest.spyOn(Date.prototype, "getHours").mockReturnValue(9); // 9 AM
 		const { rerender } = render(<WelcomeCard />);
 		expect(screen.getByText("Good morning, John!")).toBeInTheDocument();
 	});
@@ -144,9 +148,16 @@ describe("WelcomeCard Component", () => {
 		expect(screen.getByText("Settings")).toBeInTheDocument();
 
 		// Check that links have correct hrefs
-		expect(screen.getByRole("link", { name: /Add Bank Account/ })).toHaveAttribute("href", "/accounts/connect");
-		expect(screen.getByRole("link", { name: /Create Household/ })).toHaveAttribute("href", "/household/create");
-		expect(screen.getByRole("link", { name: /Settings/ })).toHaveAttribute("href", "/profile");
+		expect(
+			screen.getByRole("link", { name: /Add Bank Account/ }),
+		).toHaveAttribute("href", "/accounts/connect");
+		expect(
+			screen.getByRole("link", { name: /Create Household/ }),
+		).toHaveAttribute("href", "/household/create");
+		expect(screen.getByRole("link", { name: /Settings/ })).toHaveAttribute(
+			"href",
+			"/profile",
+		);
 	});
 
 	it("displays avatar with correct fallback", () => {

@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
 import { UserProfile } from "@/components/profile/UserProfile";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 // Mock the auth store

@@ -212,19 +212,22 @@ describe("Household Invitation API Endpoints", () => {
 					invited_by: testUser.id,
 					email: "decline@example.com",
 					token: `test-decline-${Date.now()}`,
-					expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+					expires_at: new Date(
+						Date.now() + 7 * 24 * 60 * 60 * 1000,
+					).toISOString(),
 					status: "pending",
 				})
 				.select()
 				.single();
 
 			// Create user to decline
-			const { data: decliningUser } =
-				await supabaseAdmin.auth.admin.createUser({
+			const { data: decliningUser } = await supabaseAdmin.auth.admin.createUser(
+				{
 					email: "decline@example.com",
 					password: "testpassword123",
 					email_confirm: true,
-				});
+				},
+			);
 
 			if (!decliningUser?.user) {
 				throw new Error("Failed to create declining user");

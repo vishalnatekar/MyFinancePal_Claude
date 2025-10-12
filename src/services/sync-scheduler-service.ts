@@ -71,7 +71,10 @@ const SYNC_INTERVALS = {
 };
 
 export class SyncSchedulerService {
-	private static activeSyncs = new Map<string, { userId: string; startedAt: Date }>();
+	private static activeSyncs = new Map<
+		string,
+		{ userId: string; startedAt: Date }
+	>();
 	private static syncHistory = new Map<string, Date[]>();
 
 	/**
@@ -112,9 +115,7 @@ export class SyncSchedulerService {
 
 		if (recentSyncs.length >= rateLimits.maxSyncsPerHour) {
 			const oldestSync = recentSyncs[0];
-			const retryAfter = new Date(
-				oldestSync.getTime() + 60 * 60 * 1000,
-			);
+			const retryAfter = new Date(oldestSync.getTime() + 60 * 60 * 1000);
 			return {
 				allowed: false,
 				reason: `Rate limit exceeded: ${rateLimits.maxSyncsPerHour} syncs per hour`,
@@ -284,8 +285,8 @@ export class SyncSchedulerService {
 	static async recordSyncComplete(
 		logId: string,
 		status: "completed" | "failed",
-		transactionsProcessed: number = 0,
-		duplicatesFound: number = 0,
+		transactionsProcessed = 0,
+		duplicatesFound = 0,
 		errors: string[] = [],
 	): Promise<void> {
 		const { error } = await supabaseAdmin
@@ -337,7 +338,7 @@ export class SyncSchedulerService {
 	 */
 	static async getSyncStatistics(
 		userId: string,
-		days: number = 7,
+		days = 7,
 	): Promise<{
 		totalSyncs: number;
 		successfulSyncs: number;

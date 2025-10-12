@@ -48,14 +48,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 				error: new Error("Not authenticated"),
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: ["550e8400-e29b-41d4-a716-446655440000"],
-					household_id: "660e8400-e29b-41d4-a716-446655440001",
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: ["550e8400-e29b-41d4-a716-446655440000"],
+						household_id: "660e8400-e29b-41d4-a716-446655440001",
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();
@@ -74,14 +77,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 		});
 
 		it("should validate transaction_ids is required", async () => {
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: [],
-					household_id: "660e8400-e29b-41d4-a716-446655440001",
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: [],
+						household_id: "660e8400-e29b-41d4-a716-446655440001",
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();
@@ -91,14 +97,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 		});
 
 		it("should validate household_id is required when sharing", async () => {
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: ["550e8400-e29b-41d4-a716-446655440000"],
-					household_id: null,
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: ["550e8400-e29b-41d4-a716-446655440000"],
+						household_id: null,
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();
@@ -108,14 +117,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 		});
 
 		it("should reject invalid UUID format for transaction_ids", async () => {
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: ["invalid-uuid"],
-					household_id: "660e8400-e29b-41d4-a716-446655440001",
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: ["invalid-uuid"],
+						household_id: "660e8400-e29b-41d4-a716-446655440001",
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();
@@ -174,14 +186,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 				};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: transactionIds,
-					household_id: householdId,
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: transactionIds,
+						household_id: householdId,
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();
@@ -251,14 +266,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 				};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: transactionIds,
-					household_id: householdId,
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: transactionIds,
+						household_id: householdId,
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();
@@ -292,14 +310,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 				return {};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: transactionIds,
-					household_id: householdId,
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: transactionIds,
+						household_id: householdId,
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();
@@ -342,14 +363,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 				return {};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: transactionIds,
-					household_id: householdId,
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: transactionIds,
+						household_id: householdId,
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();
@@ -399,14 +423,17 @@ describe("POST /api/transactions/bulk-sharing", () => {
 				};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/bulk-sharing", {
-				method: "POST",
-				body: JSON.stringify({
-					transaction_ids: transactionIds,
-					household_id: null,
-					is_shared: false,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/bulk-sharing",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						transaction_ids: transactionIds,
+						household_id: null,
+						is_shared: false,
+					}),
+				},
+			);
 
 			const response = await POST(request);
 			const data = await response.json();

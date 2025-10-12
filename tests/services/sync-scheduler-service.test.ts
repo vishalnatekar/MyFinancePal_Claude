@@ -70,9 +70,8 @@ describe("SyncSchedulerService", () => {
 
 	describe("determineSyncPriority", () => {
 		it("should return HIGH priority when never synced", async () => {
-			const priority = await SyncSchedulerService.determineSyncPriority(
-				mockAccountId,
-			);
+			const priority =
+				await SyncSchedulerService.determineSyncPriority(mockAccountId);
 			expect(priority).toBe(SyncPriority.HIGH);
 		});
 
@@ -234,7 +233,13 @@ describe("SyncSchedulerService", () => {
 
 			(require("@/lib/supabase").supabaseAdmin.from as jest.Mock) = mockFrom;
 
-			await SyncSchedulerService.recordSyncComplete("log-123", "completed", 50, 5, []);
+			await SyncSchedulerService.recordSyncComplete(
+				"log-123",
+				"completed",
+				50,
+				5,
+				[],
+			);
 
 			expect(mockFrom).toHaveBeenCalledWith("data_sync_logs");
 			expect(mockUpdate).toHaveBeenCalled();

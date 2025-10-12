@@ -50,7 +50,8 @@ export async function POST() {
 
 		return response;
 	} catch (error) {
-		const message = error instanceof Error ? error.message : "Failed to sign out";
+		const message =
+			error instanceof Error ? error.message : "Failed to sign out";
 		return NextResponse.json({ error: message }, { status: 500 });
 	}
 }

@@ -17,10 +17,7 @@ export async function GET(
 		const clientIp = request.headers.get("x-forwarded-for") || "unknown";
 		if (!checkRateLimit(`view_invitation_${clientIp}`, 10, 60000)) {
 			// 10 requests per minute per IP
-			return NextResponse.json(
-				{ error: "Too many requests" },
-				{ status: 429 },
-			);
+			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 		}
 
 		// Get invitation details (no auth required to view invitation)

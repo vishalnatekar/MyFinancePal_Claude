@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * Comprehensive E2E tests for TrueLayer OAuth flow and account sync operations
@@ -25,7 +25,9 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 		});
 	});
 
-	test("should complete full OAuth flow: connect -> auth -> callback -> sync", async ({ page }) => {
+	test("should complete full OAuth flow: connect -> auth -> callback -> sync", async ({
+		page,
+	}) => {
 		// Step 1: Navigate to accounts page
 		await page.goto("/accounts");
 
@@ -89,7 +91,8 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 				await route.fulfill({
 					status: 302,
 					headers: {
-						Location: "/accounts?success=true&message=Account+connected+successfully",
+						Location:
+							"/accounts?success=true&message=Account+connected+successfully",
 					},
 				});
 			} else {
@@ -129,7 +132,9 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 		await page.waitForURL(/\/accounts\?success=true/);
 
 		// Verify success message
-		await expect(page.getByText(/account connected successfully/i)).toBeVisible();
+		await expect(
+			page.getByText(/account connected successfully/i),
+		).toBeVisible();
 
 		// Verify account appears in list
 		await expect(page.getByText("Personal Current Account")).toBeVisible();
@@ -141,7 +146,9 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 		expect(accessTokenCreated).toBe(true);
 	});
 
-	test("should handle OAuth state mismatch (CSRF protection)", async ({ page }) => {
+	test("should handle OAuth state mismatch (CSRF protection)", async ({
+		page,
+	}) => {
 		await page.goto("/accounts");
 
 		// Attempt callback with invalid state
@@ -211,10 +218,14 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 
 		await page.goto("/api/accounts/callback?code=test&state=valid-state");
 
-		await expect(page.getByText(/failed to exchange authorization code/i)).toBeVisible();
+		await expect(
+			page.getByText(/failed to exchange authorization code/i),
+		).toBeVisible();
 	});
 
-	test("should sync account data after successful connection", async ({ page }) => {
+	test("should sync account data after successful connection", async ({
+		page,
+	}) => {
 		await page.goto("/accounts");
 
 		// Mock existing connected account
@@ -230,7 +241,7 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 								truelayer_account_id: "tl-account-456",
 								account_name: "Monzo Current",
 								institution_name: "Monzo",
-								current_balance: 500.00,
+								current_balance: 500.0,
 								connection_status: "active",
 								last_synced: "2024-01-01T10:00:00Z",
 								is_manual: false,
@@ -256,7 +267,7 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 					accounts: [
 						{
 							id: "account-1",
-							current_balance: 650.00,
+							current_balance: 650.0,
 							last_synced: new Date().toISOString(),
 						},
 					],
@@ -277,7 +288,9 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 		await expect(page.getByText("£650.00")).toBeVisible();
 	});
 
-	test("should handle connection expiration and prompt reconnection", async ({ page }) => {
+	test("should handle connection expiration and prompt reconnection", async ({
+		page,
+	}) => {
 		await page.goto("/accounts");
 
 		// Mock account with expired connection
@@ -291,7 +304,7 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 							id: "account-1",
 							account_name: "Expired Account",
 							institution_name: "Monzo",
-							current_balance: 1000.00,
+							current_balance: 1000.0,
 							connection_status: "expired",
 							last_synced: "2023-01-01T10:00:00Z",
 							is_manual: false,
@@ -305,10 +318,14 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 
 		// Verify expired status shown
 		await expect(page.getByText(/expired/i)).toBeVisible();
-		await expect(page.getByRole("button", { name: /reconnect/i })).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: /reconnect/i }),
+		).toBeVisible();
 	});
 
-	test("should display sync progress indicators during sync", async ({ page }) => {
+	test("should display sync progress indicators during sync", async ({
+		page,
+	}) => {
 		await page.goto("/accounts");
 
 		await page.route("**/api/accounts", (route) => {
@@ -321,7 +338,7 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 							id: "account-1",
 							account_name: "Test Account",
 							institution_name: "Monzo",
-							current_balance: 100.00,
+							current_balance: 100.0,
 							connection_status: "active",
 							is_manual: false,
 						},
@@ -347,7 +364,9 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 		await expect(page.getByText(/syncing/i)).toBeVisible();
 	});
 
-	test("should handle multiple accounts sync with rate limiting", async ({ page }) => {
+	test("should handle multiple accounts sync with rate limiting", async ({
+		page,
+	}) => {
 		await page.goto("/accounts");
 
 		// Mock multiple connected accounts

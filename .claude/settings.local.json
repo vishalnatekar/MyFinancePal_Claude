@@ -52,7 +52,8 @@
       "Bash(xargs -r kill -9)",
       "Bash(git checkout:*)",
       "Bash(npx biome format:*)",
-      "Read(//private/var/log/**)"
+      "Read(//private/var/log/**)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

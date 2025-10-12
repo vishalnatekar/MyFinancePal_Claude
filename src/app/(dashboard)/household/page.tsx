@@ -1,8 +1,8 @@
 "use client";
 
 import { HouseholdCard } from "@/components/household/HouseholdCard";
-import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Button } from "@/components/ui/button";
 import { HouseholdService } from "@/services/household-service";
 import { createBrowserClient } from "@supabase/ssr";
 import { Plus } from "lucide-react";

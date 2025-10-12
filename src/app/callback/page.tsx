@@ -46,7 +46,9 @@ export default function TrueLayerCallbackPage() {
 				console.log("- State:", state?.substring(0, 10) + "...");
 
 				// Redirect to the API callback endpoint which will process everything server-side
-				console.log("Redirecting to API callback for server-side processing...");
+				console.log(
+					"Redirecting to API callback for server-side processing...",
+				);
 				const callbackUrl = `/api/accounts/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || "")}`;
 
 				// Use window.location to let the server handle the redirect

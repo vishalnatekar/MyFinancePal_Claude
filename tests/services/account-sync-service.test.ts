@@ -1,5 +1,5 @@
-import { AccountSyncService } from "@/services/account-sync-service";
 import { supabaseAdmin } from "@/lib/supabase";
+import { AccountSyncService } from "@/services/account-sync-service";
 import { trueLayerService } from "@/services/truelayer-service";
 
 // Mock dependencies
@@ -30,7 +30,7 @@ describe("AccountSyncService", () => {
 			account_type: "checking",
 			account_name: "Test Account",
 			institution_name: "Test Bank",
-			current_balance: 1000.50,
+			current_balance: 1000.5,
 			is_manual: false,
 			connection_status: "active",
 		};
@@ -39,11 +39,17 @@ describe("AccountSyncService", () => {
 			// Mock database responses
 			const mockSelect = jest.fn().mockReturnThis();
 			const mockEq = jest.fn().mockReturnThis();
-			const mockSingle = jest.fn()
+			const mockSingle = jest
+				.fn()
 				.mockResolvedValueOnce({ data: mockAccount, error: null }) // Account fetch
 				.mockResolvedValueOnce({ data: null, error: { code: "PGRST116" } }) // No in-progress sync
-				.mockResolvedValueOnce({ // Sync history creation
-					data: { id: "sync-123", account_id: "account-123", sync_status: "in_progress" },
+				.mockResolvedValueOnce({
+					// Sync history creation
+					data: {
+						id: "sync-123",
+						account_id: "account-123",
+						sync_status: "in_progress",
+					},
 					error: null,
 				});
 
@@ -109,21 +115,25 @@ describe("AccountSyncService", () => {
 				},
 			];
 
-			(moneyHubService.getAccounts as jest.Mock).mockResolvedValue(mockMoneyHubAccounts);
+			(moneyHubService.getAccounts as jest.Mock).mockResolvedValue(
+				mockMoneyHubAccounts,
+			);
 
 			const result = await AccountSyncService.syncAccount("account-123");
 
 			expect(result.success).toBe(true);
 			expect(result.accountId).toBe("account-123");
 			expect(result.balanceUpdated).toBe(true);
-			expect(result.oldBalance).toBe(1000.50);
+			expect(result.oldBalance).toBe(1000.5);
 			expect(result.newBalance).toBe(1250.75);
 		});
 
 		it("should handle account not found", async () => {
 			const mockSelect = jest.fn().mockReturnThis();
 			const mockEq = jest.fn().mockReturnThis();
-			const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { code: "PGRST116" } });
+			const mockSingle = jest
+				.fn()
+				.mockResolvedValue({ data: null, error: { code: "PGRST116" } });
 
 			(supabaseAdmin.from as jest.Mock).mockReturnValue({
 				select: mockSelect,
@@ -137,7 +147,9 @@ describe("AccountSyncService", () => {
 				single: mockSingle,
 			});
 
-			const result = await AccountSyncService.syncAccount("nonexistent-account");
+			const result = await AccountSyncService.syncAccount(
+				"nonexistent-account",
+			);
 
 			expect(result.success).toBe(false);
 			expect(result.error).toBe("Account not found");
@@ -148,7 +160,9 @@ describe("AccountSyncService", () => {
 
 			const mockSelect = jest.fn().mockReturnThis();
 			const mockEq = jest.fn().mockReturnThis();
-			const mockSingle = jest.fn().mockResolvedValue({ data: manualAccount, error: null });
+			const mockSingle = jest
+				.fn()
+				.mockResolvedValue({ data: manualAccount, error: null });
 
 			(supabaseAdmin.from as jest.Mock).mockReturnValue({
 				select: mockSelect,
@@ -171,9 +185,11 @@ describe("AccountSyncService", () => {
 		it("should handle sync already in progress", async () => {
 			const mockSelect = jest.fn().mockReturnThis();
 			const mockEq = jest.fn().mockReturnThis();
-			const mockSingle = jest.fn()
+			const mockSingle = jest
+				.fn()
 				.mockResolvedValueOnce({ data: mockAccount, error: null }) // Account fetch
-				.mockResolvedValueOnce({ // In-progress sync found
+				.mockResolvedValueOnce({
+					// In-progress sync found
 					data: { id: "existing-sync" },
 					error: null,
 				});
@@ -216,7 +232,8 @@ describe("AccountSyncService", () => {
 			// Setup successful account fetch and sync history creation
 			const mockSelect = jest.fn().mockReturnThis();
 			const mockEq = jest.fn().mockReturnThis();
-			const mockSingle = jest.fn()
+			const mockSingle = jest
+				.fn()
 				.mockResolvedValueOnce({ data: mockAccount, error: null })
 				.mockResolvedValueOnce({ data: null, error: { code: "PGRST116" } })
 				.mockResolvedValueOnce({
@@ -234,19 +251,17 @@ describe("AccountSyncService", () => {
 				.mockReturnValueOnce({ update: mockUpdate })
 				.mockReturnValueOnce({ update: mockUpdate });
 
-			mockSelect
-				.mockReturnValueOnce({ eq: mockEq })
-				.mockReturnValueOnce({
-					select: jest.fn().mockReturnValue({
+			mockSelect.mockReturnValueOnce({ eq: mockEq }).mockReturnValueOnce({
+				select: jest.fn().mockReturnValue({
+					eq: jest.fn().mockReturnValue({
 						eq: jest.fn().mockReturnValue({
-							eq: jest.fn().mockReturnValue({
-								limit: jest.fn().mockReturnValue({
-									single: mockSingle,
-								}),
+							limit: jest.fn().mockReturnValue({
+								single: mockSingle,
 							}),
 						}),
 					}),
-				});
+				}),
+			});
 
 			mockEq.mockReturnValue({ single: mockSingle });
 
@@ -283,7 +298,9 @@ describe("AccountSyncService", () => {
 
 			const mockSelect = jest.fn().mockReturnThis();
 			const mockEq = jest.fn().mockReturnThis();
-			const mockNot = jest.fn().mockResolvedValue({ data: mockAccounts, error: null });
+			const mockNot = jest
+				.fn()
+				.mockResolvedValue({ data: mockAccounts, error: null });
 
 			(supabaseAdmin.from as jest.Mock).mockReturnValue({
 				select: mockSelect,
@@ -298,9 +315,14 @@ describe("AccountSyncService", () => {
 			});
 
 			// Mock individual account syncs
-			jest.spyOn(AccountSyncService, "syncAccount")
+			jest
+				.spyOn(AccountSyncService, "syncAccount")
 				.mockResolvedValueOnce({ accountId: "account-1", success: true })
-				.mockResolvedValueOnce({ accountId: "account-2", success: false, error: "Sync failed" });
+				.mockResolvedValueOnce({
+					accountId: "account-2",
+					success: false,
+					error: "Sync failed",
+				});
 
 			const result = await AccountSyncService.syncUserAccounts("user-123");
 
@@ -363,7 +385,8 @@ describe("AccountSyncService", () => {
 			});
 
 			// Mock user sync results
-			jest.spyOn(AccountSyncService, "syncUserAccounts")
+			jest
+				.spyOn(AccountSyncService, "syncUserAccounts")
 				.mockResolvedValueOnce({
 					totalAccounts: 2,
 					successCount: 2,

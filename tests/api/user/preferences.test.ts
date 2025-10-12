@@ -1,13 +1,15 @@
-import { createMocks } from "node-mocks-http";
 import { GET, PUT } from "@/app/api/user/preferences/route";
 import { authenticateRequest } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { createMocks } from "node-mocks-http";
 
 // Mock external dependencies
 jest.mock("@/lib/auth");
 jest.mock("@/lib/supabase");
 
-const mockAuthenticateRequest = authenticateRequest as jest.MockedFunction<typeof authenticateRequest>;
+const mockAuthenticateRequest = authenticateRequest as jest.MockedFunction<
+	typeof authenticateRequest
+>;
 const mockSupabase = supabase as jest.MockedObject<typeof supabase>;
 
 describe("/api/user/preferences", () => {

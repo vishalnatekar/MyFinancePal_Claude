@@ -3,11 +3,12 @@
  * Tests that RLS policies correctly enforce transaction-level privacy
  */
 
-import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import { createClient } from "@supabase/supabase-js";
 
 // Test environment configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:54321";
+const supabaseUrl =
+	process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:54321";
 const supabaseAnonKey =
 	process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "test-anon-key";
 
@@ -133,10 +134,19 @@ describe("RLS Policies: Transaction Sharing", () => {
 
 	afterAll(async () => {
 		// Clean up test data
-		await adminClient.from("transactions").delete().in("id", [sharedTransactionId, privateTransactionId]);
-		await adminClient.from("household_members").delete().eq("household_id", householdId);
+		await adminClient
+			.from("transactions")
+			.delete()
+			.in("id", [sharedTransactionId, privateTransactionId]);
+		await adminClient
+			.from("household_members")
+			.delete()
+			.eq("household_id", householdId);
 		await adminClient.from("households").delete().eq("id", householdId);
-		await adminClient.from("financial_accounts").delete().in("id", [account1Id, account2Id]);
+		await adminClient
+			.from("financial_accounts")
+			.delete()
+			.in("id", [account1Id, account2Id]);
 
 		// Note: In real tests, you might want to delete users too, but Supabase
 		// requires admin privileges for that
@@ -233,7 +243,9 @@ describe("RLS Policies: Transaction Sharing", () => {
 			expect(error).toBeNull();
 			expect(data).not.toBeNull();
 			expect(data?.length).toBeGreaterThan(0);
-			expect(data?.every((tx) => tx.shared_with_household_id === householdId)).toBe(true);
+			expect(
+				data?.every((tx) => tx.shared_with_household_id === householdId),
+			).toBe(true);
 		});
 	});
 
@@ -327,8 +339,14 @@ describe("RLS Policies: Transaction Sharing", () => {
 		});
 
 		afterAll(async () => {
-			await adminClient.from("transactions").delete().eq("id", otherHouseholdTransactionId);
-			await adminClient.from("household_members").delete().eq("household_id", otherHouseholdId);
+			await adminClient
+				.from("transactions")
+				.delete()
+				.eq("id", otherHouseholdTransactionId);
+			await adminClient
+				.from("household_members")
+				.delete()
+				.eq("household_id", otherHouseholdId);
 			await adminClient.from("households").delete().eq("id", otherHouseholdId);
 		});
 
@@ -350,7 +368,9 @@ describe("RLS Policies: Transaction Sharing", () => {
 				.eq("is_shared_expense", true);
 
 			// Should only see transactions from householdId (not otherHouseholdId)
-			const householdIds = user2Transactions?.map((tx) => tx.shared_with_household_id);
+			const householdIds = user2Transactions?.map(
+				(tx) => tx.shared_with_household_id,
+			);
 			expect(householdIds).not.toContain(otherHouseholdId);
 			expect(householdIds).toContain(householdId);
 		});
@@ -379,7 +399,10 @@ describe("RLS Policies: Transaction Sharing", () => {
 		});
 
 		afterAll(async () => {
-			await adminClient.from("transactions").delete().eq("id", testTransactionId);
+			await adminClient
+				.from("transactions")
+				.delete()
+				.eq("id", testTransactionId);
 		});
 
 		it("should hide transaction from household members after unsharing", async () => {
@@ -450,7 +473,10 @@ describe("RLS Policies: Transaction Sharing", () => {
 			});
 
 			// Delete the account
-			await adminClient.from("financial_accounts").delete().eq("id", testAccount?.id);
+			await adminClient
+				.from("financial_accounts")
+				.delete()
+				.eq("id", testAccount?.id);
 
 			// Verify sharing history is also deleted (CASCADE)
 			const { data: historyData } = await user1Client

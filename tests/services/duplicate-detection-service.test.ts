@@ -1,6 +1,6 @@
 import {
-	DuplicateDetectionService,
 	type DuplicateCluster,
+	DuplicateDetectionService,
 } from "@/services/duplicate-detection-service";
 import type { ProcessedTransaction } from "@/services/truelayer-data-processor";
 

@@ -63,7 +63,8 @@ export function TransactionSharingToggle({
 		}
 	};
 
-	const isShared = transaction.is_shared_expense && transaction.shared_with_household_id;
+	const isShared =
+		transaction.is_shared_expense && transaction.shared_with_household_id;
 	const currentHousehold = households.find(
 		(h) => h.id === transaction.shared_with_household_id,
 	);

@@ -56,14 +56,22 @@ export async function GET(request: NextRequest) {
 		}
 
 		// Validate state (CSRF protection) using secure state manager
-		console.log("Validating OAuth state token:", state?.substring(0, 10) + "...");
+		console.log(
+			"Validating OAuth state token:",
+			state?.substring(0, 10) + "...",
+		);
 		const stateData = await oauthStateManager.validateAndConsumeState(state);
 		if (!stateData) {
-			console.error("Invalid or expired state token:", state?.substring(0, 10) + "...");
+			console.error(
+				"Invalid or expired state token:",
+				state?.substring(0, 10) + "...",
+			);
 			console.error("This could mean:");
 			console.error("1. State expired (>10 minutes since connection started)");
 			console.error("2. State already used (duplicate callback)");
-			console.error("3. State not found in database (check oauth_states table)");
+			console.error(
+				"3. State not found in database (check oauth_states table)",
+			);
 			const redirectUrl = new URL("/accounts", config.app.url);
 			redirectUrl.searchParams.set("error", "invalid_state");
 			redirectUrl.searchParams.set("message", "Invalid or expired session");
@@ -98,7 +106,11 @@ export async function GET(request: NextRequest) {
 				redirectUri,
 			);
 			const { access_token, refresh_token, expires_in } = tokenData;
-			console.log("✅ Token exchange successful, expires in:", expires_in, "seconds");
+			console.log(
+				"✅ Token exchange successful, expires in:",
+				expires_in,
+				"seconds",
+			);
 
 			// Fetch account data from TrueLayer
 			console.log("📡 Step 2: Fetching accounts from TrueLayer...");
@@ -106,7 +118,11 @@ export async function GET(request: NextRequest) {
 			console.log("✅ Fetched", accounts.length, "accounts from TrueLayer");
 
 			// Get provider information for each account
-			console.log("📡 Step 3: Fetching balances for", accounts.length, "accounts...");
+			console.log(
+				"📡 Step 3: Fetching balances for",
+				accounts.length,
+				"accounts...",
+			);
 			const accountsWithBalances = await Promise.all(
 				accounts.map(async (account) => {
 					try {
@@ -114,7 +130,11 @@ export async function GET(request: NextRequest) {
 							account.account_id,
 							access_token,
 						);
-						console.log(`✅ Balance fetched for ${account.display_name}:`, balance.current, balance.currency);
+						console.log(
+							`✅ Balance fetched for ${account.display_name}:`,
+							balance.current,
+							balance.currency,
+						);
 						return { account, balance };
 					} catch (err) {
 						console.warn(
@@ -209,7 +229,10 @@ export async function GET(request: NextRequest) {
 			console.log(
 				`✅ Step 4 Complete: Successfully created ${createdAccounts?.length || 0} accounts in database`,
 			);
-			console.log("Created account IDs:", createdAccounts?.map((a) => a.id));
+			console.log(
+				"Created account IDs:",
+				createdAccounts?.map((a) => a.id),
+			);
 
 			// Create sync history entry
 			if (createdAccounts && createdAccounts.length > 0) {
@@ -273,7 +296,10 @@ export async function GET(request: NextRequest) {
 		});
 		const redirectUrl = new URL("/accounts", config.app.url);
 		redirectUrl.searchParams.set("error", "unknown_error");
-		redirectUrl.searchParams.set("message", "We couldn't connect to your bank. Please try again.");
+		redirectUrl.searchParams.set(
+			"message",
+			"We couldn't connect to your bank. Please try again.",
+		);
 		return NextResponse.redirect(redirectUrl);
 	}
 }

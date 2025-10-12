@@ -66,7 +66,10 @@ export async function POST(request: NextRequest) {
 				);
 			}
 
-			console.log("Session refreshed successfully for user:", refreshData.session.user.id);
+			console.log(
+				"Session refreshed successfully for user:",
+				refreshData.session.user.id,
+			);
 			return NextResponse.json({
 				success: true,
 				user: refreshData.session.user,
@@ -75,10 +78,7 @@ export async function POST(request: NextRequest) {
 
 		if (!session) {
 			console.warn("No active session found during refresh");
-			return NextResponse.json(
-				{ error: "No active session" },
-				{ status: 401 },
-			);
+			return NextResponse.json({ error: "No active session" }, { status: 401 });
 		}
 
 		console.log("Session validated for user:", session.user.id);
@@ -89,9 +89,6 @@ export async function POST(request: NextRequest) {
 		});
 	} catch (error) {
 		console.error("Unexpected error in session refresh:", error);
-		return NextResponse.json(
-			{ error: "Server error" },
-			{ status: 500 },
-		);
+		return NextResponse.json({ error: "Server error" }, { status: 500 });
 	}
 }

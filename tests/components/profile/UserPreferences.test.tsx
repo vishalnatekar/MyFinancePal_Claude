@@ -1,12 +1,14 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { UserPreferences } from "@/components/profile/UserPreferences";
 import { useUserPreferences } from "@/hooks/use-user-preferences";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 
 // Mock the user preferences hook
 jest.mock("@/hooks/use-user-preferences");
-const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<typeof useUserPreferences>;
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
+>;
 
 describe("UserPreferences Component", () => {
 	const mockUpdatePreferences = jest.fn();

@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import type {
 	CreateHouseholdData,
+	HouseholdDashboardData,
 	HouseholdResponse,
+	HouseholdSyncResponse,
 	HouseholdsResponse,
 	UpdateHouseholdData,
 } from "@/types/household";
@@ -152,7 +154,9 @@ export class HouseholdService {
 	}
 
 	// Accept household invitation
-	static async acceptInvitation(token: string): Promise<{ household_id: string }> {
+	static async acceptInvitation(
+		token: string,
+	): Promise<{ household_id: string }> {
 		const response = await fetch(`/api/households/invite/${token}/accept`, {
 			method: "POST",
 		});
@@ -186,5 +190,45 @@ export class HouseholdService {
 			memberCount: 0,
 			currentBalance: 0,
 		};
+	}
+
+	// Story 3.3: Get comprehensive household dashboard data
+	static async getHouseholdDashboard(
+		householdId: string,
+	): Promise<HouseholdDashboardData> {
+		const response = await fetch(`/api/dashboard/household/${householdId}`);
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(
+				errorData.error || "Failed to fetch household dashboard data",
+			);
+		}
+
+		return response.json();
+	}
+
+	// Story 3.3: Trigger household-wide account sync
+	static async syncHouseholdAccounts(
+		householdId: string,
+		forceSync = false,
+	): Promise<HouseholdSyncResponse> {
+		const response = await fetch(
+			`/api/dashboard/household/${householdId}/sync`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ force_sync: forceSync }),
+			},
+		);
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || "Failed to sync household accounts");
+		}
+
+		return response.json();
 	}
 }

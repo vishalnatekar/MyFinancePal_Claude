@@ -1,7 +1,7 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { AccountConnectionCard } from "@/components/accounts/AccountConnectionCard";
 import type { FinancialAccount } from "@/types/account";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // Mock Lucide React icons
 jest.mock("lucide-react", () => ({
@@ -15,7 +15,9 @@ jest.mock("lucide-react", () => ({
 	AlertTriangle: () => <div data-testid="alert-icon" />,
 	CheckCircle: () => <div data-testid="check-icon" />,
 	Clock: () => <div data-testid="clock-icon" />,
-	Loader2: ({ className }: { className?: string }) => <div data-testid="loader-icon" className={className} />,
+	Loader2: ({ className }: { className?: string }) => (
+		<div data-testid="loader-icon" className={className} />
+	),
 }));
 
 const mockAccount: FinancialAccount = {
@@ -26,7 +28,7 @@ const mockAccount: FinancialAccount = {
 	account_type: "checking",
 	account_name: "Main Checking",
 	institution_name: "Test Bank",
-	current_balance: 1500.50,
+	current_balance: 1500.5,
 	is_shared: false,
 	last_synced: "2023-01-01T12:00:00Z",
 	is_manual: false,
@@ -66,7 +68,7 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		expect(screen.getByText("Main Checking")).toBeInTheDocument();
@@ -82,7 +84,7 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		expect(screen.getByTestId("creditcard-icon")).toBeInTheDocument();
@@ -95,7 +97,7 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		expect(screen.getByText("Manual")).toBeInTheDocument();
@@ -108,11 +110,13 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		expect(screen.getByText("Expired")).toBeInTheDocument();
-		expect(screen.getByText(/This account needs to be reconnected/)).toBeInTheDocument();
+		expect(
+			screen.getByText(/This account needs to be reconnected/),
+		).toBeInTheDocument();
 	});
 
 	it("should show shared badge when account is shared", () => {
@@ -124,7 +128,7 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		expect(screen.getByText("Shared")).toBeInTheDocument();
@@ -145,7 +149,7 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		expect(screen.getByText(/30 minutes ago/)).toBeInTheDocument();
@@ -160,11 +164,13 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		// Open dropdown menu
-		const menuButton = screen.getByTestId("morevertical-icon").closest("button")!;
+		const menuButton = screen
+			.getByTestId("morevertical-icon")
+			.closest("button")!;
 		await user.click(menuButton);
 
 		// Click sync option
@@ -183,11 +189,13 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		// Open dropdown menu
-		const menuButton = screen.getByTestId("morevertical-icon").closest("button")!;
+		const menuButton = screen
+			.getByTestId("morevertical-icon")
+			.closest("button")!;
 		await user.click(menuButton);
 
 		// Sync option should not be present
@@ -203,11 +211,13 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		// Open dropdown menu
-		const menuButton = screen.getByTestId("morevertical-icon").closest("button")!;
+		const menuButton = screen
+			.getByTestId("morevertical-icon")
+			.closest("button")!;
 		await user.click(menuButton);
 
 		// Should show reconnect option
@@ -223,11 +233,13 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		// Open dropdown menu
-		const menuButton = screen.getByTestId("morevertical-icon").closest("button")!;
+		const menuButton = screen
+			.getByTestId("morevertical-icon")
+			.closest("button")!;
 		await user.click(menuButton);
 
 		// Click delete option
@@ -235,17 +247,23 @@ describe("AccountConnectionCard", () => {
 		await user.click(deleteButton);
 
 		// Should show confirmation dialog
-		expect(screen.getByText('Are you sure you want to delete "Main Checking"?')).toBeInTheDocument();
+		expect(
+			screen.getByText('Are you sure you want to delete "Main Checking"?'),
+		).toBeInTheDocument();
 
 		// Confirm deletion
-		const confirmButton = screen.getByRole("button", { name: "Delete Account" });
+		const confirmButton = screen.getByRole("button", {
+			name: "Delete Account",
+		});
 		await user.click(confirmButton);
 
 		expect(mockOnDelete).toHaveBeenCalledWith(mockAccount.id);
 	});
 
 	it("should show loading state during operations", async () => {
-		mockOnSync.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1000)));
+		mockOnSync.mockImplementation(
+			() => new Promise((resolve) => setTimeout(resolve, 1000)),
+		);
 
 		const user = userEvent.setup();
 
@@ -255,11 +273,13 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		// Open dropdown menu
-		const menuButton = screen.getByTestId("morevertical-icon").closest("button")!;
+		const menuButton = screen
+			.getByTestId("morevertical-icon")
+			.closest("button")!;
 		await user.click(menuButton);
 
 		// Click sync
@@ -271,7 +291,9 @@ describe("AccountConnectionCard", () => {
 	});
 
 	it("should disable buttons during loading", async () => {
-		mockOnSync.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1000)));
+		mockOnSync.mockImplementation(
+			() => new Promise((resolve) => setTimeout(resolve, 1000)),
+		);
 
 		const user = userEvent.setup();
 
@@ -281,11 +303,13 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		// Open dropdown menu
-		const menuButton = screen.getByTestId("morevertical-icon").closest("button")!;
+		const menuButton = screen
+			.getByTestId("morevertical-icon")
+			.closest("button")!;
 		await user.click(menuButton);
 
 		// Click sync
@@ -305,7 +329,7 @@ describe("AccountConnectionCard", () => {
 				onSync={mockOnSync}
 				onDelete={mockOnDelete}
 				onReconnect={mockOnReconnect}
-			/>
+			/>,
 		);
 
 		expect(screen.getByText("-£250.75")).toBeInTheDocument();

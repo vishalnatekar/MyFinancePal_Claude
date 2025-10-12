@@ -154,9 +154,7 @@ describe("InviteMemberModal", () => {
 		fireEvent.click(sendButton);
 
 		await waitFor(() => {
-			expect(
-				screen.getByText("Failed to send invitation"),
-			).toBeInTheDocument();
+			expect(screen.getByText("Failed to send invitation")).toBeInTheDocument();
 		});
 	});
 });

@@ -62,34 +62,34 @@ export async function upsertUserProfile(
 }
 
 // Sign in with Google
-export async function signInWithGoogle(redirectPath: string = "/") {
-    const redirectTo = `${window.location.origin}/auth/callback`;
-    console.log("🔐 Starting Google OAuth flow with redirect:", redirectTo);
+export async function signInWithGoogle(redirectPath = "/") {
+	const redirectTo = `${window.location.origin}/auth/callback`;
+	console.log("🔐 Starting Google OAuth flow with redirect:", redirectTo);
 
-    try {
-        window.localStorage.setItem("auth:redirectTo", redirectPath);
-    } catch (storageError) {
-        console.warn("Unable to persist redirect target:", storageError);
-    }
+	try {
+		window.localStorage.setItem("auth:redirectTo", redirectPath);
+	} catch (storageError) {
+		console.warn("Unable to persist redirect target:", storageError);
+	}
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-            redirectTo,
-            queryParams: {
-                access_type: "offline",
-                prompt: "consent",
-            },
-        },
-    });
+	const { data, error } = await supabase.auth.signInWithOAuth({
+		provider: "google",
+		options: {
+			redirectTo,
+			queryParams: {
+				access_type: "offline",
+				prompt: "consent",
+			},
+		},
+	});
 
 	if (error) {
 		console.error("❌ Error signing in with Google:", error);
 		throw error;
 	}
 
-    console.log("✅ OAuth initiated successfully. URL:", data.url);
-    return data;
+	console.log("✅ OAuth initiated successfully. URL:", data.url);
+	return data;
 }
 
 // Sign out

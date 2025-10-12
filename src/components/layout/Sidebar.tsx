@@ -8,12 +8,12 @@ import {
 	CreditCard,
 	Home,
 	PieChart,
+	Receipt,
 	Settings,
 	User,
 	Users,
 	Wallet,
 	X,
-	Receipt,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

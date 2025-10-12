@@ -4,7 +4,7 @@
  */
 
 import { TransactionSharingToggle } from "@/components/transactions/TransactionSharingToggle";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 // Mock the transaction sharing service

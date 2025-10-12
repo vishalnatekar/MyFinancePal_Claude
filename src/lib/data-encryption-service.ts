@@ -53,9 +53,7 @@ export class DataEncryptionService {
 			encrypted.merchant_name &&
 			typeof encrypted.merchant_name === "string"
 		) {
-			encrypted.merchant_name = CryptoService.encrypt(
-				encrypted.merchant_name,
-			);
+			encrypted.merchant_name = CryptoService.encrypt(encrypted.merchant_name);
 		}
 
 		// Encrypt description if present

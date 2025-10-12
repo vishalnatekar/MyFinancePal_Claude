@@ -44,7 +44,10 @@ export function BulkTransactionSharingControls({
 		isShared: boolean;
 	} | null>(null);
 
-	const handleBulkShare = async (householdId: string, householdName: string) => {
+	const handleBulkShare = async (
+		householdId: string,
+		householdName: string,
+	) => {
 		setPendingAction({
 			householdId,
 			householdName,

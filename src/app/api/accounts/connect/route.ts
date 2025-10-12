@@ -73,7 +73,10 @@ export async function POST(request: NextRequest) {
 		// Generate secure state token
 		console.log("🔐 Generating OAuth state token for user:", userId);
 		const state = await oauthStateManager.generateState(userId, providerId);
-		console.log("✅ State token generated and stored:", state.substring(0, 10) + "...");
+		console.log(
+			"✅ State token generated and stored:",
+			state.substring(0, 10) + "...",
+		);
 
 		// Generate TrueLayer OAuth URL
 		// Use /callback page which will then call the API endpoint

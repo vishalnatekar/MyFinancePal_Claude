@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { HouseholdService } from "@/services/household-service";
 import { createBrowserClient } from "@supabase/ssr";
 import { AlertCircle, Check, Home, X } from "lucide-react";
@@ -52,7 +52,9 @@ export default function InvitationAcceptancePage() {
 			setInvitation(result.invitation);
 		} catch (err) {
 			console.error("Error loading invitation:", err);
-			setError(err instanceof Error ? err.message : "Failed to load invitation");
+			setError(
+				err instanceof Error ? err.message : "Failed to load invitation",
+			);
 		} finally {
 			setIsLoading(false);
 		}
@@ -75,7 +77,9 @@ export default function InvitationAcceptancePage() {
 			router.push(`/household/${result.household_id}`);
 		} catch (err) {
 			console.error("Error accepting invitation:", err);
-			setError(err instanceof Error ? err.message : "Failed to accept invitation");
+			setError(
+				err instanceof Error ? err.message : "Failed to accept invitation",
+			);
 			setIsProcessing(false);
 		}
 	};
@@ -97,7 +101,9 @@ export default function InvitationAcceptancePage() {
 			router.push("/household");
 		} catch (err) {
 			console.error("Error declining invitation:", err);
-			setError(err instanceof Error ? err.message : "Failed to decline invitation");
+			setError(
+				err instanceof Error ? err.message : "Failed to decline invitation",
+			);
 			setIsProcessing(false);
 		}
 	};

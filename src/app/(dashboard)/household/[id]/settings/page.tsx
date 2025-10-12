@@ -1,6 +1,7 @@
 "use client";
 
 import { HouseholdSettingsForm } from "@/components/household/HouseholdSettingsForm";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
 	AlertDialog,
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { HouseholdService } from "@/services/household-service";
 import type { Household, HouseholdWithMembers } from "@/types/household";
 import { createBrowserClient } from "@supabase/ssr";
@@ -75,7 +75,9 @@ export default function HouseholdSettingsPage() {
 			router.push("/household");
 		} catch (err) {
 			console.error("Error leaving household:", err);
-			setError(err instanceof Error ? err.message : "Failed to leave household");
+			setError(
+				err instanceof Error ? err.message : "Failed to leave household",
+			);
 			setIsLeaving(false);
 		}
 	};
@@ -102,9 +104,7 @@ export default function HouseholdSettingsPage() {
 			<div className="max-w-4xl mx-auto">
 				<Alert variant="destructive">
 					<AlertCircle className="h-4 w-4" />
-					<AlertDescription>
-						{error || "Household not found"}
-					</AlertDescription>
+					<AlertDescription>{error || "Household not found"}</AlertDescription>
 				</Alert>
 				<div className="mt-4">
 					<Link href="/household">

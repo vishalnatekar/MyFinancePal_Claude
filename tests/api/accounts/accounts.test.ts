@@ -1,13 +1,14 @@
-import { createMocks } from "node-mocks-http";
 import { GET, POST } from "@/app/api/accounts/route";
 import { supabaseAdmin } from "@/lib/supabase";
+import { createMocks } from "node-mocks-http";
 
 // Mock the auth middleware
 jest.mock("@/lib/auth-middleware", () => ({
 	withAuth: (handler: any) => handler,
 	checkRateLimit: jest.fn(() => true),
-	createAuthErrorResponse: jest.fn((message, status) =>
-		new Response(JSON.stringify({ error: message }), { status })
+	createAuthErrorResponse: jest.fn(
+		(message, status) =>
+			new Response(JSON.stringify({ error: message }), { status }),
 	),
 }));
 
@@ -36,7 +37,7 @@ describe("/api/accounts", () => {
 					account_type: "checking",
 					account_name: "Main Account",
 					institution_name: "Test Bank",
-					current_balance: 1500.50,
+					current_balance: 1500.5,
 					is_shared: false,
 					is_manual: false,
 					connection_status: "active",
@@ -109,7 +110,7 @@ describe("/api/accounts", () => {
 			account_type: "checking",
 			account_name: "Test Account",
 			institution_name: "Test Bank",
-			current_balance: 1000.00,
+			current_balance: 1000.0,
 			is_shared: false,
 		};
 

@@ -104,9 +104,7 @@ export const DELETE = withAuth(
 			// TrueLayer connections are managed via access tokens which we'll delete with the account
 			// No need to call TrueLayer API to disconnect
 			if (!account.is_manual) {
-				console.log(
-					`Deleting TrueLayer-connected account: ${account.id}`,
-				);
+				console.log(`Deleting TrueLayer-connected account: ${account.id}`);
 			}
 
 			// Delete related data (cascade should handle this, but let's be explicit)

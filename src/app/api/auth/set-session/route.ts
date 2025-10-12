@@ -12,10 +12,7 @@ export async function POST(request: NextRequest) {
 		const { access_token, refresh_token } = await request.json();
 
 		if (!access_token || !refresh_token) {
-			return NextResponse.json(
-				{ error: "Missing tokens" },
-				{ status: 400 },
-			);
+			return NextResponse.json({ error: "Missing tokens" }, { status: 400 });
 		}
 
 		// Create response to set cookies on
@@ -70,7 +67,10 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		console.log("✅ Server-side session created for user:", data.session.user.id);
+		console.log(
+			"✅ Server-side session created for user:",
+			data.session.user.id,
+		);
 
 		// Create or update user profile using the service role client to bypass RLS
 		const user = data.session.user;
@@ -97,9 +97,6 @@ export async function POST(request: NextRequest) {
 		return response;
 	} catch (error) {
 		console.error("Unexpected error in set-session:", error);
-		return NextResponse.json(
-			{ error: "Server error" },
-			{ status: 500 },
-		);
+		return NextResponse.json({ error: "Server error" }, { status: 500 });
 	}
 }

@@ -9,7 +9,7 @@ jest.mock("@/lib/supabase", () => ({
 
 describe("HistoricalDataService", () => {
 	const mockAccountId = "acc-123";
-	const mockBalance = 1000.50;
+	const mockBalance = 1000.5;
 	const mockCurrency = "GBP";
 
 	beforeEach(() => {
@@ -109,7 +109,7 @@ describe("HistoricalDataService", () => {
 		it("should return false when balance changed below threshold", async () => {
 			const mockSingle = jest.fn().mockResolvedValue({
 				data: {
-					balance: 1000.50,
+					balance: 1000.5,
 					recorded_at: "2025-10-02T12:00:00Z",
 				},
 				error: null,
@@ -131,7 +131,7 @@ describe("HistoricalDataService", () => {
 
 			const result = await HistoricalDataService.hasBalanceChanged(
 				mockAccountId,
-				1000.50, // Same balance
+				1000.5, // Same balance
 				0.01, // Threshold
 			);
 
@@ -141,7 +141,7 @@ describe("HistoricalDataService", () => {
 		it("should return true when balance changed above threshold", async () => {
 			const mockSingle = jest.fn().mockResolvedValue({
 				data: {
-					balance: 1000.00,
+					balance: 1000.0,
 					recorded_at: "2025-10-02T12:00:00Z",
 				},
 				error: null,
@@ -163,7 +163,7 @@ describe("HistoricalDataService", () => {
 
 			const result = await HistoricalDataService.hasBalanceChanged(
 				mockAccountId,
-				1050.00, // Changed by 50
+				1050.0, // Changed by 50
 				0.01, // Threshold
 			);
 

@@ -1,5 +1,8 @@
-import { TrueLayerService, TrueLayerServiceError } from "@/services/truelayer-service";
 import { config } from "@/lib/config";
+import {
+	TrueLayerService,
+	TrueLayerServiceError,
+} from "@/services/truelayer-service";
 
 // Mock the config to avoid needing real API keys in tests
 jest.mock("@/lib/config", () => ({
@@ -34,7 +37,9 @@ describe("TrueLayerService", () => {
 
 			expect(authUrl).toContain("https://auth.truelayer.com");
 			expect(authUrl).toContain(`client_id=${config.truelayer.clientId}`);
-			expect(authUrl).toContain(`redirect_uri=${encodeURIComponent(redirectUri)}`);
+			expect(authUrl).toContain(
+				`redirect_uri=${encodeURIComponent(redirectUri)}`,
+			);
 			expect(authUrl).toContain(`providers=${providerId}`);
 			expect(authUrl).toContain(`state=${state}`);
 			// Note: enable_mock is commented out in service for production readiness
@@ -81,7 +86,7 @@ describe("TrueLayerService", () => {
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
 					},
-				})
+				}),
 			);
 		});
 
@@ -95,7 +100,9 @@ describe("TrueLayerService", () => {
 				}),
 			});
 
-			await expect(service.getClientCredentialsToken()).rejects.toThrow(TrueLayerServiceError);
+			await expect(service.getClientCredentialsToken()).rejects.toThrow(
+				TrueLayerServiceError,
+			);
 		});
 	});
 
@@ -113,7 +120,10 @@ describe("TrueLayerService", () => {
 				json: jest.fn().mockResolvedValue(mockTokenResponse),
 			});
 
-			const result = await service.exchangeCodeForToken("auth-code-123", "https://localhost:3000/callback");
+			const result = await service.exchangeCodeForToken(
+				"auth-code-123",
+				"https://localhost:3000/callback",
+			);
 
 			expect(result).toEqual(mockTokenResponse);
 			expect(fetch).toHaveBeenCalledWith(
@@ -123,7 +133,7 @@ describe("TrueLayerService", () => {
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
 					},
-				})
+				}),
 			);
 		});
 
@@ -137,8 +147,12 @@ describe("TrueLayerService", () => {
 				}),
 			});
 
-			await expect(service.exchangeCodeForToken("invalid-code", "https://localhost:3000/callback"))
-				.rejects.toThrow(TrueLayerServiceError);
+			await expect(
+				service.exchangeCodeForToken(
+					"invalid-code",
+					"https://localhost:3000/callback",
+				),
+			).rejects.toThrow(TrueLayerServiceError);
 		});
 	});
 
@@ -188,36 +202,58 @@ describe("TrueLayerService", () => {
 
 	describe("error handling", () => {
 		it("should correctly identify rate limit errors", () => {
-			const rateLimitError = new TrueLayerServiceError("Rate limit exceeded", 429, {
-				error: "rate_limit_exceeded",
-				error_description: "Too many requests",
-			});
+			const rateLimitError = new TrueLayerServiceError(
+				"Rate limit exceeded",
+				429,
+				{
+					error: "rate_limit_exceeded",
+					error_description: "Too many requests",
+				},
+			);
 
 			expect(TrueLayerServiceError.isRateLimitError(rateLimitError)).toBe(true);
 			expect(TrueLayerServiceError.isServerError(rateLimitError)).toBe(false);
-			expect(TrueLayerServiceError.isExpiredTokenError(rateLimitError)).toBe(false);
+			expect(TrueLayerServiceError.isExpiredTokenError(rateLimitError)).toBe(
+				false,
+			);
 		});
 
 		it("should correctly identify server errors", () => {
-			const serverError = new TrueLayerServiceError("Internal server error", 500, {
-				error: "internal_error",
-				error_description: "Something went wrong",
-			});
+			const serverError = new TrueLayerServiceError(
+				"Internal server error",
+				500,
+				{
+					error: "internal_error",
+					error_description: "Something went wrong",
+				},
+			);
 
 			expect(TrueLayerServiceError.isServerError(serverError)).toBe(true);
 			expect(TrueLayerServiceError.isRateLimitError(serverError)).toBe(false);
-			expect(TrueLayerServiceError.isExpiredTokenError(serverError)).toBe(false);
+			expect(TrueLayerServiceError.isExpiredTokenError(serverError)).toBe(
+				false,
+			);
 		});
 
 		it("should correctly identify expired token errors", () => {
-			const expiredTokenError = new TrueLayerServiceError("Token expired", 401, {
-				error: "invalid_token",
-				error_description: "The access token expired",
-			});
+			const expiredTokenError = new TrueLayerServiceError(
+				"Token expired",
+				401,
+				{
+					error: "invalid_token",
+					error_description: "The access token expired",
+				},
+			);
 
-			expect(TrueLayerServiceError.isExpiredTokenError(expiredTokenError)).toBe(true);
-			expect(TrueLayerServiceError.isRateLimitError(expiredTokenError)).toBe(false);
-			expect(TrueLayerServiceError.isServerError(expiredTokenError)).toBe(false);
+			expect(TrueLayerServiceError.isExpiredTokenError(expiredTokenError)).toBe(
+				true,
+			);
+			expect(TrueLayerServiceError.isRateLimitError(expiredTokenError)).toBe(
+				false,
+			);
+			expect(TrueLayerServiceError.isServerError(expiredTokenError)).toBe(
+				false,
+			);
 		});
 	});
 });

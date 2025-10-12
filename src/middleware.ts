@@ -16,7 +16,12 @@ const protectedPaths = [
 const authOnlyPaths = ["/login", "/auth"];
 
 // Define public paths that don't require authentication
-const publicPaths = ["/", "/api/auth/callback", "/auth/callback", "/auth/error"];
+const publicPaths = [
+	"/",
+	"/api/auth/callback",
+	"/auth/callback",
+	"/auth/error",
+];
 
 export async function middleware(request: NextRequest) {
 	const response = NextResponse.next();

@@ -230,11 +230,7 @@ describe("CurrencyService", () => {
 	describe("getHistoricalExchangeRate", () => {
 		it("should get historical exchange rate for date", async () => {
 			const date = new Date("2025-10-01");
-			const rate = await service.getHistoricalExchangeRate(
-				"GBP",
-				"EUR",
-				date,
-			);
+			const rate = await service.getHistoricalExchangeRate("GBP", "EUR", date);
 
 			expect(rate).toBeGreaterThan(0);
 		});
@@ -242,16 +238,8 @@ describe("CurrencyService", () => {
 		it("should cache historical rates", async () => {
 			const date = new Date("2025-10-01");
 
-			const rate1 = await service.getHistoricalExchangeRate(
-				"GBP",
-				"EUR",
-				date,
-			);
-			const rate2 = await service.getHistoricalExchangeRate(
-				"GBP",
-				"EUR",
-				date,
-			);
+			const rate1 = await service.getHistoricalExchangeRate("GBP", "EUR", date);
+			const rate2 = await service.getHistoricalExchangeRate("GBP", "EUR", date);
 
 			expect(rate1).toBe(rate2);
 		});

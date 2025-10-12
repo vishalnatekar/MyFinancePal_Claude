@@ -80,7 +80,9 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 			const isExpired = tokenData.expires_at <= now + 5 * 60 * 1000;
 
 			if (isExpired && tokenData.refresh_token) {
-				console.log(`Access token expired for account ${account.id}, refreshing...`);
+				console.log(
+					`Access token expired for account ${account.id}, refreshing...`,
+				);
 
 				// Refresh the access token
 				const refreshedToken = await trueLayerService.refreshToken(
@@ -90,7 +92,8 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 				// Update token data
 				tokenData = {
 					access_token: refreshedToken.access_token,
-					refresh_token: refreshedToken.refresh_token || tokenData.refresh_token,
+					refresh_token:
+						refreshedToken.refresh_token || tokenData.refresh_token,
 					expires_at: Date.now() + refreshedToken.expires_in * 1000,
 				};
 
@@ -108,7 +111,9 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 				if (updateTokenError) {
 					console.error("Failed to update refreshed token:", updateTokenError);
 				} else {
-					console.log(`✅ Token refreshed successfully for account ${account.id}`);
+					console.log(
+						`✅ Token refreshed successfully for account ${account.id}`,
+					);
 				}
 			}
 
@@ -231,7 +236,10 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 				await supabaseAdmin
 					.from("financial_accounts")
 					.update({
-						connection_status: connectionStatus as "active" | "expired" | "failed",
+						connection_status: connectionStatus as
+							| "active"
+							| "expired"
+							| "failed",
 						updated_at: new Date().toISOString(),
 					})
 					.eq("id", account.id);

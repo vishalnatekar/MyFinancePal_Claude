@@ -52,10 +52,16 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 				error: new Error("Not authenticated"),
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({ household_id: "household-1", is_shared: true }),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						household_id: "household-1",
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await PUT(request, { params: { id: "123" } });
 			const data = await response.json();
@@ -74,10 +80,13 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 		});
 
 		it("should validate household_id is required when sharing", async () => {
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({ household_id: null, is_shared: true }),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({ household_id: null, is_shared: true }),
+				},
+			);
 
 			const response = await PUT(request, { params: { id: "transaction-1" } });
 			const data = await response.json();
@@ -87,10 +96,16 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 		});
 
 		it("should reject invalid household_id format", async () => {
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({ household_id: "invalid-uuid", is_shared: true }),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						household_id: "invalid-uuid",
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await PUT(request, { params: { id: "transaction-1" } });
 			const data = await response.json();
@@ -136,10 +151,13 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 				};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({ household_id: null, is_shared: false }),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({ household_id: null, is_shared: false }),
+				},
+			);
 
 			// This should not throw validation error
 			await PUT(request, { params: { id: "transaction-1" } });
@@ -164,13 +182,16 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 				}),
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({
-					household_id: "550e8400-e29b-41d4-a716-446655440000",
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						household_id: "550e8400-e29b-41d4-a716-446655440000",
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await PUT(request, { params: { id: "non-existent" } });
 			const data = await response.json();
@@ -193,13 +214,16 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 				}),
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({
-					household_id: "550e8400-e29b-41d4-a716-446655440000",
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						household_id: "550e8400-e29b-41d4-a716-446655440000",
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await PUT(request, { params: { id: "transaction-1" } });
 			const data = await response.json();
@@ -247,13 +271,16 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 				};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({
-					household_id: "550e8400-e29b-41d4-a716-446655440000",
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						household_id: "550e8400-e29b-41d4-a716-446655440000",
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await PUT(request, { params: { id: "transaction-1" } });
 			const data = await response.json();
@@ -339,13 +366,16 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 				};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({
-					household_id: householdId,
-					is_shared: true,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						household_id: householdId,
+						is_shared: true,
+					}),
+				},
+			);
 
 			const response = await PUT(request, { params: { id: transactionId } });
 			const data = await response.json();
@@ -403,13 +433,16 @@ describe("PUT /api/transactions/[id]/sharing", () => {
 				};
 			});
 
-			const request = new Request("http://localhost:3000/api/transactions/123/sharing", {
-				method: "PUT",
-				body: JSON.stringify({
-					household_id: null,
-					is_shared: false,
-				}),
-			});
+			const request = new Request(
+				"http://localhost:3000/api/transactions/123/sharing",
+				{
+					method: "PUT",
+					body: JSON.stringify({
+						household_id: null,
+						is_shared: false,
+					}),
+				},
+			);
 
 			const response = await PUT(request, { params: { id: transactionId } });
 			const data = await response.json();

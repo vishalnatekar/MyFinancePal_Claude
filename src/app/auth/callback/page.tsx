@@ -2,10 +2,10 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
 import { AlertCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
 
 const REDIRECT_STORAGE_KEY = "auth:redirectTo";
 
@@ -71,13 +71,14 @@ export default function AuthCallbackPage() {
 							exchangeError,
 						);
 
-						const {
-							data: existing,
-							error: existingError,
-						} = await supabase.auth.getSession();
+						const { data: existing, error: existingError } =
+							await supabase.auth.getSession();
 
 						if (existingError) {
-							console.error("❌ Failed to get existing session:", existingError);
+							console.error(
+								"❌ Failed to get existing session:",
+								existingError,
+							);
 							setError("Failed to complete authentication");
 							setIsLoading(false);
 							return;
@@ -120,7 +121,9 @@ export default function AuthCallbackPage() {
 							});
 
 							if (!response.ok) {
-								console.warn("Server session setup failed, but client session is set");
+								console.warn(
+									"Server session setup failed, but client session is set",
+								);
 							}
 						} catch (err) {
 							console.warn("Error setting up server session:", err);
@@ -195,7 +198,9 @@ export default function AuthCallbackPage() {
 							});
 
 							if (!response.ok) {
-								console.warn("Server session setup failed, but client session is set");
+								console.warn(
+									"Server session setup failed, but client session is set",
+								);
 							}
 						} catch (err) {
 							console.warn("Error setting up server session:", err);

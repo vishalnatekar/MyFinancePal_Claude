@@ -3,10 +3,11 @@
  * Tests the complete workflow of sharing transactions with household members
  */
 
-import { test, expect, type Page } from "@playwright/test";
+import { type Page, expect, test } from "@playwright/test";
 
 // Test configuration
-const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000";
+const BASE_URL =
+	process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000";
 
 // Helper function to sign up and sign in
 async function signUpAndSignIn(page: Page, email: string, password: string) {
@@ -83,7 +84,11 @@ test.describe("Transaction Privacy Controls", () => {
 	test("should allow user to create household and invite another user", async () => {
 		// User 1 signs up and creates household
 		await signUpAndSignIn(user1Page, user1Email, password);
-		await createHousehold(user1Page, householdName, "Test household for sharing");
+		await createHousehold(
+			user1Page,
+			householdName,
+			"Test household for sharing",
+		);
 
 		// Verify household was created
 		await expect(user1Page.locator(`text="${householdName}"`)).toBeVisible();
@@ -117,7 +122,10 @@ test.describe("Transaction Privacy Controls", () => {
 		await user1Page.goto(`${BASE_URL}/accounts`);
 
 		// Create manual account if needed
-		const accountExists = await user1Page.locator('text="Checking Account"').isVisible().catch(() => false);
+		const accountExists = await user1Page
+			.locator('text="Checking Account"')
+			.isVisible()
+			.catch(() => false);
 		if (!accountExists) {
 			await user1Page.click('text="Add Account"');
 			await user1Page.fill('input[name="account_name"]', "Checking Account");
@@ -127,15 +135,22 @@ test.describe("Transaction Privacy Controls", () => {
 		}
 
 		// Create a transaction
-		await createManualTransaction(user1Page, "Tesco Groceries", -50.0, "groceries");
+		await createManualTransaction(
+			user1Page,
+			"Tesco Groceries",
+			-50.0,
+			"groceries",
+		);
 
 		// Share the transaction
 		await user1Page.locator('text="Tesco Groceries"').first().hover();
-		await user1Page.click('[data-testid="share-transaction-button"]').catch(async () => {
-			// Alternative: click share button in the transaction row
-			await user1Page.locator('text="Tesco Groceries"').first().click();
-			await user1Page.click('button:has-text("Share")');
-		});
+		await user1Page
+			.click('[data-testid="share-transaction-button"]')
+			.catch(async () => {
+				// Alternative: click share button in the transaction row
+				await user1Page.locator('text="Tesco Groceries"').first().click();
+				await user1Page.click('button:has-text("Share")');
+			});
 
 		// Select household
 		await user1Page.click(`text="${householdName}"`);
@@ -143,7 +158,10 @@ test.describe("Transaction Privacy Controls", () => {
 
 		// Verify transaction shows as shared
 		await expect(
-			user1Page.locator('text="Tesco Groceries"').locator('..').locator('text="Shared"')
+			user1Page
+				.locator('text="Tesco Groceries"')
+				.locator("..")
+				.locator('text="Shared"'),
 		).toBeVisible();
 	});
 
@@ -162,7 +180,12 @@ test.describe("Transaction Privacy Controls", () => {
 
 	test("should keep private transactions hidden from household members", async () => {
 		// User 1 creates a private transaction
-		await createManualTransaction(user1Page, "Bar & Grill", -25.0, "entertainment");
+		await createManualTransaction(
+			user1Page,
+			"Bar & Grill",
+			-25.0,
+			"entertainment",
+		);
 
 		// Explicitly verify it's private (don't share it)
 		await user1Page.goto(`${BASE_URL}/transactions`);
@@ -171,7 +194,7 @@ test.describe("Transaction Privacy Controls", () => {
 
 		// Check it shows as private
 		await expect(
-			barTransaction.locator('..').locator('text="Private"')
+			barTransaction.locator("..").locator('text="Private"'),
 		).toBeVisible();
 
 		// User 2 should NOT see this transaction in household view
@@ -188,7 +211,12 @@ test.describe("Transaction Privacy Controls", () => {
 	test("should support bulk sharing operations", async () => {
 		// User 1 creates multiple transactions
 		await createManualTransaction(user1Page, "Sainsbury's", -75.0, "groceries");
-		await createManualTransaction(user1Page, "Utility Bill", -100.0, "utilities");
+		await createManualTransaction(
+			user1Page,
+			"Utility Bill",
+			-100.0,
+			"utilities",
+		);
 		await createManualTransaction(user1Page, "Lidl", -40.0, "groceries");
 
 		// Go to transactions page
@@ -199,12 +227,14 @@ test.describe("Transaction Privacy Controls", () => {
 		const utilities = user1Page.locator('text="Utility Bill"').first();
 		const lidl = user1Page.locator('text="Lidl"').first();
 
-		await sainsburys.locator('..').locator('input[type="checkbox"]').check();
-		await utilities.locator('..').locator('input[type="checkbox"]').check();
-		await lidl.locator('..').locator('input[type="checkbox"]').check();
+		await sainsburys.locator("..").locator('input[type="checkbox"]').check();
+		await utilities.locator("..").locator('input[type="checkbox"]').check();
+		await lidl.locator("..").locator('input[type="checkbox"]').check();
 
 		// Bulk share toolbar should appear
-		await expect(user1Page.locator('text="3 transactions selected"')).toBeVisible();
+		await expect(
+			user1Page.locator('text="3 transactions selected"'),
+		).toBeVisible();
 
 		// Select household and share
 		await user1Page.selectOption('select[name="household"]', householdName);
@@ -212,7 +242,9 @@ test.describe("Transaction Privacy Controls", () => {
 		await user1Page.waitForLoadState("networkidle");
 
 		// Verify success message
-		await expect(user1Page.locator('text="3 transactions shared"')).toBeVisible();
+		await expect(
+			user1Page.locator('text="3 transactions shared"'),
+		).toBeVisible();
 
 		// User 2 should see all three transactions
 		await user2Page.goto(`${BASE_URL}/household`);
@@ -228,17 +260,22 @@ test.describe("Transaction Privacy Controls", () => {
 		await user1Page.goto(`${BASE_URL}/transactions`);
 
 		await user1Page.locator('text="Tesco Groceries"').first().hover();
-		await user1Page.click('[data-testid="share-transaction-button"]').catch(async () => {
-			await user1Page.locator('text="Tesco Groceries"').first().click();
-			await user1Page.click('button:has-text("Make Private")');
-		});
+		await user1Page
+			.click('[data-testid="share-transaction-button"]')
+			.catch(async () => {
+				await user1Page.locator('text="Tesco Groceries"').first().click();
+				await user1Page.click('button:has-text("Make Private")');
+			});
 
 		await user1Page.click('text="Make Private"');
 		await user1Page.waitForLoadState("networkidle");
 
 		// Verify it shows as private
 		await expect(
-			user1Page.locator('text="Tesco Groceries"').locator('..').locator('text="Private"')
+			user1Page
+				.locator('text="Tesco Groceries"')
+				.locator("..")
+				.locator('text="Private"'),
 		).toBeVisible();
 
 		// User 2 should no longer see it
@@ -289,10 +326,14 @@ test.describe("Transaction Privacy Controls", () => {
 		await expect(user1Page.locator('text="Sharing History"')).toBeVisible();
 
 		// Should show sharing event
-		await expect(user1Page.locator('text="Shared with household"')).toBeVisible();
+		await expect(
+			user1Page.locator('text="Shared with household"'),
+		).toBeVisible();
 
 		// Should show timestamp
-		await expect(user1Page.locator('[data-testid="sharing-timestamp"]')).toBeVisible();
+		await expect(
+			user1Page.locator('[data-testid="sharing-timestamp"]'),
+		).toBeVisible();
 	});
 
 	test("should export sharing history to CSV", async () => {
@@ -313,7 +354,12 @@ test.describe("Transaction Privacy Controls", () => {
 		await user2Page.goto(`${BASE_URL}/transactions`);
 
 		// Create a transaction as user 2
-		await createManualTransaction(user2Page, "User 2 Purchase", -30.0, "shopping");
+		await createManualTransaction(
+			user2Page,
+			"User 2 Purchase",
+			-30.0,
+			"shopping",
+		);
 
 		// User 2 should only see their own transactions in the list
 		await expect(user2Page.locator('text="User 2 Purchase"')).toBeVisible();
@@ -322,7 +368,9 @@ test.describe("Transaction Privacy Controls", () => {
 		await expect(user2Page.locator('text="Bar & Grill"')).not.toBeVisible();
 	});
 
-	test("should handle real-time updates when transaction is shared", async ({ context }) => {
+	test("should handle real-time updates when transaction is shared", async ({
+		context,
+	}) => {
 		// User 1 shares a new transaction
 		await user1Page.goto(`${BASE_URL}/transactions`);
 		await createManualTransaction(user1Page, "Real-time Test", -20.0, "other");
@@ -336,29 +384,45 @@ test.describe("Transaction Privacy Controls", () => {
 		await user2Page.click(`text="${householdName}"`);
 
 		// Wait for real-time update (max 5 seconds)
-		await expect(user2Page.locator('text="Real-time Test"')).toBeVisible({ timeout: 5000 });
+		await expect(user2Page.locator('text="Real-time Test"')).toBeVisible({
+			timeout: 5000,
+		});
 	});
 });
 
 test.describe("Transaction Privacy Edge Cases", () => {
-	test("should handle sharing to wrong household gracefully", async ({ page }) => {
+	test("should handle sharing to wrong household gracefully", async ({
+		page,
+	}) => {
 		// This would be tested at the API level, but we can verify UI prevents it
 		// The UI should only show households the user belongs to
-		await signUpAndSignIn(page, `edge-user-${Date.now()}@example.com`, "TestPass123!");
+		await signUpAndSignIn(
+			page,
+			`edge-user-${Date.now()}@example.com`,
+			"TestPass123!",
+		);
 
 		await createHousehold(page, `Edge Household ${Date.now()}`);
 		await page.goto(`${BASE_URL}/transactions`);
 
 		// Only user's households should be available
-		const householdOptions = await page.locator('select[name="household"] option').count();
+		const householdOptions = await page
+			.locator('select[name="household"] option')
+			.count();
 		expect(householdOptions).toBeGreaterThanOrEqual(1); // At least the created household
 	});
 
-	test("should persist sharing status across account syncs", async ({ page }) => {
+	test("should persist sharing status across account syncs", async ({
+		page,
+	}) => {
 		// This verifies that manual sharing settings are preserved
 		// even when transactions are re-synced from TrueLayer
 
-		await signUpAndSignIn(page, `sync-user-${Date.now()}@example.com`, "TestPass123!");
+		await signUpAndSignIn(
+			page,
+			`sync-user-${Date.now()}@example.com`,
+			"TestPass123!",
+		);
 		await createHousehold(page, `Sync Test ${Date.now()}`);
 		await createManualTransaction(page, "Pre-sync Transaction", -15.0, "other");
 
@@ -370,7 +434,10 @@ test.describe("Transaction Privacy Edge Cases", () => {
 		// Verify it's shared
 		await page.goto(`${BASE_URL}/transactions`);
 		await expect(
-			page.locator('text="Pre-sync Transaction"').locator('..').locator('text="Shared"')
+			page
+				.locator('text="Pre-sync Transaction"')
+				.locator("..")
+				.locator('text="Shared"'),
 		).toBeVisible();
 
 		// Simulate account sync (reload page)
@@ -378,7 +445,10 @@ test.describe("Transaction Privacy Edge Cases", () => {
 
 		// Sharing status should persist
 		await expect(
-			page.locator('text="Pre-sync Transaction"').locator('..').locator('text="Shared"')
+			page
+				.locator('text="Pre-sync Transaction"')
+				.locator("..")
+				.locator('text="Shared"'),
 		).toBeVisible();
 	});
 });

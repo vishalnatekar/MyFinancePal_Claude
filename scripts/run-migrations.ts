@@ -17,7 +17,9 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
 	console.error("❌ Missing Supabase credentials in .env.local");
-	console.error("Required: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY");
+	console.error(
+		"Required: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY",
+	);
 	process.exit(1);
 }
 
@@ -30,7 +32,9 @@ async function runMigration(filePath: string, name: string) {
 		const sql = readFileSync(filePath, "utf-8");
 
 		// Execute the SQL
-		const { error } = await supabase.rpc("exec_sql", { sql_string: sql }).single();
+		const { error } = await supabase
+			.rpc("exec_sql", { sql_string: sql })
+			.single();
 
 		if (error) {
 			// If exec_sql function doesn't exist, we need to use a different approach
@@ -71,7 +75,10 @@ async function main() {
 			name: "Main Schema (includes financial_accounts)",
 		},
 		{
-			path: join(process.cwd(), "database/migrations/003_data_processing_tables.sql"),
+			path: join(
+				process.cwd(),
+				"database/migrations/003_data_processing_tables.sql",
+			),
 			name: "Data Processing Tables",
 		},
 	];
@@ -86,7 +93,9 @@ async function main() {
 	console.log(`\n✨ Completed ${successCount}/${migrations.length} migrations`);
 
 	if (successCount < migrations.length) {
-		console.error("\n⚠️  Some migrations failed. Please check the errors above.");
+		console.error(
+			"\n⚠️  Some migrations failed. Please check the errors above.",
+		);
 		process.exit(1);
 	}
 }

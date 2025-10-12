@@ -107,9 +107,7 @@ export class HistoricalDataService {
 			.select();
 
 		if (error) {
-			throw new Error(
-				`Failed to record balance snapshots: ${error.message}`,
-			);
+			throw new Error(`Failed to record balance snapshots: ${error.message}`);
 		}
 
 		return data;
@@ -138,7 +136,10 @@ export class HistoricalDataService {
 		}
 
 		if (query.endDate) {
-			queryBuilder = queryBuilder.lte("recorded_at", query.endDate.toISOString());
+			queryBuilder = queryBuilder.lte(
+				"recorded_at",
+				query.endDate.toISOString(),
+			);
 		}
 
 		// Apply limit
@@ -163,7 +164,7 @@ export class HistoricalDataService {
 	static async getLatestBalanceSnapshot(
 		accountId: string,
 	): Promise<BalanceHistoryEntry | null> {
-		const { data, error} = await supabaseAdmin
+		const { data, error } = await supabaseAdmin
 			.from("account_balance_history")
 			.select("*")
 			.eq("account_id", accountId)
@@ -276,12 +277,10 @@ export class HistoricalDataService {
 		});
 
 		// Reverse to get chronological order for trend display
-		return history
-			.reverse()
-			.map((entry) => ({
-				date: entry.recorded_at,
-				balance: entry.balance,
-			}));
+		return history.reverse().map((entry) => ({
+			date: entry.recorded_at,
+			balance: entry.balance,
+		}));
 	}
 
 	/**
@@ -314,7 +313,9 @@ export class HistoricalDataService {
 	 * @param olderThanDays - Delete entries older than this many days
 	 * @returns Number of deleted entries
 	 */
-	static async cleanupOldBalanceHistory(olderThanDays: number): Promise<number> {
+	static async cleanupOldBalanceHistory(
+		olderThanDays: number,
+	): Promise<number> {
 		const cutoffDate = new Date();
 		cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
 
@@ -395,8 +396,7 @@ export class HistoricalDataService {
 		// Transactions CSV
 		if (data.transactions && data.transactions.length > 0) {
 			csv += "Transactions\n";
-			csv +=
-				"Date,Amount,Merchant,Description,Category,Type\n";
+			csv += "Date,Amount,Merchant,Description,Category,Type\n";
 			for (const txn of data.transactions) {
 				csv += `${txn.date},${txn.amount},"${txn.merchant_name || ""}","${txn.description || ""}","${txn.category || ""}","${txn.transaction_type || ""}"\n`;
 			}

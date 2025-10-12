@@ -1,6 +1,6 @@
 import { config } from "@/lib/config";
 import type { Database } from "@/types/database";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient, createClient } from "@supabase/supabase-js";
 
 // Singleton instance
 let supabaseInstance: SupabaseClient<Database> | null = null;
@@ -13,7 +13,7 @@ const createBrowserClient = () => {
 		return supabaseInstance;
 	}
 
-	if (typeof window === 'undefined') {
+	if (typeof window === "undefined") {
 		// Return a minimal client for SSR (not cached)
 		return createClient<Database>(
 			config.supabase.url,
@@ -37,7 +37,7 @@ const createBrowserClient = () => {
 				autoRefreshToken: true,
 				persistSession: true,
 				detectSessionInUrl: true,
-				flowType: 'pkce',
+				flowType: "pkce",
 			},
 		},
 	);

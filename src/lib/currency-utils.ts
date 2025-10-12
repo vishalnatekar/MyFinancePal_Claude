@@ -24,15 +24,18 @@ export function formatCurrency(
 		locale = "en-GB",
 	} = options || {};
 
+	// Default to GBP if currency is undefined/null/empty
+	const safeCurrency = currency && currency.trim() ? currency : "GBP";
+
 	const formatted = new Intl.NumberFormat(locale, {
 		style: showSymbol ? "currency" : "decimal",
-		currency: showSymbol ? currency : undefined,
+		currency: showSymbol ? safeCurrency : undefined,
 		minimumFractionDigits: decimals,
 		maximumFractionDigits: decimals,
 	}).format(amount);
 
 	if (showCode && !showSymbol) {
-		return `${formatted} ${currency}`;
+		return `${formatted} ${safeCurrency}`;
 	}
 
 	return formatted;

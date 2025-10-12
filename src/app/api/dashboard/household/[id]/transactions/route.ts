@@ -1,7 +1,7 @@
 import { config } from "@/lib/config";
 import type { SharedTransactionWithOwner } from "@/types/transaction";
-import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -112,7 +112,10 @@ export async function GET(
 			...new Set(data.map((t: any) => t.account_id).filter(Boolean)),
 		];
 
-		console.log("[Household Transactions] Account IDs from transactions:", accountIds);
+		console.log(
+			"[Household Transactions] Account IDs from transactions:",
+			accountIds,
+		);
 
 		// Fetch financial accounts to get user IDs (using admin client to bypass RLS)
 		let { data: accounts, error: accountsError } = await supabaseAdmin
@@ -120,31 +123,52 @@ export async function GET(
 			.select("id, user_id")
 			.in("id", accountIds);
 
-		console.log("[Household Transactions] Accounts fetched with admin:", accounts);
-		console.log("[Household Transactions] Accounts fetch error:", accountsError);
+		console.log(
+			"[Household Transactions] Accounts fetched with admin:",
+			accounts,
+		);
+		console.log(
+			"[Household Transactions] Accounts fetch error:",
+			accountsError,
+		);
 
 		// If admin client returns empty (service role not working), try regular client
 		if (!accounts || accounts.length === 0) {
-			console.log("[Household Transactions] Admin fetch returned empty, trying regular client...");
-			const { data: accountsFallback, error: accountsFallbackError } = await supabase
-				.from("financial_accounts")
-				.select("id, user_id")
-				.in("id", accountIds);
+			console.log(
+				"[Household Transactions] Admin fetch returned empty, trying regular client...",
+			);
+			const { data: accountsFallback, error: accountsFallbackError } =
+				await supabase
+					.from("financial_accounts")
+					.select("id, user_id")
+					.in("id", accountIds);
 
-			console.log("[Household Transactions] Accounts fetched with regular client:", accountsFallback);
-			console.log("[Household Transactions] Accounts fallback error:", accountsFallbackError);
+			console.log(
+				"[Household Transactions] Accounts fetched with regular client:",
+				accountsFallback,
+			);
+			console.log(
+				"[Household Transactions] Accounts fallback error:",
+				accountsFallbackError,
+			);
 
 			accounts = accountsFallback;
 		}
 
 		const accountMap = new Map(accounts?.map((a) => [a.id, a.user_id]) || []);
-		console.log("[Household Transactions] Account map:", Array.from(accountMap.entries()));
+		console.log(
+			"[Household Transactions] Account map:",
+			Array.from(accountMap.entries()),
+		);
 
 		// Get unique user IDs
 		const userIds = [...new Set(Array.from(accountMap.values()))];
 
 		// Fetch profiles for all unique users (using admin client to bypass RLS)
-		console.log("[Household Transactions] Fetching profiles for user IDs:", userIds);
+		console.log(
+			"[Household Transactions] Fetching profiles for user IDs:",
+			userIds,
+		);
 		const { data: profiles, error: profilesError } = await supabaseAdmin
 			.from("profiles")
 			.select("id, email, full_name")
@@ -154,18 +178,30 @@ export async function GET(
 		console.log("[Household Transactions] Profile fetch error:", profilesError);
 
 		if (profilesError) {
-			console.error("Error fetching profiles with admin client:", profilesError);
-			console.log("Service role key configured:", config.supabase.serviceRoleKey !== "dummy-key");
+			console.error(
+				"Error fetching profiles with admin client:",
+				profilesError,
+			);
+			console.log(
+				"Service role key configured:",
+				config.supabase.serviceRoleKey !== "dummy-key",
+			);
 			// Try with regular client (will use RLS policy for household members)
-			const { data: profilesFallback, error: profilesFallbackError } = await supabase
-				.from("profiles")
-				.select("id, email, full_name")
-				.in("id", userIds);
+			const { data: profilesFallback, error: profilesFallbackError } =
+				await supabase
+					.from("profiles")
+					.select("id, email, full_name")
+					.in("id", userIds);
 
 			if (profilesFallbackError) {
-				console.error("Error fetching profiles with fallback:", profilesFallbackError);
+				console.error(
+					"Error fetching profiles with fallback:",
+					profilesFallbackError,
+				);
 			} else {
-				console.log("Successfully fetched profiles using fallback (RLS policy)");
+				console.log(
+					"Successfully fetched profiles using fallback (RLS policy)",
+				);
 				// Use fallback profiles
 				const profileMap = new Map(
 					profilesFallback?.map((p) => [p.id, p]) || [],
@@ -205,9 +241,7 @@ export async function GET(
 		}
 
 		// Create a map of user_id to profile
-		const profileMap = new Map(
-			profiles?.map((p) => [p.id, p]) || [],
-		);
+		const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
 
 		// Transform data to include owner information
 		const transactionsWithOwner: SharedTransactionWithOwner[] = data.map(

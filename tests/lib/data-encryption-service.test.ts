@@ -8,7 +8,8 @@ describe("DataEncryptionService", () => {
 				amount: 50.0,
 			};
 
-			const encrypted = DataEncryptionService.encryptTransactionFields(transaction);
+			const encrypted =
+				DataEncryptionService.encryptTransactionFields(transaction);
 
 			expect(encrypted.merchant_name).not.toBe("Tesco Store");
 			expect(encrypted.merchant_name).toBeTruthy();
@@ -21,7 +22,8 @@ describe("DataEncryptionService", () => {
 				amount: 75.5,
 			};
 
-			const encrypted = DataEncryptionService.encryptTransactionFields(transaction);
+			const encrypted =
+				DataEncryptionService.encryptTransactionFields(transaction);
 
 			expect(encrypted.description).not.toBe("Weekly grocery shopping");
 			expect(encrypted.description).toBeTruthy();
@@ -35,7 +37,8 @@ describe("DataEncryptionService", () => {
 				amount: 100.0,
 			};
 
-			const encrypted = DataEncryptionService.encryptTransactionFields(transaction);
+			const encrypted =
+				DataEncryptionService.encryptTransactionFields(transaction);
 
 			expect(encrypted.merchant_name).not.toBe("Sainsbury's");
 			expect(encrypted.description).not.toBe("Groceries");
@@ -48,7 +51,8 @@ describe("DataEncryptionService", () => {
 				description: "Test",
 			};
 
-			const encrypted = DataEncryptionService.encryptTransactionFields(transaction);
+			const encrypted =
+				DataEncryptionService.encryptTransactionFields(transaction);
 
 			expect(encrypted.merchant_name).toBe(null);
 			expect(encrypted.description).not.toBe("Test");
@@ -59,7 +63,8 @@ describe("DataEncryptionService", () => {
 				amount: 50.0,
 			};
 
-			const encrypted = DataEncryptionService.encryptTransactionFields(transaction);
+			const encrypted =
+				DataEncryptionService.encryptTransactionFields(transaction);
 
 			expect(encrypted).toEqual({ amount: 50.0 });
 		});
@@ -68,16 +73,20 @@ describe("DataEncryptionService", () => {
 	describe("decryptTransactionFields", () => {
 		it("should decrypt merchant_name", () => {
 			const original = { merchant_name: "Tesco Store" };
-			const encrypted = DataEncryptionService.encryptTransactionFields(original);
-			const decrypted = DataEncryptionService.decryptTransactionFields(encrypted);
+			const encrypted =
+				DataEncryptionService.encryptTransactionFields(original);
+			const decrypted =
+				DataEncryptionService.decryptTransactionFields(encrypted);
 
 			expect(decrypted.merchant_name).toBe("Tesco Store");
 		});
 
 		it("should decrypt description", () => {
 			const original = { description: "Weekly grocery shopping" };
-			const encrypted = DataEncryptionService.encryptTransactionFields(original);
-			const decrypted = DataEncryptionService.decryptTransactionFields(encrypted);
+			const encrypted =
+				DataEncryptionService.encryptTransactionFields(original);
+			const decrypted =
+				DataEncryptionService.decryptTransactionFields(encrypted);
 
 			expect(decrypted.description).toBe("Weekly grocery shopping");
 		});
@@ -88,7 +97,8 @@ describe("DataEncryptionService", () => {
 				description: "also-invalid",
 			};
 
-			const decrypted = DataEncryptionService.decryptTransactionFields(corrupted);
+			const decrypted =
+				DataEncryptionService.decryptTransactionFields(corrupted);
 
 			expect(decrypted.merchant_name).toBe("[Encrypted]");
 			expect(decrypted.description).toBe("[Encrypted]");
@@ -99,7 +109,8 @@ describe("DataEncryptionService", () => {
 				merchant_name: null as unknown as string,
 			};
 
-			const decrypted = DataEncryptionService.decryptTransactionFields(transaction);
+			const decrypted =
+				DataEncryptionService.decryptTransactionFields(transaction);
 
 			expect(decrypted.merchant_name).toBe(null);
 		});
@@ -180,7 +191,8 @@ describe("DataEncryptionService", () => {
 				{ merchant_name: "Asda", amount: 100 },
 			];
 
-			const encrypted = DataEncryptionService.encryptTransactionBatch(transactions);
+			const encrypted =
+				DataEncryptionService.encryptTransactionBatch(transactions);
 
 			expect(encrypted).toHaveLength(3);
 			expect(encrypted[0].merchant_name).not.toBe("Tesco");
@@ -203,7 +215,8 @@ describe("DataEncryptionService", () => {
 			];
 
 			const encrypted = DataEncryptionService.encryptTransactionBatch(original);
-			const decrypted = DataEncryptionService.decryptTransactionBatch(encrypted);
+			const decrypted =
+				DataEncryptionService.decryptTransactionBatch(encrypted);
 
 			expect(decrypted[0].merchant_name).toBe("Tesco");
 			expect(decrypted[1].merchant_name).toBe("Sainsbury's");
@@ -271,8 +284,10 @@ describe("DataEncryptionService", () => {
 				date: "2025-10-02",
 			};
 
-			const encrypted = DataEncryptionService.encryptTransactionFields(transaction);
-			const decrypted = DataEncryptionService.decryptTransactionFields(encrypted);
+			const encrypted =
+				DataEncryptionService.encryptTransactionFields(transaction);
+			const decrypted =
+				DataEncryptionService.decryptTransactionFields(encrypted);
 
 			expect(decrypted).toEqual(transaction);
 		});
@@ -281,8 +296,10 @@ describe("DataEncryptionService", () => {
 			const transaction1 = { merchant_name: "Same Merchant" };
 			const transaction2 = { merchant_name: "Same Merchant" };
 
-			const encrypted1 = DataEncryptionService.encryptTransactionFields(transaction1);
-			const encrypted2 = DataEncryptionService.encryptTransactionFields(transaction2);
+			const encrypted1 =
+				DataEncryptionService.encryptTransactionFields(transaction1);
+			const encrypted2 =
+				DataEncryptionService.encryptTransactionFields(transaction2);
 
 			// Different IVs should produce different ciphertexts
 			expect(encrypted1.merchant_name).not.toBe(encrypted2.merchant_name);

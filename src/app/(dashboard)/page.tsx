@@ -1,29 +1,43 @@
-'use client';
+"use client";
 
-import { EmptyState } from "@/components/dashboard/EmptyState";
-import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
-import { NetWorthSummaryCard } from "@/components/dashboard/NetWorthSummaryCard";
 import { AccountBreakdownCard } from "@/components/dashboard/AccountBreakdownCard";
-import { AssetCategoryChart } from "@/components/dashboard/AssetCategoryChart";
-import { NetWorthTrendChart } from "@/components/dashboard/NetWorthTrendChart";
-import { AccountSyncStatus } from "@/components/dashboard/AccountSyncStatus";
 import { AccountManagementSection } from "@/components/dashboard/AccountManagementSection";
+import { AccountSyncStatus } from "@/components/dashboard/AccountSyncStatus";
+import { AssetCategoryChart } from "@/components/dashboard/AssetCategoryChart";
 import { DataExportCard } from "@/components/dashboard/DataExportCard";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { NetWorthSummaryCard } from "@/components/dashboard/NetWorthSummaryCard";
+import { NetWorthTrendChart } from "@/components/dashboard/NetWorthTrendChart";
+import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
 import { Breadcrumb } from "@/components/layout/Breadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useAccountManagement } from "@/hooks/use-account-management";
+import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
 	const router = useRouter();
-	const { netWorth, accounts, history, loading, error, refetchAll, updateDateRange } = useDashboardData();
-	const { syncStatus, managedAccounts, loading: accountsLoading, handleRefresh, handleRemoveAccount } = useAccountManagement();
+	const {
+		netWorth,
+		accounts,
+		history,
+		loading,
+		error,
+		refetchAll,
+		updateDateRange,
+	} = useDashboardData();
+	const {
+		syncStatus,
+		managedAccounts,
+		loading: accountsLoading,
+		handleRefresh,
+		handleRemoveAccount,
+	} = useAccountManagement();
 
 	const hasAccounts = accounts.length > 0;
 
 	const handleAddAccount = () => {
-		router.push('/accounts?action=connect');
+		router.push("/accounts?action=connect");
 	};
 
 	const handleReconnect = (accountId: string) => {
@@ -44,7 +58,9 @@ export default function DashboardPage() {
 			)}
 			{!loading && accounts.length === 0 && !error && (
 				<div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
-					<p className="text-sm">Debug: No accounts found. Check console for errors.</p>
+					<p className="text-sm">
+						Debug: No accounts found. Check console for errors.
+					</p>
 				</div>
 			)}
 
@@ -70,7 +86,10 @@ export default function DashboardPage() {
 							{/* Dashboard Grid */}
 							<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 								<AccountBreakdownCard accounts={accounts} loading={loading} />
-								<AssetCategoryChart assets={netWorth?.asset_breakdown} loading={loading} />
+								<AssetCategoryChart
+									assets={netWorth?.asset_breakdown}
+									loading={loading}
+								/>
 							</div>
 
 							{/* Net Worth Trend - Full Width */}
@@ -100,7 +119,7 @@ export default function DashboardPage() {
 
 							{/* Data Export - Full Width */}
 							<div className="w-full lg:max-w-md">
-								<DataExportCard accountIds={accounts.map(a => a.id)} />
+								<DataExportCard accountIds={accounts.map((a) => a.id)} />
 							</div>
 						</>
 					) : (

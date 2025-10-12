@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // Mock user data for testing
 const mockUser = {
@@ -26,7 +26,7 @@ test.describe("Dashboard User Flow", () => {
 							avatar_url: null,
 						},
 					},
-				})
+				}),
 			);
 		});
 
@@ -79,7 +79,9 @@ test.describe("Dashboard User Flow", () => {
 		await expect(page.getByText("No financial accounts yet")).toBeVisible();
 	});
 
-	test("should navigate to profile page and update preferences", async ({ page }) => {
+	test("should navigate to profile page and update preferences", async ({
+		page,
+	}) => {
 		await page.goto("/");
 
 		// Click on profile/settings from header dropdown
@@ -107,7 +109,9 @@ test.describe("Dashboard User Flow", () => {
 		await saveButton.click();
 
 		// Should show success message
-		await expect(page.getByText("Preferences saved successfully!")).toBeVisible();
+		await expect(
+			page.getByText("Preferences saved successfully!"),
+		).toBeVisible();
 	});
 
 	test("should use responsive navigation on mobile", async ({ page }) => {
@@ -144,11 +148,15 @@ test.describe("Dashboard User Flow", () => {
 		await expect(page).toHaveURL("/");
 	});
 
-	test("should display empty states for unimplemented features", async ({ page }) => {
+	test("should display empty states for unimplemented features", async ({
+		page,
+	}) => {
 		await page.goto("/finances");
 
 		// Should show finances empty state
-		await expect(page.getByText("No financial accounts connected")).toBeVisible();
+		await expect(
+			page.getByText("No financial accounts connected"),
+		).toBeVisible();
 		await expect(page.getByText("Connect Account")).toBeVisible();
 
 		// Navigate to reports

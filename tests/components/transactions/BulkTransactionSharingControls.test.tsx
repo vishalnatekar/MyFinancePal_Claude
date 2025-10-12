@@ -4,7 +4,7 @@
  */
 
 import { BulkTransactionSharingControls } from "@/components/transactions/BulkTransactionSharingControls";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 // Mock the transaction sharing service
@@ -87,7 +87,9 @@ describe("BulkTransactionSharingControls", () => {
 
 	describe("Bulk Sharing", () => {
 		it("should share selected transactions with chosen household", async () => {
-			(transactionSharingService.bulkUpdateSharing as jest.Mock).mockResolvedValue({
+			(
+				transactionSharingService.bulkUpdateSharing as jest.Mock
+			).mockResolvedValue({
 				success_count: 3,
 				failed_count: 0,
 				errors: [],
@@ -111,7 +113,9 @@ describe("BulkTransactionSharingControls", () => {
 			fireEvent.click(shareButton);
 
 			await waitFor(() => {
-				expect(transactionSharingService.bulkUpdateSharing).toHaveBeenCalledWith({
+				expect(
+					transactionSharingService.bulkUpdateSharing,
+				).toHaveBeenCalledWith({
 					transaction_ids: ["tx-1", "tx-2", "tx-3"],
 					household_id: "household-1",
 					is_shared: true,
@@ -137,12 +141,16 @@ describe("BulkTransactionSharingControls", () => {
 
 			// Should show error or disable button
 			await waitFor(() => {
-				expect(transactionSharingService.bulkUpdateSharing).not.toHaveBeenCalled();
+				expect(
+					transactionSharingService.bulkUpdateSharing,
+				).not.toHaveBeenCalled();
 			});
 		});
 
 		it("should handle partial success responses", async () => {
-			(transactionSharingService.bulkUpdateSharing as jest.Mock).mockResolvedValue({
+			(
+				transactionSharingService.bulkUpdateSharing as jest.Mock
+			).mockResolvedValue({
 				success_count: 2,
 				failed_count: 1,
 				errors: [
@@ -178,7 +186,9 @@ describe("BulkTransactionSharingControls", () => {
 
 	describe("Bulk Unsharing", () => {
 		it("should make selected transactions private", async () => {
-			(transactionSharingService.bulkUpdateSharing as jest.Mock).mockResolvedValue({
+			(
+				transactionSharingService.bulkUpdateSharing as jest.Mock
+			).mockResolvedValue({
 				success_count: 2,
 				failed_count: 0,
 				errors: [],
@@ -197,7 +207,9 @@ describe("BulkTransactionSharingControls", () => {
 			fireEvent.click(makePrivateButton);
 
 			await waitFor(() => {
-				expect(transactionSharingService.bulkUpdateSharing).toHaveBeenCalledWith({
+				expect(
+					transactionSharingService.bulkUpdateSharing,
+				).toHaveBeenCalledWith({
 					transaction_ids: ["tx-1", "tx-2"],
 					household_id: null,
 					is_shared: false,
@@ -208,7 +220,9 @@ describe("BulkTransactionSharingControls", () => {
 		});
 
 		it("should not require household selection for unsharing", async () => {
-			(transactionSharingService.bulkUpdateSharing as jest.Mock).mockResolvedValue({
+			(
+				transactionSharingService.bulkUpdateSharing as jest.Mock
+			).mockResolvedValue({
 				success_count: 1,
 				failed_count: 0,
 				errors: [],
@@ -236,9 +250,9 @@ describe("BulkTransactionSharingControls", () => {
 	describe("Error Handling", () => {
 		it("should handle API errors gracefully", async () => {
 			const consoleError = jest.spyOn(console, "error").mockImplementation();
-			(transactionSharingService.bulkUpdateSharing as jest.Mock).mockRejectedValue(
-				new Error("Network error"),
-			);
+			(
+				transactionSharingService.bulkUpdateSharing as jest.Mock
+			).mockRejectedValue(new Error("Network error"));
 
 			render(
 				<BulkTransactionSharingControls
@@ -264,7 +278,9 @@ describe("BulkTransactionSharingControls", () => {
 		});
 
 		it("should display all errors when multiple transactions fail", async () => {
-			(transactionSharingService.bulkUpdateSharing as jest.Mock).mockResolvedValue({
+			(
+				transactionSharingService.bulkUpdateSharing as jest.Mock
+			).mockResolvedValue({
 				success_count: 0,
 				failed_count: 2,
 				errors: [
@@ -297,7 +313,9 @@ describe("BulkTransactionSharingControls", () => {
 	describe("Loading States", () => {
 		it("should disable buttons during bulk operation", async () => {
 			let resolveBulkUpdate: any;
-			(transactionSharingService.bulkUpdateSharing as jest.Mock).mockReturnValue(
+			(
+				transactionSharingService.bulkUpdateSharing as jest.Mock
+			).mockReturnValue(
 				new Promise((resolve) => {
 					resolveBulkUpdate = resolve;
 				}),
@@ -337,7 +355,9 @@ describe("BulkTransactionSharingControls", () => {
 
 		it("should show progress indicator during operation", async () => {
 			let resolveBulkUpdate: any;
-			(transactionSharingService.bulkUpdateSharing as jest.Mock).mockReturnValue(
+			(
+				transactionSharingService.bulkUpdateSharing as jest.Mock
+			).mockReturnValue(
 				new Promise((resolve) => {
 					resolveBulkUpdate = resolve;
 				}),

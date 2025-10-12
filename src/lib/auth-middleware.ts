@@ -153,10 +153,7 @@ export function withHouseholdAuth<T = any>(
 		context?: T,
 	) => Promise<NextResponse> | NextResponse,
 ) {
-	return async (
-		request: NextRequest,
-		context: any,
-	): Promise<NextResponse> => {
+	return async (request: NextRequest, context: any): Promise<NextResponse> => {
 		const authResult = await authenticateRequest(request);
 
 		if (!authResult.success || !authResult.user) {

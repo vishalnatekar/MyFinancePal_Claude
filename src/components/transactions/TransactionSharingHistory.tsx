@@ -22,15 +22,12 @@ export function TransactionSharingHistoryComponent({
 		const fetchHistory = async () => {
 			try {
 				setIsLoading(true);
-				const data = await transactionSharingService.getSharingHistory(
-					transactionId,
-				);
+				const data =
+					await transactionSharingService.getSharingHistory(transactionId);
 				setHistory(data);
 			} catch (err) {
 				console.error("Failed to fetch sharing history:", err);
-				setError(
-					err instanceof Error ? err.message : "Failed to load history",
-				);
+				setError(err instanceof Error ? err.message : "Failed to load history");
 			} finally {
 				setIsLoading(false);
 			}

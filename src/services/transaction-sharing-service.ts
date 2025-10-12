@@ -51,7 +51,9 @@ export const transactionSharingService = {
 
 		if (!response.ok) {
 			const error = await response.json();
-			throw new Error(error.error || "Failed to bulk update transaction sharing");
+			throw new Error(
+				error.error || "Failed to bulk update transaction sharing",
+			);
 		}
 
 		return response.json();

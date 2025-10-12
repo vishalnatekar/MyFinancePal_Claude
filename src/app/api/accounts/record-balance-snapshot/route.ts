@@ -39,9 +39,8 @@ export async function POST(request: NextRequest) {
 		}
 
 		// Record balance snapshots for all accounts
-		const snapshots = await HistoricalDataService.recordBalanceSnapshotBatch(
-			accounts,
-		);
+		const snapshots =
+			await HistoricalDataService.recordBalanceSnapshotBatch(accounts);
 
 		return NextResponse.json({
 			message: "Balance snapshots recorded successfully",

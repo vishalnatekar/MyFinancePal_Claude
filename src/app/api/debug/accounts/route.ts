@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
 
 		// Get current user info from cookies
 		const cookies = request.cookies.getAll();
-		const authCookies = cookies.filter((c) =>
-			c.name.includes("supabase") || c.name.includes("auth"),
+		const authCookies = cookies.filter(
+			(c) => c.name.includes("supabase") || c.name.includes("auth"),
 		);
 
 		return NextResponse.json({

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("Account Connection Flow", () => {
 	test.beforeEach(async ({ page }) => {
@@ -7,7 +7,9 @@ test.describe("Account Connection Flow", () => {
 			route.fulfill({
 				status: 200,
 				contentType: "application/json",
-				body: JSON.stringify({ user: { id: "test-user", email: "test@example.com" } }),
+				body: JSON.stringify({
+					user: { id: "test-user", email: "test@example.com" },
+				}),
 			});
 		});
 
@@ -51,7 +53,12 @@ test.describe("Account Connection Flow", () => {
 							status: "active",
 							country: "GB",
 							type: "bank",
-							features: { accounts: true, transactions: true, balance: true, identity: true },
+							features: {
+								accounts: true,
+								transactions: true,
+								balance: true,
+								identity: true,
+							},
 						},
 						{
 							id: "starling",
@@ -61,7 +68,12 @@ test.describe("Account Connection Flow", () => {
 							status: "active",
 							country: "GB",
 							type: "bank",
-							features: { accounts: true, transactions: true, balance: true, identity: true },
+							features: {
+								accounts: true,
+								transactions: true,
+								balance: true,
+								identity: true,
+							},
 						},
 					],
 				}),
@@ -85,10 +97,16 @@ test.describe("Account Connection Flow", () => {
 		await page.goto("/accounts");
 	});
 
-	test("should display empty state when no accounts exist", async ({ page }) => {
+	test("should display empty state when no accounts exist", async ({
+		page,
+	}) => {
 		await expect(page.getByText("No Accounts Connected")).toBeVisible();
-		await expect(page.getByText("Get started by connecting your first bank account")).toBeVisible();
-		await expect(page.getByRole("button", { name: "Add Account" })).toBeVisible();
+		await expect(
+			page.getByText("Get started by connecting your first bank account"),
+		).toBeVisible();
+		await expect(
+			page.getByRole("button", { name: "Add Account" }),
+		).toBeVisible();
 	});
 
 	test("should open account connection dialog", async ({ page }) => {
@@ -99,12 +117,16 @@ test.describe("Account Connection Flow", () => {
 		await expect(page.getByText("Add Manually")).toBeVisible();
 	});
 
-	test("should show institution selector when connecting bank", async ({ page }) => {
+	test("should show institution selector when connecting bank", async ({
+		page,
+	}) => {
 		await page.getByRole("button", { name: "Add Account" }).click();
 		await page.getByText("Connect Bank").click();
 
 		await expect(page.getByText("Connect Your Bank Account")).toBeVisible();
-		await expect(page.getByPlaceholder("e.g. Monzo, Barclays, Halifax...")).toBeVisible();
+		await expect(
+			page.getByPlaceholder("e.g. Monzo, Barclays, Halifax..."),
+		).toBeVisible();
 		await expect(page.getByText("Monzo Bank")).toBeVisible();
 		await expect(page.getByText("Starling Bank")).toBeVisible();
 	});
@@ -113,14 +135,18 @@ test.describe("Account Connection Flow", () => {
 		await page.getByRole("button", { name: "Add Account" }).click();
 		await page.getByText("Connect Bank").click();
 
-		const searchInput = page.getByPlaceholder("e.g. Monzo, Barclays, Halifax...");
+		const searchInput = page.getByPlaceholder(
+			"e.g. Monzo, Barclays, Halifax...",
+		);
 		await searchInput.fill("monzo");
 
 		await expect(page.getByText("Monzo Bank")).toBeVisible();
 		await expect(page.getByText("Starling Bank")).not.toBeVisible();
 	});
 
-	test("should initiate connection flow when selecting institution", async ({ page }) => {
+	test("should initiate connection flow when selecting institution", async ({
+		page,
+	}) => {
 		await page.getByRole("button", { name: "Add Account" }).click();
 		await page.getByText("Connect Bank").click();
 
@@ -135,7 +161,11 @@ test.describe("Account Connection Flow", () => {
 			});
 		});
 
-		await page.getByText("Monzo Bank").locator("..").getByRole("button", { name: "Connect" }).click();
+		await page
+			.getByText("Monzo Bank")
+			.locator("..")
+			.getByRole("button", { name: "Connect" })
+			.click();
 
 		// Should redirect to TrueLayer OAuth
 		await page.waitForURL("**/auth.truelayer.com/**");
@@ -213,7 +243,11 @@ test.describe("Account Connection Flow", () => {
 		await page.getByRole("button", { name: "Add Account" }).click();
 		await page.getByText("Connect Bank").click();
 
-		await page.getByText("Monzo Bank").locator("..").getByRole("button", { name: "Connect" }).click();
+		await page
+			.getByText("Monzo Bank")
+			.locator("..")
+			.getByRole("button", { name: "Connect" })
+			.click();
 
 		// Should show error message
 		await expect(page.getByText("Connection failed")).toBeVisible();
@@ -225,24 +259,35 @@ test.describe("Account Connection Flow", () => {
 			route.fulfill({
 				status: 302,
 				headers: {
-					Location: "/accounts?success=true&message=Account connected successfully",
+					Location:
+						"/accounts?success=true&message=Account connected successfully",
 				},
 			});
 		});
 
 		// Navigate directly to callback URL (simulating OAuth return)
-		await page.goto("/accounts?success=true&message=Account connected successfully");
+		await page.goto(
+			"/accounts?success=true&message=Account connected successfully",
+		);
 
-		await expect(page.getByText("Account connected successfully!")).toBeVisible();
+		await expect(
+			page.getByText("Account connected successfully!"),
+		).toBeVisible();
 	});
 
 	test("should handle OAuth callback errors", async ({ page }) => {
-		await page.goto("/accounts?error=connection_failed&message=Failed to connect account");
+		await page.goto(
+			"/accounts?error=connection_failed&message=Failed to connect account",
+		);
 
-		await expect(page.getByText("Failed to connect account. Please try again.")).toBeVisible();
+		await expect(
+			page.getByText("Failed to connect account. Please try again."),
+		).toBeVisible();
 	});
 
-	test("should display account overview when accounts exist", async ({ page }) => {
+	test("should display account overview when accounts exist", async ({
+		page,
+	}) => {
 		// Mock accounts response with data
 		await page.route("**/api/accounts", (route) => {
 			route.fulfill({
@@ -255,7 +300,7 @@ test.describe("Account Connection Flow", () => {
 							account_type: "checking",
 							account_name: "Main Account",
 							institution_name: "Monzo Bank",
-							current_balance: 1500.50,
+							current_balance: 1500.5,
 							is_shared: false,
 							is_manual: false,
 							connection_status: "active",
@@ -266,7 +311,7 @@ test.describe("Account Connection Flow", () => {
 							account_type: "savings",
 							account_name: "Savings Account",
 							institution_name: "Test Bank",
-							current_balance: 5000.00,
+							current_balance: 5000.0,
 							is_shared: false,
 							is_manual: true,
 							connection_status: "active",

@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -9,7 +10,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Loader2, Mail, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -37,12 +37,9 @@ export function PendingInvitations({ householdId }: PendingInvitationsProps) {
 			setLoading(true);
 			setError(null);
 
-			const response = await fetch(
-				`/api/households/${householdId}/invite`,
-				{
-					method: "GET",
-				},
-			);
+			const response = await fetch(`/api/households/${householdId}/invite`, {
+				method: "GET",
+			});
 
 			if (!response.ok) {
 				throw new Error("Failed to fetch invitations");
@@ -52,7 +49,9 @@ export function PendingInvitations({ householdId }: PendingInvitationsProps) {
 			setInvitations(data.invitations || []);
 		} catch (err) {
 			console.error("Error loading invitations:", err);
-			setError(err instanceof Error ? err.message : "Failed to load invitations");
+			setError(
+				err instanceof Error ? err.message : "Failed to load invitations",
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -83,7 +82,9 @@ export function PendingInvitations({ householdId }: PendingInvitationsProps) {
 			await loadInvitations();
 		} catch (err) {
 			console.error("Error resending invitation:", err);
-			setError(err instanceof Error ? err.message : "Failed to resend invitation");
+			setError(
+				err instanceof Error ? err.message : "Failed to resend invitation",
+			);
 		} finally {
 			setActionLoading(null);
 		}
@@ -120,7 +121,9 @@ export function PendingInvitations({ householdId }: PendingInvitationsProps) {
 			await loadInvitations();
 		} catch (err) {
 			console.error("Error deleting invitation:", err);
-			setError(err instanceof Error ? err.message : "Failed to delete invitation");
+			setError(
+				err instanceof Error ? err.message : "Failed to delete invitation",
+			);
 		} finally {
 			setActionLoading(null);
 		}
