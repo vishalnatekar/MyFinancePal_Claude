@@ -159,7 +159,7 @@ export interface HouseholdActivityEvent {
 	actor_id: string;
 	actor_name: string;
 	timestamp: string;
-	metadata?: Record<string, any>;
+	metadata?: Record<string, string | number | boolean>;
 }
 
 // Household sync response
@@ -167,4 +167,12 @@ export interface HouseholdSyncResponse {
 	success: boolean;
 	syncing_accounts: number;
 	message: string;
+}
+
+// User profile type for dashboard
+export interface UserProfile {
+	id: string;
+	email: string;
+	full_name: string;
+	avatar_url?: string;
 }

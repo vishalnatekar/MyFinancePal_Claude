@@ -6,9 +6,45 @@ import type {
 	HouseholdMemberWithStats,
 	SharedAccountWithOwner,
 	SharedTransactionWithOwner,
+	UserProfile,
 } from "@/types/household";
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
+
+/**
+ * Database types for queries
+ */
+interface HouseholdMemberRow {
+	id: string;
+	user_id: string;
+	role: string;
+	joined_at: string;
+}
+
+interface FinancialAccountRow {
+	id: string;
+	user_id: string;
+	account_type: string;
+	account_name: string;
+	institution_name: string;
+	current_balance: number;
+	currency: string;
+	last_synced: string | null;
+	is_manual: boolean;
+}
+
+interface TransactionRow {
+	id: string;
+	account_id: string;
+	amount: number;
+	merchant_name: string | null;
+	description: string | null;
+	category: string | null;
+	date: string;
+	shared_at: string | null;
+	shared_by: string | null;
+	financial_accounts: { user_id: string };
+}
 
 /**
  * GET /api/dashboard/household/[id]
@@ -54,15 +90,14 @@ export const GET = withHouseholdAuth(
 
 			const memberIds = members?.map((m) => m.user_id) || [];
 
-			// Fetch user profiles separately (check if profiles table exists)
-			let userProfiles: Record<string, any> = {};
+			// Fetch user profiles for all household members (single query, no duplication)
+			let userProfiles: Record<string, UserProfile> = {};
 			if (memberIds.length > 0) {
 				// Try to fetch from profiles table, fallback to auth metadata if it doesn't exist
-				const { data: profilesData, error: profilesError } =
-					await supabaseAdmin
-						.from("profiles")
-						.select("id, email, full_name, avatar_url")
-						.in("id", memberIds);
+				const { data: profilesData, error: profilesError } = await supabaseAdmin
+					.from("profiles")
+					.select("id, email, full_name, avatar_url")
+					.in("id", memberIds);
 
 				if (!profilesError && profilesData) {
 					userProfiles = profilesData.reduce(
@@ -70,17 +105,19 @@ export const GET = withHouseholdAuth(
 							acc[profile.id] = profile;
 							return acc;
 						},
-						{} as Record<string, any>,
+						{} as Record<string, UserProfile>,
 					);
 				} else {
 					// If profiles table doesn't exist or query fails, fetch from auth.users
 					for (const userId of memberIds) {
-						const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+						const { data: userData } =
+							await supabaseAdmin.auth.admin.getUserById(userId);
 						if (userData.user) {
 							userProfiles[userId] = {
 								id: userId,
 								email: userData.user.email,
-								full_name: userData.user.user_metadata?.full_name || userData.user.email,
+								full_name:
+									userData.user.user_metadata?.full_name || userData.user.email,
 								avatar_url: userData.user.user_metadata?.avatar_url,
 							};
 						}
@@ -116,40 +153,10 @@ export const GET = withHouseholdAuth(
 			}
 
 			// For now, all accounts of household members are considered "shared"
-			const sharedAccounts = allAccounts || [];
+			const sharedAccounts =
+				(allAccounts as FinancialAccountRow[] | null) || [];
 
-			// Debug: Check if currency is present in database response
-			console.log(
-				"[DEBUG] Sample account currencies from DB:",
-				sharedAccounts.slice(0, 3).map((acc) => ({
-					id: acc.id,
-					currency: acc.currency,
-					name: acc.account_name,
-				})),
-			);
-
-			// Fetch user profiles for account owners
-			const ownerIds = [...new Set(sharedAccounts.map((acc) => acc.user_id))];
-			let profiles: any = {};
-
-			if (ownerIds.length > 0) {
-				const { data: profileData, error: profileError } = await supabaseAdmin
-					.from("profiles")
-					.select("id, full_name, email, avatar_url")
-					.in("id", ownerIds);
-
-				if (!profileError && profileData) {
-					profiles = profileData.reduce(
-						(acc, profile) => {
-							acc[profile.id] = profile;
-							return acc;
-						},
-						{} as Record<string, any>,
-					);
-				}
-			}
-
-			// Build shared accounts with owner information
+			// Build shared accounts with owner information (reuse userProfiles)
 			const sharedAccountsWithOwners: SharedAccountWithOwner[] =
 				sharedAccounts.map((account) => ({
 					id: account.id,
@@ -160,8 +167,8 @@ export const GET = withHouseholdAuth(
 					currency: account.currency || "GBP",
 					last_synced: account.last_synced || undefined,
 					owner_id: account.user_id,
-					owner_name: profiles[account.user_id]?.full_name || "Unknown",
-					owner_avatar: profiles[account.user_id]?.avatar_url,
+					owner_name: userProfiles[account.user_id]?.full_name || "Unknown",
+					owner_avatar: userProfiles[account.user_id]?.avatar_url,
 					sharing_level: "full", // Default to full for now
 				}));
 
@@ -171,15 +178,13 @@ export const GET = withHouseholdAuth(
 				0,
 			);
 
-			// Fetch recent transactions for all accounts
-			const accountIds = sharedAccounts.map((acc) => acc.id);
-
+			// Fetch ONLY transactions explicitly shared with THIS household
+			// NOT all transactions from household members' accounts
 			let recentTransactions: SharedTransactionWithOwner[] = [];
-			if (accountIds.length > 0) {
-				const { data: txData, error: txError } = await supabaseAdmin
-					.from("transactions")
-					.select(
-						`
+			const { data: txData, error: txError } = await supabaseAdmin
+				.from("transactions")
+				.select(
+					`
               id,
               account_id,
               amount,
@@ -191,34 +196,37 @@ export const GET = withHouseholdAuth(
               shared_by,
               financial_accounts!inner(user_id)
             `,
-					)
-					.in("account_id", accountIds)
-					.order("date", { ascending: false })
-					.limit(50);
+				)
+				.eq("is_shared_expense", true)
+				.eq("shared_with_household_id", householdId)
+				.order("date", { ascending: false })
+				.limit(50);
 
-				if (txError) {
-					console.error("Error fetching shared transactions:", txError);
-				} else if (txData) {
-					// Transform transactions with owner info
-					recentTransactions = txData.map((tx: any) => ({
-						id: tx.id,
-						amount: tx.amount,
-						merchant_name: tx.merchant_name || tx.description || "Unknown Merchant",
-						category: tx.category || "other",
-						date: tx.date,
-						shared_at: tx.shared_at || tx.date,
-						owner_id: tx.financial_accounts.user_id,
-						owner_name:
-							profiles[tx.financial_accounts.user_id]?.full_name || "Unknown",
-						owner_avatar: profiles[tx.financial_accounts.user_id]?.avatar_url,
-						account_id: tx.account_id,
-					}));
-				}
+			if (txError) {
+				console.error("Error fetching shared transactions:", txError);
+			} else if (txData) {
+				// Transform transactions with owner info (reuse userProfiles)
+				recentTransactions = (txData as TransactionRow[]).map((tx) => ({
+					id: tx.id,
+					amount: tx.amount,
+					merchant_name:
+						tx.merchant_name || tx.description || "Unknown Merchant",
+					category: tx.category || "other",
+					date: tx.date,
+					shared_at: tx.shared_at || tx.date,
+					owner_id: tx.financial_accounts.user_id,
+					owner_name:
+						userProfiles[tx.financial_accounts.user_id]?.full_name ||
+						"Unknown",
+					owner_avatar:
+						userProfiles[tx.financial_accounts.user_id]?.avatar_url,
+					account_id: tx.account_id,
+				}));
 			}
 
 			// Calculate member statistics with contributions
 			const membersWithStats: HouseholdMemberWithStats[] =
-				members?.map((member: any) => {
+				(members as HouseholdMemberRow[] | null)?.map((member) => {
 					const profile = userProfiles[member.user_id] || {};
 					const memberAccounts = sharedAccountsWithOwners.filter(
 						(acc) => acc.owner_id === member.user_id,
@@ -248,27 +256,29 @@ export const GET = withHouseholdAuth(
 			// Build activity feed from household events
 			const activityFeed: HouseholdActivityEvent[] = [];
 
-			// Add member joined events
-			members?.forEach((member: any) => {
-				const profile = userProfiles[member.user_id] || {};
-				activityFeed.push({
-					id: `member_joined_${member.id}`,
-					type: "member_joined",
-					description: `${profile.full_name || "Member"} joined the household`,
-					actor_id: member.user_id,
-					actor_name: profile.full_name || profile.email || "Unknown",
-					timestamp: member.joined_at,
-				});
-			});
+			// Add member joined events (use for...of instead of forEach)
+			if (members) {
+				for (const member of members as HouseholdMemberRow[]) {
+					const profile = userProfiles[member.user_id] || {};
+					activityFeed.push({
+						id: `member_joined_${member.id}`,
+						type: "member_joined",
+						description: `${profile.full_name || "Member"} joined the household`,
+						actor_id: member.user_id,
+						actor_name: profile.full_name || profile.email || "Unknown",
+						timestamp: member.joined_at,
+					});
+				}
+			}
 
-			// Add transaction shared events (recent 30 days)
+			// Add transaction shared events (recent 30 days, use for...of instead of forEach)
 			const thirtyDaysAgo = new Date();
 			thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 			const recentActivityTx = recentTransactions.filter(
 				(tx) => new Date(tx.shared_at) >= thirtyDaysAgo,
 			);
 
-			recentActivityTx.forEach((tx) => {
+			for (const tx of recentActivityTx) {
 				const isLarge = Math.abs(tx.amount) > 100;
 				activityFeed.push({
 					id: `transaction_${tx.id}`,
@@ -284,7 +294,7 @@ export const GET = withHouseholdAuth(
 						merchant: tx.merchant_name,
 					},
 				});
-			});
+			}
 
 			// Sort activity feed by timestamp (most recent first)
 			activityFeed.sort(
@@ -293,14 +303,15 @@ export const GET = withHouseholdAuth(
 			);
 
 			// Get most recent sync time
+			const sortedBySyncTime = sharedAccountsWithOwners
+				.filter((acc) => acc.last_synced)
+				.sort(
+					(a, b) =>
+						new Date(b.last_synced as string).getTime() -
+						new Date(a.last_synced as string).getTime(),
+				);
 			const lastSync =
-				sharedAccountsWithOwners
-					.filter((acc) => acc.last_synced)
-					.sort(
-						(a, b) =>
-							new Date(b.last_synced!).getTime() -
-							new Date(a.last_synced!).getTime(),
-					)[0]?.last_synced || new Date().toISOString();
+				sortedBySyncTime[0]?.last_synced || new Date().toISOString();
 
 			// Build comprehensive dashboard response
 			const dashboardData: HouseholdDashboardData = {
