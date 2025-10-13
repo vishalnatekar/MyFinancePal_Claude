@@ -216,10 +216,8 @@ export const GET = withHouseholdAuth(
 					shared_at: tx.shared_at || tx.date,
 					owner_id: tx.financial_accounts.user_id,
 					owner_name:
-						userProfiles[tx.financial_accounts.user_id]?.full_name ||
-						"Unknown",
-					owner_avatar:
-						userProfiles[tx.financial_accounts.user_id]?.avatar_url,
+						userProfiles[tx.financial_accounts.user_id]?.full_name || "Unknown",
+					owner_avatar: userProfiles[tx.financial_accounts.user_id]?.avatar_url,
 					account_id: tx.account_id,
 				}));
 			}

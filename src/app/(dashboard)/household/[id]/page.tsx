@@ -6,8 +6,6 @@ import { HouseholdNetWorthCard } from "@/components/household/HouseholdNetWorthC
 import { InviteMemberModal } from "@/components/household/InviteMemberModal";
 import { MemberContributionSummary } from "@/components/household/MemberContributionSummary";
 import { PendingInvitations } from "@/components/household/PendingInvitations";
-import { SharedAccountsSummary } from "@/components/household/SharedAccountsSummary";
-import { SharedAccountsTable } from "@/components/household/SharedAccountsTable";
 import { SharedTransactionsList } from "@/components/household/SharedTransactionsList";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
@@ -15,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHouseholdDashboard } from "@/hooks/use-household-dashboard";
 import { useToast } from "@/hooks/use-toast";
 import { createBrowserClient } from "@supabase/ssr";
-import { ArrowLeft, Settings, TrendingUp, UserPlus } from "lucide-react";
+import { ArrowLeft, Settings, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -43,8 +41,6 @@ export default function HouseholdDetailPage({
 		isLoading: loading,
 		error,
 		refetchDashboard,
-		syncAccounts,
-		isSyncing,
 	} = useHouseholdDashboard(params.id);
 
 	useEffect(() => {
@@ -62,22 +58,6 @@ export default function HouseholdDetailPage({
 	const handleInviteSent = () => {
 		// Refetch dashboard data to show updated member list
 		refetchDashboard();
-	};
-
-	const handleRefreshAll = async () => {
-		try {
-			await syncAccounts(false);
-			toast({
-				title: "Sync initiated",
-				description: "Refreshing all household accounts...",
-			});
-		} catch (error) {
-			toast({
-				title: "Sync failed",
-				description: "Failed to sync household accounts",
-				variant: "destructive",
-			});
-		}
 	};
 
 	if (loading) {
@@ -104,13 +84,8 @@ export default function HouseholdDetailPage({
 		);
 	}
 
-	const {
-		household,
-		members,
-		shared_accounts,
-		recent_shared_transactions,
-		activity_feed,
-	} = dashboard;
+	const { household, members, recent_shared_transactions, activity_feed } =
+		dashboard;
 
 	return (
 		<div className="space-y-4 md:space-y-6">
@@ -154,28 +129,19 @@ export default function HouseholdDetailPage({
 			</div>
 
 			{/* Overview Cards - responsive grid */}
-			<div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+			<div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
 				<HouseholdNetWorthCard dashboard={dashboard} />
 				<MemberContributionSummary members={members} />
-				<SharedAccountsSummary accounts={shared_accounts} />
 			</div>
 
 			{/* Main Content - mobile tabs, desktop grid */}
 			<div className="block lg:hidden">
-				<Tabs defaultValue="accounts" className="w-full">
-					<TabsList className="grid w-full grid-cols-4">
-						<TabsTrigger value="accounts">Accounts</TabsTrigger>
+				<Tabs defaultValue="transactions" className="w-full">
+					<TabsList className="grid w-full grid-cols-3">
 						<TabsTrigger value="transactions">Transactions</TabsTrigger>
 						<TabsTrigger value="activity">Activity</TabsTrigger>
 						<TabsTrigger value="members">Members</TabsTrigger>
 					</TabsList>
-					<TabsContent value="accounts" className="mt-4">
-						<SharedAccountsTable
-							accounts={shared_accounts}
-							onRefreshAll={handleRefreshAll}
-							isRefreshing={isSyncing}
-						/>
-					</TabsContent>
 					<TabsContent value="transactions" className="mt-4">
 						<SharedTransactionsList
 							householdId={params.id}
@@ -215,11 +181,6 @@ export default function HouseholdDetailPage({
 			{/* Desktop Layout */}
 			<div className="hidden lg:grid gap-6 grid-cols-3">
 				<div className="col-span-2 space-y-6">
-					<SharedAccountsTable
-						accounts={shared_accounts}
-						onRefreshAll={handleRefreshAll}
-						isRefreshing={isSyncing}
-					/>
 					<SharedTransactionsList
 						householdId={params.id}
 						transactions={recent_shared_transactions}
