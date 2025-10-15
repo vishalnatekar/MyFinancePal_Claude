@@ -1,54 +1,40 @@
 import { config } from "@/lib/config";
 import type { Database } from "@/types/database";
-import { type SupabaseClient, createClient } from "@supabase/supabase-js";
+import { createBrowserClient as createBrowserClientSSR } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-// Singleton instance
-let supabaseInstance: SupabaseClient<Database> | null = null;
-
-// Client-side Supabase client for browser
-// Use singleton pattern to ensure only ONE instance exists
-const createBrowserClient = () => {
-	// Return existing instance if available
-	if (supabaseInstance) {
-		return supabaseInstance;
-	}
-
+/**
+ * Create a Supabase client for browser use
+ * Uses @supabase/ssr for proper cookie handling
+ *
+ * IMPORTANT: This is for CLIENT-SIDE use only
+ * For server-side (API routes), use createClient from @/lib/supabase-server
+ */
+export function createClient() {
 	if (typeof window === "undefined") {
-		// Return a minimal client for SSR (not cached)
-		return createClient<Database>(
-			config.supabase.url,
-			config.supabase.anonKey,
-			{
-				auth: {
-					autoRefreshToken: false,
-					persistSession: false,
-					detectSessionInUrl: false,
-				},
-			},
-		);
+		throw new Error("createClient should only be called on the client side. Use createClient from @/lib/supabase-server for server-side code.");
 	}
 
-	// Create and cache the client instance
-	supabaseInstance = createClient<Database>(
+	return createBrowserClientSSR<Database>(
 		config.supabase.url,
-		config.supabase.anonKey,
-		{
-			auth: {
-				autoRefreshToken: true,
-				persistSession: true,
-				detectSessionInUrl: true,
-				flowType: "pkce",
-			},
-		},
+		config.supabase.anonKey
 	);
+}
 
-	return supabaseInstance;
-};
+/**
+ * Legacy export for backwards compatibility
+ * DEPRECATED: Use createClient() function instead
+ */
+export const supabase = createBrowserClientSSR<Database>(
+	config.supabase.url,
+	config.supabase.anonKey
+);
 
-export const supabase = createBrowserClient();
-
-// Server-side client with service role key
-export const supabaseAdmin = createClient<Database>(
+/**
+ * Server-side admin client with service role key
+ * Only use this for admin operations that bypass RLS
+ */
+export const supabaseAdmin = createSupabaseClient<Database>(
 	config.supabase.url,
 	config.supabase.serviceRoleKey,
 	{

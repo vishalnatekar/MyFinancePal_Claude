@@ -22,7 +22,7 @@ export async function authenticateRequest(
 	request: NextRequest,
 ): Promise<AuthResult> {
 	try {
-		const cookieStore = cookies();
+		const cookieStore = await cookies();
 		const supabase = createServerClient<Database>(
 			config.supabase.url,
 			config.supabase.anonKey,
