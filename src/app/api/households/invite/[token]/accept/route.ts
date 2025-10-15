@@ -5,6 +5,10 @@ import {
 } from "@/lib/auth-middleware";
 import { sendAcceptanceNotificationEmail } from "@/lib/email-service";
 import { supabaseAdmin } from "@/lib/supabase";
+import {
+	createNotification,
+	getHouseholdRecipients,
+} from "@/services/notification-service";
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -137,6 +141,29 @@ export const POST = withAuth(
 			if (updateError) {
 				console.error("Error updating invitation status:", updateError);
 				// Don't fail the operation if status update fails
+			}
+
+			// Create in-app notifications for household members (non-blocking)
+			try {
+				const recipients = await getHouseholdRecipients(
+					invitation.household_id,
+					user.id,
+				);
+				const newMemberName = userProfile.full_name || userProfile.email;
+
+				if (recipients.length > 0) {
+					await createNotification(
+						"member_joined",
+						invitation.household_id,
+						recipients,
+						user.id,
+						{
+							member_name: newMemberName,
+						},
+					);
+				}
+			} catch (notifError) {
+				console.error("Error creating member joined notification:", notifError);
 			}
 
 			// Send acceptance notification to household members (non-blocking)

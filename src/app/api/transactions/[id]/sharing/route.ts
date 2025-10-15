@@ -1,4 +1,8 @@
 import { config } from "@/lib/config";
+import {
+	createNotification,
+	getHouseholdRecipients,
+} from "@/services/notification-service";
 import type { UpdateTransactionSharingRequest } from "@/types/transaction";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -132,10 +136,10 @@ export async function PUT(
 			});
 		}
 
-		// Fetch updated transaction
+		// Fetch updated transaction to get details for notification
 		const { data: updatedTransaction, error: refetchError } = await supabase
 			.from("transactions")
-			.select("*")
+			.select("*, financial_accounts!inner(user_id), users!transactions_user_id_fkey(full_name)")
 			.eq("id", transactionId)
 			.single();
 
@@ -147,9 +151,50 @@ export async function PUT(
 			);
 		}
 
+		// Create notifications for household members (non-blocking)
+		if (is_shared && household_id && updatedTransaction) {
+			try {
+				const recipients = await getHouseholdRecipients(household_id, user.id);
+				const actorName = (updatedTransaction.users as { full_name: string } | null)?.full_name || "A member";
+
+				if (recipients.length > 0) {
+					await createNotification(
+						"transaction_shared",
+						household_id,
+						recipients,
+						user.id,
+						{
+							transaction_id: transactionId,
+							amount: Math.abs(Number(updatedTransaction.amount)),
+							merchant_name: updatedTransaction.merchant_name || "Unknown",
+							member_name: actorName,
+						}
+					);
+				}
+			} catch (notifError) {
+				// Log but don't fail the request if notification fails
+				console.error("Error creating notification:", notifError);
+			}
+		}
+
+		// Return the transaction (remove extra fields added for notification)
+		const { data: finalTransaction, error: finalFetchError } = await supabase
+			.from("transactions")
+			.select("*")
+			.eq("id", transactionId)
+			.single();
+
+		if (finalFetchError) {
+			console.error("Error fetching final transaction:", finalFetchError);
+			return NextResponse.json(
+				{ error: "Failed to fetch updated transaction" },
+				{ status: 500 },
+			);
+		}
+
 		return NextResponse.json({
 			success: true,
-			transaction: updatedTransaction,
+			transaction: finalTransaction,
 		});
 	} catch (error) {
 		console.error("Error in PUT /api/transactions/[id]/sharing:", error);

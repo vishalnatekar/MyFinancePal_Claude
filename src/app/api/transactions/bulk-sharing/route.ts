@@ -1,4 +1,8 @@
 import { config } from "@/lib/config";
+import {
+	createNotification,
+	getHouseholdRecipients,
+} from "@/services/notification-service";
 import type {
 	BulkTransactionSharingRequest,
 	BulkTransactionSharingResponse,
@@ -162,6 +166,67 @@ export async function POST(request: Request) {
 				transaction_id: r.transaction_id,
 				error: r.error_message || "Unknown error",
 			}));
+
+		// Create batched notification for successful bulk shares (non-blocking)
+		if (is_shared && household_id && successCount > 0) {
+			try {
+				const successfulIds = results
+					.filter((r) => r.success)
+					.map((r) => r.transaction_id);
+
+				// Get transaction details for notification
+				const { data: transactions } = await supabase
+					.from("transactions")
+					.select("id, amount, merchant_name")
+					.in("id", successfulIds);
+
+				if (transactions && transactions.length > 0) {
+					const totalAmount = transactions.reduce(
+						(sum, tx) => sum + Math.abs(Number(tx.amount)),
+						0,
+					);
+
+					// Get user's name
+					const { data: userProfile } = await supabase
+						.from("profiles")
+						.select("full_name")
+						.eq("id", user.id)
+						.single();
+
+					const actorName = userProfile?.full_name || "A member";
+					const recipients = await getHouseholdRecipients(household_id, user.id);
+
+					if (recipients.length > 0) {
+						// For single transaction, include individual details
+						const metadata =
+							successCount === 1
+								? {
+										transaction_id: transactions[0].id,
+										amount: Math.abs(Number(transactions[0].amount)),
+										merchant_name: transactions[0].merchant_name || undefined,
+										member_name: actorName,
+								  }
+								: {
+										transaction_ids: successfulIds,
+										count: successCount,
+										total_amount: totalAmount,
+										member_name: actorName,
+								  };
+
+						await createNotification(
+							"transaction_shared",
+							household_id,
+							recipients,
+							user.id,
+							metadata,
+						);
+					}
+				}
+			} catch (notifError) {
+				// Log but don't fail the request if notification fails
+				console.error("Error creating bulk notification:", notifError);
+			}
+		}
 
 		const response: BulkTransactionSharingResponse = {
 			success_count: successCount,

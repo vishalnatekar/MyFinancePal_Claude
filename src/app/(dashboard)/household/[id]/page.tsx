@@ -160,6 +160,8 @@ export default function HouseholdDetailPage({
 						<div className="space-y-4">
 							<HouseholdMemberList
 								members={members.map((m) => ({
+									id: m.id,
+									household_id: params.id,
 									user_id: m.user_id,
 									role: m.role,
 									joined_at: m.joined_at,
@@ -167,7 +169,7 @@ export default function HouseholdDetailPage({
 										id: m.user_id,
 										email: m.email,
 										full_name: m.name,
-										avatar_url: m.avatar_url,
+										avatar_url: m.avatar_url || null,
 									},
 								}))}
 								currentUserId={currentUserId || undefined}
@@ -196,6 +198,8 @@ export default function HouseholdDetailPage({
 				<div className="space-y-6">
 					<HouseholdMemberList
 						members={members.map((m) => ({
+							id: m.id,
+							household_id: params.id,
 							user_id: m.user_id,
 							role: m.role,
 							joined_at: m.joined_at,
@@ -203,7 +207,7 @@ export default function HouseholdDetailPage({
 								id: m.user_id,
 								email: m.email,
 								full_name: m.name,
-								avatar_url: m.avatar_url,
+								avatar_url: m.avatar_url || null,
 							},
 						}))}
 						currentUserId={currentUserId || undefined}

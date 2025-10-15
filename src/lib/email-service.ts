@@ -6,6 +6,9 @@
 import {
 	generateAcceptanceNotificationEmail,
 	generateInvitationEmail,
+	generateLargeTransactionEmail,
+	generateTransactionSharedEmail,
+	generateWeeklySummaryEmail,
 } from "./email-templates";
 
 // Resend API configuration
@@ -174,4 +177,160 @@ export async function sendBatchInvitationEmails(
 		sent,
 		failed,
 	};
+}
+
+/**
+ * Send transaction shared notification email
+ */
+interface SendTransactionSharedEmailParams {
+	to: string;
+	recipientName: string;
+	householdName: string;
+	householdId: string;
+	actorName: string;
+	amount?: number;
+	merchant?: string;
+	count?: number;
+	totalAmount?: number;
+}
+
+export async function sendTransactionSharedEmail(
+	params: SendTransactionSharedEmailParams,
+): Promise<{ success: boolean; error?: string }> {
+	try {
+		const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+		const dashboardUrl = `${appUrl}/household/${params.householdId}`;
+		const unsubscribeUrl = `${appUrl}/household/${params.householdId}/settings`;
+
+		// Generate email content
+		const { subject, html, text } = generateTransactionSharedEmail({
+			recipientName: params.recipientName,
+			householdName: params.householdName,
+			actorName: params.actorName,
+			amount: params.amount,
+			merchant: params.merchant,
+			count: params.count,
+			totalAmount: params.totalAmount,
+			dashboardUrl,
+			unsubscribeUrl,
+		});
+
+		// Send email via Resend API
+		const response = await fetch(RESEND_API_URL, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${RESEND_API_KEY}`,
+			},
+			body: JSON.stringify({
+				from: FROM_EMAIL,
+				to: params.to,
+				subject,
+				html,
+				text,
+			}),
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			console.error("Resend API error:", errorData);
+			return {
+				success: false,
+				error: errorData.message || "Failed to send email",
+			};
+		}
+
+		const data = await response.json();
+		console.log("Transaction shared email sent successfully:", data);
+		return { success: true };
+	} catch (error) {
+		console.error("Error sending transaction shared email:", error);
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
+}
+
+/**
+ * Send weekly household summary email
+ */
+interface SendWeeklySummaryEmailParams {
+	to: string;
+	recipientName: string;
+	householdName: string;
+	householdId: string;
+	weekStart: string;
+	weekEnd: string;
+	totalSpending: number;
+	transactionCount: number;
+	memberContributions: Array<{
+		name: string;
+		amount: number;
+		count: number;
+	}>;
+	topCategories: Array<{
+		category: string;
+		amount: number;
+		percentage: number;
+	}>;
+}
+
+export async function sendWeeklySummaryEmail(
+	params: SendWeeklySummaryEmailParams,
+): Promise<{ success: boolean; error?: string }> {
+	try {
+		const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+		const dashboardUrl = `${appUrl}/household/${params.householdId}`;
+		const unsubscribeUrl = `${appUrl}/household/${params.householdId}/settings`;
+
+		// Generate email content
+		const { subject, html, text } = generateWeeklySummaryEmail({
+			recipientName: params.recipientName,
+			householdName: params.householdName,
+			weekStart: params.weekStart,
+			weekEnd: params.weekEnd,
+			totalSpending: params.totalSpending,
+			transactionCount: params.transactionCount,
+			memberContributions: params.memberContributions,
+			topCategories: params.topCategories,
+			dashboardUrl,
+			unsubscribeUrl,
+		});
+
+		// Send email via Resend API
+		const response = await fetch(RESEND_API_URL, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${RESEND_API_KEY}`,
+			},
+			body: JSON.stringify({
+				from: FROM_EMAIL,
+				to: params.to,
+				subject,
+				html,
+				text,
+			}),
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			console.error("Resend API error:", errorData);
+			return {
+				success: false,
+				error: errorData.message || "Failed to send email",
+			};
+		}
+
+		const data = await response.json();
+		console.log("Weekly summary email sent successfully:", data);
+		return { success: true };
+	} catch (error) {
+		console.error("Error sending weekly summary email:", error);
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : "Unknown error",
+		};
+	}
 }

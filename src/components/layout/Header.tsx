@@ -1,5 +1,6 @@
 "use client";
 
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +53,7 @@ export function Header({ onMenuClick, sidebarOpen }: HeaderProps) {
 				</div>
 
 				<div className="flex items-center space-x-4">
+					{user && <NotificationCenter userId={user.id} />}
 					{profile && (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>

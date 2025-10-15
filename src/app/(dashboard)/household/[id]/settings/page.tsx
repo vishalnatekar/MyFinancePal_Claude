@@ -1,6 +1,7 @@
 "use client";
 
 import { HouseholdSettingsForm } from "@/components/household/HouseholdSettingsForm";
+import { NotificationPreferences } from "@/components/notifications/NotificationPreferences";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -143,6 +144,11 @@ export default function HouseholdSettingsPage() {
 				household={household}
 				isCreator={isCreator}
 				onUpdate={handleUpdate}
+			/>
+
+			<NotificationPreferences
+				householdId={householdId}
+				userId={currentUserId || undefined}
 			/>
 
 			<Card className="border-destructive">
