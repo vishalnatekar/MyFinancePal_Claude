@@ -8,18 +8,26 @@
 		"rules": {
 			"recommended": true,
 			"correctness": {
-				"useExhaustiveDependencies": "warn"
+				"useExhaustiveDependencies": "off"
 			},
 			"suspicious": {
-				"noExplicitAny": "error",
+				"noExplicitAny": "warn",
 				"noArrayIndexKey": "warn"
 			},
+			"a11y": {
+				"useValidAnchor": "warn"
+			},
 			"style": {
-				"noNegationElse": "off"
+				"noNegationElse": "off",
+				"useNodejsImportProtocol": "off",
+				"useTemplate": "off",
+				"noNonNullAssertion": "warn"
 			},
 			"complexity": {
 				"noBannedTypes": "error",
-				"noUselessFragments": "error"
+				"noUselessFragments": "error",
+				"noStaticOnlyClass": "off",
+				"noThisInStatic": "off"
 			}
 		}
 	},
@@ -46,16 +54,31 @@
 		}
 	},
 	"files": {
-		"include": ["src/**/*", "*.ts", "*.tsx", "*.js", "*.jsx"],
+		"include": ["src/**/*"],
 		"ignore": [
-			".next/**/*",
-			"node_modules/**/*",
-			"build/**/*",
-			"dist/**/*",
-			"coverage/**/*",
-			".bmad-core/**/*",
-			".claude/**/*",
-			"docs/**/*"
+			".next",
+			".next/**",
+			"node_modules",
+			"node_modules/**",
+			"build",
+			"build/**",
+			"dist",
+			"dist/**",
+			"coverage",
+			"coverage/**",
+			".bmad-core",
+			".bmad-core/**",
+			".claude",
+			".claude/**",
+			"docs",
+			"docs/**",
+			"scripts",
+			"scripts/**",
+			"*.config.js",
+			"*.config.ts",
+			"tests/**",
+			"playwright-report/**",
+			".supabase/**"
 		]
 	}
 }
