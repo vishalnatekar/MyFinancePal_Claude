@@ -11,6 +11,8 @@ A modern household financial management application built with Next.js, TypeScri
 - 🔐 **Secure Authentication**: Google OAuth integration
 - 📱 **Responsive Design**: Works on desktop and mobile
 
+
+## test
 ## Tech Stack
 
 - **Frontend**: Next.js 14 with App Router, React 18, TypeScript
