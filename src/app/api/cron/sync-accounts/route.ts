@@ -78,12 +78,10 @@ export async function GET(request: NextRequest) {
 		// Sync accounts for each user
 		for (const [userId, userAccounts] of Object.entries(accountsByUser)) {
 			try {
-				const syncService = new AccountSyncService(userId);
-
 				// Sync all accounts for this user
 				for (const account of userAccounts) {
 					try {
-						await syncService.syncSingleAccount(account.id);
+						await AccountSyncService.syncAccount(account.id);
 						successCount++;
 						console.log(`✅ Synced account ${account.id} for user ${userId}`);
 					} catch (error) {

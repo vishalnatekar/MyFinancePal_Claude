@@ -249,8 +249,21 @@ export async function GET(request: NextRequest) {
 				// Record initial balance snapshots for historical tracking
 				console.log("📊 Recording initial balance snapshots...");
 				try {
+					// Map database nulls to undefined for TypeScript types
+					const accountsForSnapshot = createdAccounts.map((account) => ({
+						...account,
+						truelayer_account_id: account.truelayer_account_id ?? undefined,
+						truelayer_connection_id: account.truelayer_connection_id ?? undefined,
+						currency: account.currency ?? undefined,
+						last_synced: account.last_synced ?? undefined,
+						connection_status: account.connection_status as "active" | "expired" | "failed" | undefined,
+						encrypted_access_token: account.encrypted_access_token ?? undefined,
+						created_at: account.created_at ?? undefined,
+						updated_at: account.updated_at ?? undefined,
+						account_type: account.account_type as "checking" | "savings" | "investment" | "credit",
+					}));
 					await HistoricalDataService.recordBalanceSnapshotBatch(
-						createdAccounts,
+						accountsForSnapshot,
 					);
 					console.log(
 						`✅ Recorded ${createdAccounts.length} balance snapshots`,

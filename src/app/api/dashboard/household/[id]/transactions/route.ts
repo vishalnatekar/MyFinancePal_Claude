@@ -138,13 +138,12 @@ export async function GET(
 		const transactionRows = data as TransactionRow[];
 
 		// Get unique account IDs from the transactions
-		const accountIds = [
-			...new Set(
-				transactionRows
-					.map((t) => t.account_id)
-					.filter((id): id is string => Boolean(id)),
-			),
-		];
+		const uniqueAccountIds = new Set(
+			transactionRows
+				.map((t) => t.account_id)
+				.filter((id): id is string => Boolean(id)),
+		);
+		const accountIds = Array.from(uniqueAccountIds);
 
 		// Fetch financial accounts to get user IDs (using admin client to bypass RLS)
 		let { data: accounts, error: accountsError } = await supabaseAdmin
@@ -166,7 +165,8 @@ export async function GET(
 		const accountMap = new Map(accountRows.map((a) => [a.id, a.user_id]));
 
 		// Get unique user IDs
-		const userIds = [...new Set(Array.from(accountMap.values()))];
+		const uniqueUserIds = new Set(Array.from(accountMap.values()));
+		const userIds = Array.from(uniqueUserIds);
 
 		// Fetch profiles for all unique users (using admin client to bypass RLS)
 		const { data: profiles, error: profilesError } = await supabaseAdmin

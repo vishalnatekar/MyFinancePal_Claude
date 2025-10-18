@@ -54,7 +54,8 @@
       "Bash(npx biome format:*)",
       "Read(//private/var/log/**)",
       "Bash(psql:*)",
-      "Bash(cut:*)"
+      "Bash(cut:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []

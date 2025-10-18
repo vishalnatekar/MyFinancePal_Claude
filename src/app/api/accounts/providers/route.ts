@@ -36,7 +36,7 @@ export const GET = withAuth(async (request: NextRequest, user: User) => {
 		const filteredProviders = providers.filter(
 			(provider) =>
 				provider.country_code === "GB" &&
-				provider.capabilities.accounts === true,
+				provider.capabilities?.accounts === true,
 		);
 
 		return NextResponse.json({

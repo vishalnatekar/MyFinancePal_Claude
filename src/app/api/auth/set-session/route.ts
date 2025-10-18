@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 			.from("profiles")
 			.upsert({
 				id: user.id,
-				email: user.email,
+				email: user.email!,
 				full_name:
 					user.user_metadata?.full_name || user.user_metadata?.name || null,
 				avatar_url:

@@ -102,7 +102,12 @@ export const GET = withHouseholdAuth(
 				if (!profilesError && profilesData) {
 					userProfiles = profilesData.reduce(
 						(acc, profile) => {
-							acc[profile.id] = profile;
+							acc[profile.id] = {
+								id: profile.id,
+								email: profile.email,
+								full_name: profile.full_name || profile.email,
+								avatar_url: profile.avatar_url ?? undefined,
+							};
 							return acc;
 						},
 						{} as Record<string, UserProfile>,
@@ -115,9 +120,9 @@ export const GET = withHouseholdAuth(
 						if (userData.user) {
 							userProfiles[userId] = {
 								id: userId,
-								email: userData.user.email,
+								email: userData.user.email!,
 								full_name:
-									userData.user.user_metadata?.full_name || userData.user.email,
+									userData.user.user_metadata?.full_name || userData.user.email!,
 								avatar_url: userData.user.user_metadata?.avatar_url,
 							};
 						}
@@ -161,7 +166,7 @@ export const GET = withHouseholdAuth(
 				sharedAccounts.map((account) => ({
 					id: account.id,
 					account_name: account.account_name,
-					account_type: account.account_type,
+					account_type: account.account_type as "checking" | "savings" | "investment" | "credit" | "loan",
 					institution_name: account.institution_name,
 					current_balance: account.current_balance || 0,
 					currency: account.currency || "GBP",
@@ -243,7 +248,7 @@ export const GET = withHouseholdAuth(
 						name: profile.full_name || profile.email || "Unknown",
 						email: profile.email || "",
 						avatar_url: profile.avatar_url,
-						role: member.role,
+						role: member.role as "creator" | "member",
 						joined_at: member.joined_at,
 						shared_accounts_count: memberAccounts.length,
 						shared_transactions_count: memberTransactions.length,

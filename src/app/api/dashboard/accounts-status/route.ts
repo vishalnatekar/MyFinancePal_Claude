@@ -16,6 +16,10 @@ export async function GET(request: NextRequest) {
 	try {
 		const { user } = await authenticateRequest(request);
 
+		if (!user) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
 		// Fetch accounts with sync history
 		const { data: accounts, error: accountsError } = await supabaseAdmin
 			.from("financial_accounts")
@@ -47,7 +51,7 @@ export async function GET(request: NextRequest) {
 			accountName: account.account_name,
 			lastSynced: null, // Field not available in DB
 			nextSync: null, // Field not available in DB
-			status: determineSyncStatus(account.connection_status, null),
+			status: determineSyncStatus(account.connection_status ?? "unknown", null),
 			error: null,
 		}));
 

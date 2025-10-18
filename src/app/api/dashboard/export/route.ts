@@ -16,6 +16,10 @@ export async function GET(request: NextRequest) {
 	try {
 		const { user } = await authenticateRequest(request);
 
+		if (!user) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
 		// Parse query parameters
 		const searchParams = request.nextUrl.searchParams;
 		const format = searchParams.get("format");

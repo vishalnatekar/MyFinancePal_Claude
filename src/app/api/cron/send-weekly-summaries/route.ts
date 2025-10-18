@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 
 				// Send email to each member with weekly digest enabled
 				for (const member of members) {
-					const user = member.profiles as {
+					const user = member.profiles as unknown as {
 						id: string;
 						email: string;
 						full_name: string;
@@ -173,7 +173,11 @@ export async function POST(request: NextRequest) {
 						weekEnd: endDate,
 						totalSpending: summary.total_shared_spending,
 						transactionCount: summary.transaction_count,
-						memberContributions: summary.member_contributions,
+						memberContributions: summary.member_contributions.map((contrib) => ({
+							name: contrib.member_name,
+							amount: contrib.amount,
+							count: contrib.transaction_count,
+						})),
 						topCategories: summary.top_categories,
 					});
 
