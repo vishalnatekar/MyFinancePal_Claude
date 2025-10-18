@@ -13,7 +13,7 @@ A modern household financial management application built with Next.js, TypeScri
 
 
 ## test
-## Tech Stack
+## Tech Stack2
 
 - **Frontend**: Next.js 14 with App Router, React 18, TypeScript
 - **Styling**: Tailwind CSS with shadcn/ui components
