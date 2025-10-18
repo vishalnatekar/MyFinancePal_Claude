@@ -55,7 +55,10 @@
       "Read(//private/var/log/**)",
       "Bash(psql:*)",
       "Bash(cut:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
