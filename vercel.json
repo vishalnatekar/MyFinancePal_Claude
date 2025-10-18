@@ -27,7 +27,7 @@
 	},
 	"functions": {
 		"src/app/api/**/*.ts": {
-			"runtime": "nodejs18.x"
+			"runtime": "nodejs20.x"
 		},
 		"src/app/api/accounts/sync-all/route.ts": {
 			"maxDuration": 300
