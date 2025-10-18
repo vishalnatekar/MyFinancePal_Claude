@@ -201,3 +201,4 @@ This project uses modern tooling for code quality:
 ## License
 
 This project is licensed under the MIT License.
+
