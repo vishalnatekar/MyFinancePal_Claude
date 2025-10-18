@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 			cookies: Object.fromEntries(
 				request.cookies
 					.getAll()
-					.map((c) => [c.name, c.value?.substring(0, 30) + "..."]),
+					.map((c) => [c.name, `${c.value?.substring(0, 30)}...`]),
 			),
 			headers: Object.fromEntries(
 				Array.from(request.headers.entries()).filter(

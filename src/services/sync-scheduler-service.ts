@@ -90,7 +90,7 @@ export class SyncSchedulerService {
 		rateLimits: RateLimitConfig = DEFAULT_RATE_LIMITS,
 	): { allowed: boolean; reason?: string; retryAfter?: Date } {
 		// Check if already syncing
-		if (this.activeSyncs.has(accountId)) {
+		if (SyncSchedulerService.activeSyncs.has(accountId)) {
 			return {
 				allowed: false,
 				reason: "Sync already in progress",
@@ -98,9 +98,9 @@ export class SyncSchedulerService {
 		}
 
 		// Check concurrent syncs limit
-		const userActiveSyncs = Array.from(this.activeSyncs.values()).filter(
-			(sync) => sync.userId === userId,
-		);
+		const userActiveSyncs = Array.from(
+			SyncSchedulerService.activeSyncs.values(),
+		).filter((sync) => sync.userId === userId);
 		if (userActiveSyncs.length >= rateLimits.maxConcurrentSyncs) {
 			return {
 				allowed: false,
@@ -109,7 +109,7 @@ export class SyncSchedulerService {
 		}
 
 		// Check hourly rate limit
-		const userSyncHistory = this.syncHistory.get(userId) || [];
+		const userSyncHistory = SyncSchedulerService.syncHistory.get(userId) || [];
 		const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 		const recentSyncs = userSyncHistory.filter((date) => date > oneHourAgo);
 
@@ -132,16 +132,19 @@ export class SyncSchedulerService {
 	 * @param accountId - Account ID
 	 */
 	static startSync(userId: string, accountId: string): void {
-		this.activeSyncs.set(accountId, { userId, startedAt: new Date() });
+		SyncSchedulerService.activeSyncs.set(accountId, {
+			userId,
+			startedAt: new Date(),
+		});
 
 		// Update sync history
-		const history = this.syncHistory.get(userId) || [];
+		const history = SyncSchedulerService.syncHistory.get(userId) || [];
 		history.push(new Date());
-		this.syncHistory.set(userId, history);
+		SyncSchedulerService.syncHistory.set(userId, history);
 
 		// Clean up old history (keep last 24 hours)
 		const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-		this.syncHistory.set(
+		SyncSchedulerService.syncHistory.set(
 			userId,
 			history.filter((date) => date > oneDayAgo),
 		);
@@ -152,7 +155,7 @@ export class SyncSchedulerService {
 	 * @param accountId - Account ID
 	 */
 	static completeSync(accountId: string): void {
-		this.activeSyncs.delete(accountId);
+		SyncSchedulerService.activeSyncs.delete(accountId);
 	}
 
 	/**
@@ -230,13 +233,16 @@ export class SyncSchedulerService {
 				? new Date(account.last_synced)
 				: undefined;
 
-			const priority = await this.determineSyncPriority(
+			const priority = await SyncSchedulerService.determineSyncPriority(
 				account.id,
 				undefined,
 				lastSynced,
 			);
 
-			const nextSyncTime = this.calculateNextSyncTime(priority, lastSynced);
+			const nextSyncTime = SyncSchedulerService.calculateNextSyncTime(
+				priority,
+				lastSynced,
+			);
 
 			if (now >= nextSyncTime) {
 				accountsToSync.push(account.id);
@@ -407,7 +413,7 @@ export class SyncSchedulerService {
 	 * Clear sync history (for testing)
 	 */
 	static clearSyncHistory(): void {
-		this.activeSyncs.clear();
-		this.syncHistory.clear();
+		SyncSchedulerService.activeSyncs.clear();
+		SyncSchedulerService.syncHistory.clear();
 	}
 }

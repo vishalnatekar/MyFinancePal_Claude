@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
 import { SharedAccountsTable } from "@/components/household/SharedAccountsTable";
 import type { SharedAccountWithOwner } from "@/types/household";
+import { render, screen } from "@testing-library/react";
 
 describe("SharedAccountsTable", () => {
 	const mockAccounts: SharedAccountWithOwner[] = [
@@ -87,9 +87,7 @@ describe("SharedAccountsTable", () => {
 
 	it("should handle empty accounts array", () => {
 		render(<SharedAccountsTable accounts={[]} />);
-		expect(
-			screen.getByText(/No shared accounts yet/i),
-		).toBeInTheDocument();
+		expect(screen.getByText(/No shared accounts yet/i)).toBeInTheDocument();
 	});
 
 	it("should display sync status for recently synced accounts", () => {

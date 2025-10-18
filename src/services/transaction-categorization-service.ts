@@ -131,7 +131,8 @@ export class TransactionCategorizationService {
 
 		// Check for income first (positive amounts with certain keywords)
 		if (amount > 0) {
-			for (const pattern of this.categoryPatterns.income) {
+			for (const pattern of TransactionCategorizationService.categoryPatterns
+				.income) {
 				if (pattern.test(searchText)) {
 					return "income";
 				}
@@ -157,7 +158,8 @@ export class TransactionCategorizationService {
 		];
 
 		for (const category of priorityOrder) {
-			const patterns = this.categoryPatterns[category];
+			const patterns =
+				TransactionCategorizationService.categoryPatterns[category];
 			for (const pattern of patterns) {
 				if (pattern.test(searchText)) {
 					return category;
@@ -180,7 +182,11 @@ export class TransactionCategorizationService {
 		}>,
 	): TransactionCategory[] {
 		return transactions.map((tx) =>
-			this.categorizeTransaction(tx.merchant_name, tx.amount, tx.description),
+			TransactionCategorizationService.categorizeTransaction(
+				tx.merchant_name,
+				tx.amount,
+				tx.description,
+			),
 		);
 	}
 
@@ -188,7 +194,9 @@ export class TransactionCategorizationService {
 	 * Get all available categories
 	 */
 	static getAvailableCategories(): TransactionCategory[] {
-		return Object.keys(this.categoryPatterns) as TransactionCategory[];
+		return Object.keys(
+			TransactionCategorizationService.categoryPatterns,
+		) as TransactionCategory[];
 	}
 
 	/**

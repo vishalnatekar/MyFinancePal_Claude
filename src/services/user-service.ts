@@ -56,7 +56,7 @@ export class UserService {
 	 * Get user preferences
 	 */
 	static async getUserPreferences(): Promise<UserPreferencesResponse> {
-		const response = await this.request<UserPreferences>(
+		const response = await UserService.request<UserPreferences>(
 			"/api/user/preferences",
 			{
 				method: "GET",
@@ -76,7 +76,7 @@ export class UserService {
 	static async updateUserPreferences(
 		preferences: Partial<UserPreferences>,
 	): Promise<UserPreferencesResponse> {
-		const response = await this.request<UserPreferences>(
+		const response = await UserService.request<UserPreferences>(
 			"/api/user/preferences",
 			{
 				method: "PUT",

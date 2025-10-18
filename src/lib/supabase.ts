@@ -12,12 +12,14 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
  */
 export function createClient() {
 	if (typeof window === "undefined") {
-		throw new Error("createClient should only be called on the client side. Use createClient from @/lib/supabase-server for server-side code.");
+		throw new Error(
+			"createClient should only be called on the client side. Use createClient from @/lib/supabase-server for server-side code.",
+		);
 	}
 
 	return createBrowserClientSSR<Database>(
 		config.supabase.url,
-		config.supabase.anonKey
+		config.supabase.anonKey,
 	);
 }
 
@@ -27,7 +29,7 @@ export function createClient() {
  */
 export const supabase = createBrowserClientSSR<Database>(
 	config.supabase.url,
-	config.supabase.anonKey
+	config.supabase.anonKey,
 );
 
 /**

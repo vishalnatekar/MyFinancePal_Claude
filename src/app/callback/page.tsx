@@ -42,8 +42,8 @@ export default function TrueLayerCallbackPage() {
 				}
 
 				console.log("✅ TrueLayer authorization successful!");
-				console.log("- Code:", code.substring(0, 10) + "...");
-				console.log("- State:", state?.substring(0, 10) + "...");
+				console.log("- Code:", `${code.substring(0, 10)}...`);
+				console.log("- State:", `${state?.substring(0, 10)}...`);
 
 				// Redirect to the API callback endpoint which will process everything server-side
 				console.log(
@@ -67,7 +67,7 @@ export default function TrueLayerCallbackPage() {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
 				<div className="text-center">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
 					<p className="text-sm text-muted-foreground">
 						Processing TrueLayer connection...
 					</p>

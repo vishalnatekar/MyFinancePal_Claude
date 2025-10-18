@@ -420,9 +420,11 @@ Notification Settings: ${dashboardUrl}/settings
 /**
  * Generate HTML email template for weekly household summary
  */
-export function generateWeeklySummaryEmail(
-	data: WeeklySummaryEmailData,
-): { subject: string; html: string; text: string } {
+export function generateWeeklySummaryEmail(data: WeeklySummaryEmailData): {
+	subject: string;
+	html: string;
+	text: string;
+} {
 	const {
 		recipientName,
 		householdName,
@@ -555,13 +557,15 @@ export function generateWeeklySummaryEmail(
 
 	const memberContributionsText = memberContributions
 		.map(
-			(member) => `  - ${member.name}: £${member.amount.toFixed(2)} (${member.count} transactions)`,
+			(member) =>
+				`  - ${member.name}: £${member.amount.toFixed(2)} (${member.count} transactions)`,
 		)
 		.join("\n");
 
 	const topCategoriesText = topCategories
 		.map(
-			(cat) => `  - ${cat.category}: £${cat.amount.toFixed(2)} (${cat.percentage.toFixed(0)}%)`,
+			(cat) =>
+				`  - ${cat.category}: £${cat.amount.toFixed(2)} (${cat.percentage.toFixed(0)}%)`,
 		)
 		.join("\n");
 

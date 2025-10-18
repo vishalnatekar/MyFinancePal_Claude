@@ -188,7 +188,7 @@ export class DataEncryptionService {
 		transactions: T[],
 	): T[] {
 		return transactions.map((transaction) =>
-			this.encryptTransactionFields(transaction),
+			DataEncryptionService.encryptTransactionFields(transaction),
 		);
 	}
 
@@ -201,7 +201,7 @@ export class DataEncryptionService {
 		transactions: T[],
 	): T[] {
 		return transactions.map((transaction) =>
-			this.decryptTransactionFields(transaction),
+			DataEncryptionService.decryptTransactionFields(transaction),
 		);
 	}
 

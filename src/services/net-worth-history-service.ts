@@ -265,8 +265,7 @@ export class NetWorthHistoryService {
 		const periodsPerYear = 365 / daysDiff;
 		const growthRate =
 			firstValue !== 0
-				? (Math.pow(lastValue / Math.abs(firstValue), 1 / periodsPerYear) - 1) *
-					100
+				? ((lastValue / Math.abs(firstValue)) ** (1 / periodsPerYear) - 1) * 100
 				: 0;
 
 		const trend =

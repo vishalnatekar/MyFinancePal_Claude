@@ -46,14 +46,24 @@ export async function POST(request: NextRequest) {
 			truelayer_connection_id: account.truelayer_connection_id ?? undefined,
 			currency: account.currency ?? undefined,
 			last_synced: account.last_synced ?? undefined,
-			connection_status: account.connection_status as "active" | "expired" | "failed" | undefined,
+			connection_status: account.connection_status as
+				| "active"
+				| "expired"
+				| "failed"
+				| undefined,
 			encrypted_access_token: account.encrypted_access_token ?? undefined,
 			created_at: account.created_at ?? undefined,
 			updated_at: account.updated_at ?? undefined,
-			account_type: account.account_type as "checking" | "savings" | "investment" | "credit",
+			account_type: account.account_type as
+				| "checking"
+				| "savings"
+				| "investment"
+				| "credit",
 		}));
 		const snapshots =
-			await HistoricalDataService.recordBalanceSnapshotBatch(accountsForSnapshot);
+			await HistoricalDataService.recordBalanceSnapshotBatch(
+				accountsForSnapshot,
+			);
 
 		return NextResponse.json({
 			message: "Balance snapshots recorded successfully",

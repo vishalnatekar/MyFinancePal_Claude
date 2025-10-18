@@ -32,7 +32,7 @@ function LoginPageContent() {
 	if (loading) {
 		return (
 			<div className="text-center">
-				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
 				<p className="text-sm text-muted-foreground">Loading...</p>
 			</div>
 		);
@@ -41,7 +41,7 @@ function LoginPageContent() {
 	if (user) {
 		return (
 			<div className="text-center">
-				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
 				<p className="text-sm text-muted-foreground">
 					Redirecting to dashboard...
 				</p>
@@ -96,7 +96,7 @@ export default function LoginPage() {
 		<Suspense
 			fallback={
 				<div className="text-center">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
 					<p className="text-sm text-muted-foreground">Loading...</p>
 				</div>
 			}

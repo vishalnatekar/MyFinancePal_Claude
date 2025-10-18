@@ -24,13 +24,8 @@ export function NotificationCenter({
 }: NotificationCenterProps) {
 	const [open, setOpen] = useState(false);
 
-	const {
-		notifications,
-		unreadCount,
-		loading,
-		markAsRead,
-		markAllAsRead,
-	} = useNotifications(userId, householdId);
+	const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
+		useNotifications(userId, householdId);
 
 	const handleNotificationClick = async (
 		notification: NotificationWithActor,

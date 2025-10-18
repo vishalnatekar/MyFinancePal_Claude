@@ -132,7 +132,7 @@ export class OAuthStateManager {
 	 */
 	async generateState(userId: string, providerId: string): Promise<string> {
 		// Generate cryptographically secure random state
-		const { webcrypto } = await import("crypto");
+		const { webcrypto } = await import("node:crypto");
 		const array = new Uint8Array(32);
 		webcrypto.getRandomValues(array);
 		const state = Array.from(array, (byte) =>

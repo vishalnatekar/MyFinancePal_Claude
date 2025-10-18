@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 		const state = await oauthStateManager.generateState(userId, providerId);
 		console.log(
 			"✅ State token generated and stored:",
-			state.substring(0, 10) + "...",
+			`${state.substring(0, 10)}...`,
 		);
 
 		// Generate TrueLayer OAuth URL
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 		console.log("- User ID:", userId);
 		console.log("- Provider ID:", providerId);
 		console.log("- Redirect URI:", redirectUri);
-		console.log("- State:", state.substring(0, 10) + "...");
+		console.log("- State:", `${state.substring(0, 10)}...`);
 		console.log("- Full Auth URL:", authUrl);
 		console.log("");
 		console.log(

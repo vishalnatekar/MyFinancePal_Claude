@@ -3,8 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { NotificationWithActor } from "@/types/notification";
-import { Check, DollarSign, UserCheck, UserMinus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Check, DollarSign, UserCheck, UserMinus } from "lucide-react";
 
 interface NotificationItemProps {
 	notification: NotificationWithActor;

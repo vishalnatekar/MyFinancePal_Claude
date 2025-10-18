@@ -52,7 +52,7 @@ test.describe("TrueLayer OAuth Flow - Complete Journey", () => {
 		// Step 2: Initiate connection
 		let capturedState = "";
 		await page.route("**/api/accounts/connect", (route) => {
-			capturedState = "secure-state-token-" + Math.random();
+			capturedState = `secure-state-token-${Math.random()}`;
 			route.fulfill({
 				status: 200,
 				contentType: "application/json",

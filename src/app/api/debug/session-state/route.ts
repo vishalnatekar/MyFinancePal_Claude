@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 		const authCookies = {};
 		cookieStore.getAll().forEach((cookie) => {
 			if (cookie.name.includes("supabase") || cookie.name.includes("auth")) {
-				authCookies[cookie.name] = cookie.value.substring(0, 50) + "..."; // Truncate for security
+				authCookies[cookie.name] = `${cookie.value.substring(0, 50)}...`; // Truncate for security
 			}
 		});
 

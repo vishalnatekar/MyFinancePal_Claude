@@ -388,8 +388,7 @@ export async function generateWeeklySummary(
 			if (!financialAccount) continue;
 
 			const userId = financialAccount.user_id;
-			const userName =
-				financialAccount.profiles?.full_name || "Unknown";
+			const userName = financialAccount.profiles?.full_name || "Unknown";
 			const amount = Math.abs(Number(tx.amount));
 
 			if (memberContributionsMap.has(userId)) {
@@ -405,13 +404,13 @@ export async function generateWeeklySummary(
 			}
 		}
 
-		const memberContributions = Array.from(
-			memberContributionsMap.values(),
-		).map((contrib) => ({
-			member_name: contrib.name,
-			amount: contrib.amount,
-			transaction_count: contrib.count,
-		}));
+		const memberContributions = Array.from(memberContributionsMap.values()).map(
+			(contrib) => ({
+				member_name: contrib.name,
+				amount: contrib.amount,
+				transaction_count: contrib.count,
+			}),
+		);
 
 		// Calculate top categories
 		const categoryMap = new Map<string, number>();

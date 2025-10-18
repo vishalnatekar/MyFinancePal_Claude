@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
 import { HouseholdNetWorthCard } from "@/components/household/HouseholdNetWorthCard";
 import type { SharedAccountWithOwner } from "@/types/household";
+import { render, screen } from "@testing-library/react";
 
 describe("HouseholdNetWorthCard", () => {
 	const mockAccounts: SharedAccountWithOwner[] = [

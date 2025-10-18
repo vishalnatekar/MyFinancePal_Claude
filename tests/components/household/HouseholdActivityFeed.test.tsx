@@ -1,6 +1,6 @@
-import { render, screen, fireEvent } from "@testing-library/react";
 import { HouseholdActivityFeed } from "@/components/household/HouseholdActivityFeed";
 import type { HouseholdActivityEvent } from "@/types/household";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 describe("HouseholdActivityFeed", () => {
 	const mockActivities: HouseholdActivityEvent[] = [
@@ -48,9 +48,13 @@ describe("HouseholdActivityFeed", () => {
 		expect(
 			screen.getByText("John Doe joined the household"),
 		).toBeInTheDocument();
-		expect(screen.getByText(/Jane Doe shared £50.00 at Tesco/)).toBeInTheDocument();
 		expect(
-			screen.getByText(/Bob Smith shared large expense: £500.00 at Apple Store/),
+			screen.getByText(/Jane Doe shared £50.00 at Tesco/),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				/Bob Smith shared large expense: £500.00 at Apple Store/,
+			),
 		).toBeInTheDocument();
 	});
 
@@ -73,7 +77,9 @@ describe("HouseholdActivityFeed", () => {
 		);
 
 		// Check for different activity type indicators (icons or badges)
-		expect(container.querySelectorAll('[class*="activity"]').length).toBeGreaterThan(0);
+		expect(
+			container.querySelectorAll('[class*="activity"]').length,
+		).toBeGreaterThan(0);
 	});
 
 	it("should display relative timestamps", () => {

@@ -185,9 +185,8 @@ test.describe("Google OAuth Authentication Flow", () => {
 							},
 							error: null,
 						});
-					} else {
-						return Promise.resolve({ data: { user: null }, error: null });
 					}
+					return Promise.resolve({ data: { user: null }, error: null });
 				});
 
 			(window as any).mockSupabaseClient.auth.signOut = jest

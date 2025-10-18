@@ -220,7 +220,7 @@ export class DataExportService {
 		}
 
 		lines.push("");
-		lines.push(`# Export Information`);
+		lines.push("# Export Information");
 		lines.push(`Exported At,${data.exportedAt}`);
 		lines.push(`Date Range,${data.dateRange.from} to ${data.dateRange.to}`);
 

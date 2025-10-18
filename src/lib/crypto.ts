@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 const ALGORITHM = "aes-256-gcm";
 const KEY_LENGTH = 32;
@@ -24,7 +24,7 @@ export class CryptoService {
 	private static encryptionKey: Buffer | null = null;
 
 	private static getEncryptionKey(): Buffer {
-		if (!this.encryptionKey) {
+		if (!CryptoService.encryptionKey) {
 			const keyString = process.env.ENCRYPTION_KEY;
 			if (!keyString) {
 				throw new Error("ENCRYPTION_KEY environment variable is required");
@@ -32,7 +32,7 @@ export class CryptoService {
 
 			// Derive key from environment variable using PBKDF2 with environment-specific salt
 			const salt = crypto.createHash("sha256").update(SALT).digest();
-			this.encryptionKey = crypto.pbkdf2Sync(
+			CryptoService.encryptionKey = crypto.pbkdf2Sync(
 				keyString,
 				salt,
 				100000,
@@ -40,7 +40,7 @@ export class CryptoService {
 				"sha256",
 			);
 		}
-		return this.encryptionKey;
+		return CryptoService.encryptionKey;
 	}
 
 	/**
@@ -51,7 +51,7 @@ export class CryptoService {
 	 */
 	static encrypt(data: string): string {
 		try {
-			const key = this.getEncryptionKey();
+			const key = CryptoService.getEncryptionKey();
 			const iv = crypto.randomBytes(IV_LENGTH);
 
 			// Use proper GCM mode with explicit IV
@@ -79,7 +79,7 @@ export class CryptoService {
 	 */
 	static decrypt(encryptedData: string): string {
 		try {
-			const key = this.getEncryptionKey();
+			const key = CryptoService.getEncryptionKey();
 			const combined = Buffer.from(encryptedData, "base64");
 
 			// Extract components: IV (16) + Auth Tag (16) + Encrypted Data

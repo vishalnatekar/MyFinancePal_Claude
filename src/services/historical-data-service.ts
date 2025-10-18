@@ -192,7 +192,8 @@ export class HistoricalDataService {
 		currentBalance: number,
 		threshold = 0.01,
 	): Promise<boolean> {
-		const latest = await this.getLatestBalanceSnapshot(accountId);
+		const latest =
+			await HistoricalDataService.getLatestBalanceSnapshot(accountId);
 
 		if (!latest) {
 			return true; // No history, consider it changed
@@ -216,7 +217,7 @@ export class HistoricalDataService {
 		currency: string,
 		threshold = 0.01,
 	): Promise<BalanceHistoryEntry | null> {
-		const hasChanged = await this.hasBalanceChanged(
+		const hasChanged = await HistoricalDataService.hasBalanceChanged(
 			accountId,
 			balance,
 			threshold,
@@ -226,7 +227,11 @@ export class HistoricalDataService {
 			return null;
 		}
 
-		return await this.recordBalanceSnapshot(accountId, balance, currency);
+		return await HistoricalDataService.recordBalanceSnapshot(
+			accountId,
+			balance,
+			currency,
+		);
 	}
 
 	/**
@@ -241,7 +246,7 @@ export class HistoricalDataService {
 		startDate: Date,
 		endDate: Date,
 	): Promise<number> {
-		const history = await this.getBalanceHistory({
+		const history = await HistoricalDataService.getBalanceHistory({
 			accountId,
 			startDate,
 			endDate,
@@ -271,7 +276,7 @@ export class HistoricalDataService {
 		const startDate = new Date();
 		startDate.setDate(startDate.getDate() - days);
 
-		const history = await this.getBalanceHistory({
+		const history = await HistoricalDataService.getBalanceHistory({
 			accountId,
 			startDate,
 		});
@@ -348,11 +353,13 @@ export class HistoricalDataService {
 
 		// Include balance history if requested
 		if (options.includeBalanceHistory !== false) {
-			exportData.balanceHistory = await this.getBalanceHistory({
-				accountId,
-				startDate: options.startDate,
-				endDate: options.endDate,
-			});
+			exportData.balanceHistory = await HistoricalDataService.getBalanceHistory(
+				{
+					accountId,
+					startDate: options.startDate,
+					endDate: options.endDate,
+				},
+			);
 		}
 
 		// Include transactions if requested
@@ -372,7 +379,7 @@ export class HistoricalDataService {
 		}
 
 		// CSV format
-		return this.convertToCSV(exportData);
+		return HistoricalDataService.convertToCSV(exportData);
 	}
 
 	/**
@@ -425,7 +432,7 @@ export class HistoricalDataService {
 		const startDate = new Date();
 		startDate.setDate(startDate.getDate() - days);
 
-		const history = await this.getBalanceHistory({
+		const history = await HistoricalDataService.getBalanceHistory({
 			accountId,
 			startDate,
 		});

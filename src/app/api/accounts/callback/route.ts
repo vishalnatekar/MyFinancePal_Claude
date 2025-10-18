@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
 			hasCode: !!code,
 			hasState: !!state,
 			hasError: !!error,
-			codePreview: code?.substring(0, 10) + "...",
-			statePreview: state?.substring(0, 10) + "...",
+			codePreview: `${code?.substring(0, 10)}...`,
+			statePreview: `${state?.substring(0, 10)}...`,
 		});
 
 		// Handle OAuth errors
@@ -58,13 +58,13 @@ export async function GET(request: NextRequest) {
 		// Validate state (CSRF protection) using secure state manager
 		console.log(
 			"Validating OAuth state token:",
-			state?.substring(0, 10) + "...",
+			`${state?.substring(0, 10)}...`,
 		);
 		const stateData = await oauthStateManager.validateAndConsumeState(state);
 		if (!stateData) {
 			console.error(
 				"Invalid or expired state token:",
-				state?.substring(0, 10) + "...",
+				`${state?.substring(0, 10)}...`,
 			);
 			console.error("This could mean:");
 			console.error("1. State expired (>10 minutes since connection started)");
@@ -253,14 +253,23 @@ export async function GET(request: NextRequest) {
 					const accountsForSnapshot = createdAccounts.map((account) => ({
 						...account,
 						truelayer_account_id: account.truelayer_account_id ?? undefined,
-						truelayer_connection_id: account.truelayer_connection_id ?? undefined,
+						truelayer_connection_id:
+							account.truelayer_connection_id ?? undefined,
 						currency: account.currency ?? undefined,
 						last_synced: account.last_synced ?? undefined,
-						connection_status: account.connection_status as "active" | "expired" | "failed" | undefined,
+						connection_status: account.connection_status as
+							| "active"
+							| "expired"
+							| "failed"
+							| undefined,
 						encrypted_access_token: account.encrypted_access_token ?? undefined,
 						created_at: account.created_at ?? undefined,
 						updated_at: account.updated_at ?? undefined,
-						account_type: account.account_type as "checking" | "savings" | "investment" | "credit",
+						account_type: account.account_type as
+							| "checking"
+							| "savings"
+							| "investment"
+							| "credit",
 					}));
 					await HistoricalDataService.recordBalanceSnapshotBatch(
 						accountsForSnapshot,

@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
 import { MemberContributionSummary } from "@/components/household/MemberContributionSummary";
 import type { HouseholdMemberWithStats } from "@/types/household";
+import { render, screen } from "@testing-library/react";
 
 describe("MemberContributionSummary", () => {
 	const mockMembers: HouseholdMemberWithStats[] = [

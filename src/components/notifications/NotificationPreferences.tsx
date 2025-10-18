@@ -1,7 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
@@ -18,7 +24,8 @@ export function NotificationPreferences({
 	householdId,
 	userId,
 }: NotificationPreferencesProps) {
-	const [preferences, setPreferences] = useState<NotificationPreferencesType | null>(null);
+	const [preferences, setPreferences] =
+		useState<NotificationPreferencesType | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -36,7 +43,9 @@ export function NotificationPreferences({
 			setLoading(true);
 			setError(null);
 
-			const response = await fetch(`/api/notifications/preferences/${householdId}`);
+			const response = await fetch(
+				`/api/notifications/preferences/${householdId}`,
+			);
 
 			if (!response.ok) {
 				throw new Error("Failed to fetch notification preferences");
@@ -46,13 +55,17 @@ export function NotificationPreferences({
 			setPreferences(data);
 		} catch (err) {
 			console.error("Error fetching preferences:", err);
-			setError(err instanceof Error ? err.message : "Failed to load preferences");
+			setError(
+				err instanceof Error ? err.message : "Failed to load preferences",
+			);
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	const updatePreferences = async (updates: Partial<NotificationPreferencesType>) => {
+	const updatePreferences = async (
+		updates: Partial<NotificationPreferencesType>,
+	) => {
 		if (!preferences) return;
 
 		const updatedPreferences = { ...preferences, ...updates };
@@ -63,11 +76,14 @@ export function NotificationPreferences({
 			setError(null);
 			setSuccessMessage(null);
 
-			const response = await fetch(`/api/notifications/preferences/${householdId}`, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(updatedPreferences),
-			});
+			const response = await fetch(
+				`/api/notifications/preferences/${householdId}`,
+				{
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(updatedPreferences),
+				},
+			);
 
 			if (!response.ok) {
 				throw new Error("Failed to save notification preferences");
@@ -77,7 +93,9 @@ export function NotificationPreferences({
 			setTimeout(() => setSuccessMessage(null), 3000);
 		} catch (err) {
 			console.error("Error saving preferences:", err);
-			setError(err instanceof Error ? err.message : "Failed to save preferences");
+			setError(
+				err instanceof Error ? err.message : "Failed to save preferences",
+			);
 			// Revert changes on error
 			fetchPreferences();
 		} finally {
@@ -94,9 +112,7 @@ export function NotificationPreferences({
 			<Card>
 				<CardHeader>
 					<CardTitle>Notification Preferences</CardTitle>
-					<CardDescription>
-						Loading preferences...
-					</CardDescription>
+					<CardDescription>Loading preferences...</CardDescription>
 				</CardHeader>
 			</Card>
 		);
@@ -157,7 +173,10 @@ export function NotificationPreferences({
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
 						<div className="space-y-0.5">
-							<Label htmlFor="email-notifications" className="text-base flex items-center gap-2">
+							<Label
+								htmlFor="email-notifications"
+								className="text-base flex items-center gap-2"
+							>
 								<Mail className="w-4 h-4" />
 								Email Notifications
 							</Label>
@@ -184,7 +203,8 @@ export function NotificationPreferences({
 							Large Transaction Alert Threshold
 						</Label>
 						<p className="text-sm text-muted-foreground">
-							Get notified when a shared transaction exceeds this amount (£{preferences.large_transaction_threshold})
+							Get notified when a shared transaction exceeds this amount (£
+							{preferences.large_transaction_threshold})
 						</p>
 						<div className="flex items-center gap-4 pt-2">
 							<input
@@ -229,9 +249,7 @@ export function NotificationPreferences({
 				</div>
 
 				{saving && (
-					<div className="text-sm text-muted-foreground">
-						Saving...
-					</div>
+					<div className="text-sm text-muted-foreground">Saving...</div>
 				)}
 			</CardContent>
 		</Card>

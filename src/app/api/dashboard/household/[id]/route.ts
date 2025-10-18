@@ -122,7 +122,8 @@ export const GET = withHouseholdAuth(
 								id: userId,
 								email: userData.user.email!,
 								full_name:
-									userData.user.user_metadata?.full_name || userData.user.email!,
+									userData.user.user_metadata?.full_name ||
+									userData.user.email!,
 								avatar_url: userData.user.user_metadata?.avatar_url,
 							};
 						}
@@ -166,7 +167,12 @@ export const GET = withHouseholdAuth(
 				sharedAccounts.map((account) => ({
 					id: account.id,
 					account_name: account.account_name,
-					account_type: account.account_type as "checking" | "savings" | "investment" | "credit" | "loan",
+					account_type: account.account_type as
+						| "checking"
+						| "savings"
+						| "investment"
+						| "credit"
+						| "loan",
 					institution_name: account.institution_name,
 					current_balance: account.current_balance || 0,
 					currency: account.currency || "GBP",

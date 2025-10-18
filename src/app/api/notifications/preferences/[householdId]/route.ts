@@ -62,7 +62,10 @@ export const GET = withAuth(
 			}
 
 			// Get or create notification preferences
-			const preferences = await getNotificationPreferences(user.id, householdId);
+			const preferences = await getNotificationPreferences(
+				user.id,
+				householdId,
+			);
 
 			if (!preferences) {
 				return NextResponse.json(
@@ -168,14 +171,11 @@ export const PUT = withAuth(
 					.insert({
 						user_id: user.id,
 						household_id: householdId,
-						email_notifications:
-							validatedData.email_notifications ?? true,
-						in_app_notifications:
-							validatedData.in_app_notifications ?? true,
+						email_notifications: validatedData.email_notifications ?? true,
+						in_app_notifications: validatedData.in_app_notifications ?? true,
 						large_transaction_threshold:
 							validatedData.large_transaction_threshold ?? 100.0,
-						weekly_digest_enabled:
-							validatedData.weekly_digest_enabled ?? true,
+						weekly_digest_enabled: validatedData.weekly_digest_enabled ?? true,
 					})
 					.select()
 					.single();

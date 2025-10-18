@@ -137,7 +137,7 @@ export class AuthService {
 			};
 
 			// Create or update user profile
-			return await this.upsertUserProfile(user.id, profileData);
+			return await AuthService.upsertUserProfile(user.id, profileData);
 		} catch (error) {
 			console.error("OAuth callback handling error:", error);
 			return {

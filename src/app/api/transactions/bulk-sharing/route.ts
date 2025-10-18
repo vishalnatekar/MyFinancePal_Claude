@@ -194,7 +194,10 @@ export async function POST(request: Request) {
 						.single();
 
 					const actorName = userProfile?.full_name || "A member";
-					const recipients = await getHouseholdRecipients(household_id, user.id);
+					const recipients = await getHouseholdRecipients(
+						household_id,
+						user.id,
+					);
 
 					if (recipients.length > 0) {
 						// For single transaction, include individual details
@@ -205,13 +208,13 @@ export async function POST(request: Request) {
 										amount: Math.abs(Number(transactions[0].amount)),
 										merchant_name: transactions[0].merchant_name || undefined,
 										member_name: actorName,
-								  }
+									}
 								: {
 										transaction_ids: successfulIds,
 										count: successCount,
 										total_amount: totalAmount,
 										member_name: actorName,
-								  };
+									};
 
 						await createNotification(
 							"transaction_shared",

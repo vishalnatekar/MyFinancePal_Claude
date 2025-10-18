@@ -1,7 +1,7 @@
-import { createMocks } from "node-mocks-http";
 import { GET } from "@/app/api/dashboard/household/[id]/route";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import { createMocks } from "node-mocks-http";
 
 // Mock Supabase
 jest.mock("@/lib/supabase", () => ({
@@ -133,7 +133,9 @@ describe("GET /api/dashboard/household/[id]", () => {
 		(supabaseAdmin.from as jest.Mock).mockReturnValueOnce({
 			select: jest.fn().mockReturnThis(),
 			eq: jest.fn().mockReturnThis(),
-			single: jest.fn().mockResolvedValue({ data: null, error: { message: "Not found" } }),
+			single: jest
+				.fn()
+				.mockResolvedValue({ data: null, error: { message: "Not found" } }),
 		});
 
 		const response = await GET(req as any, mockUser, "non-existent-id");
@@ -159,7 +161,10 @@ describe("GET /api/dashboard/household/[id]", () => {
 		(supabaseAdmin.from as jest.Mock).mockReturnValueOnce({
 			select: jest.fn().mockReturnThis(),
 			eq: jest.fn().mockReturnThis(),
-			mockResolvedValue: jest.fn().mockResolvedValue({ data: null, error: { message: "Database error" } }),
+			mockResolvedValue: jest.fn().mockResolvedValue({
+				data: null,
+				error: { message: "Database error" },
+			}),
 		});
 
 		const response = await GET(req as any, mockUser, "household-1");
@@ -187,7 +192,9 @@ describe("GET /api/dashboard/household/[id]", () => {
 		fromMock.mockReturnValueOnce({
 			select: jest.fn().mockReturnThis(),
 			eq: jest.fn().mockReturnThis(),
-			mockResolvedValue: jest.fn().mockResolvedValue({ data: mockMembers, error: null }),
+			mockResolvedValue: jest
+				.fn()
+				.mockResolvedValue({ data: mockMembers, error: null }),
 		});
 
 		// 3. Profiles query
@@ -207,7 +214,9 @@ describe("GET /api/dashboard/household/[id]", () => {
 			select: jest.fn().mockReturnThis(),
 			in: jest.fn().mockReturnThis(),
 			order: jest.fn().mockReturnThis(),
-			limit: jest.fn().mockResolvedValue({ data: mockTransactions, error: null }),
+			limit: jest
+				.fn()
+				.mockResolvedValue({ data: mockTransactions, error: null }),
 		});
 
 		const response = await GET(req as any, mockUser, "household-1");
@@ -252,7 +261,9 @@ describe("GET /api/dashboard/household/[id]", () => {
 			select: jest.fn().mockReturnThis(),
 			in: jest.fn().mockReturnThis(),
 			order: jest.fn().mockReturnThis(),
-			limit: jest.fn().mockResolvedValue({ data: mockTransactions, error: null }),
+			limit: jest
+				.fn()
+				.mockResolvedValue({ data: mockTransactions, error: null }),
 		});
 
 		const response = await GET(req as any, mockUser, "household-1");
@@ -294,7 +305,9 @@ describe("GET /api/dashboard/household/[id]", () => {
 			select: jest.fn().mockReturnThis(),
 			in: jest.fn().mockReturnThis(),
 			order: jest.fn().mockReturnThis(),
-			limit: jest.fn().mockResolvedValue({ data: mockTransactions, error: null }),
+			limit: jest
+				.fn()
+				.mockResolvedValue({ data: mockTransactions, error: null }),
 		});
 
 		const response = await GET(req as any, mockUser, "household-1");
@@ -339,7 +352,9 @@ describe("GET /api/dashboard/household/[id]", () => {
 			select: jest.fn().mockReturnThis(),
 			in: jest.fn().mockReturnThis(),
 			order: jest.fn().mockReturnThis(),
-			limit: jest.fn().mockResolvedValue({ data: mockTransactions, error: null }),
+			limit: jest
+				.fn()
+				.mockResolvedValue({ data: mockTransactions, error: null }),
 		});
 
 		const response = await GET(req as any, mockUser, "household-1");

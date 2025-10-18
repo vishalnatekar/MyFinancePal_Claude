@@ -65,9 +65,12 @@ export function useNotifications(
 	// Mark a single notification as read
 	const markAsRead = useCallback(async (notificationId: string) => {
 		try {
-			const response = await fetch(`/api/notifications/${notificationId}/read`, {
-				method: "PUT",
-			});
+			const response = await fetch(
+				`/api/notifications/${notificationId}/read`,
+				{
+					method: "PUT",
+				},
+			);
 
 			if (!response.ok) {
 				throw new Error("Failed to mark notification as read");
@@ -93,9 +96,10 @@ export function useNotifications(
 	const markAllAsRead = useCallback(
 		async (filterHouseholdId?: string) => {
 			try {
-				const body = filterHouseholdId || householdId
-					? { household_id: filterHouseholdId || householdId }
-					: {};
+				const body =
+					filterHouseholdId || householdId
+						? { household_id: filterHouseholdId || householdId }
+						: {};
 
 				const response = await fetch("/api/notifications/mark-all-read", {
 					method: "POST",
@@ -167,10 +171,7 @@ export function useNotifications(
 					};
 
 					// If householdId filter is active, only add notifications for that household
-					if (
-						householdId &&
-						newRecord.household_id !== householdId
-					) {
+					if (householdId && newRecord.household_id !== householdId) {
 						// Still increment unread count but don't add to list
 						setUnreadCount((prev) => prev + 1);
 						return;

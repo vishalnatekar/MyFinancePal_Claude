@@ -139,7 +139,9 @@ export async function PUT(
 		// Fetch updated transaction to get details for notification
 		const { data: updatedTransaction, error: refetchError } = await supabase
 			.from("transactions")
-			.select("*, financial_accounts!inner(user_id), users!transactions_user_id_fkey(full_name)")
+			.select(
+				"*, financial_accounts!inner(user_id), users!transactions_user_id_fkey(full_name)",
+			)
 			.eq("id", transactionId)
 			.single();
 
@@ -155,7 +157,9 @@ export async function PUT(
 		if (is_shared && household_id && updatedTransaction) {
 			try {
 				const recipients = await getHouseholdRecipients(household_id, user.id);
-				const actorName = (updatedTransaction.users as { full_name: string } | null)?.full_name || "A member";
+				const actorName =
+					(updatedTransaction.users as { full_name: string } | null)
+						?.full_name || "A member";
 
 				if (recipients.length > 0) {
 					await createNotification(
@@ -168,7 +172,7 @@ export async function PUT(
 							amount: Math.abs(Number(updatedTransaction.amount)),
 							merchant_name: updatedTransaction.merchant_name || "Unknown",
 							member_name: actorName,
-						}
+						},
 					);
 				}
 			} catch (notifError) {

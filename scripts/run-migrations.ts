@@ -38,7 +38,7 @@ async function runMigration(filePath: string, name: string) {
 
 		if (error) {
 			// If exec_sql function doesn't exist, we need to use a different approach
-			console.log(`⚠️  exec_sql not available, trying direct execution...`);
+			console.log("⚠️  exec_sql not available, trying direct execution...");
 
 			// Split by semicolons and execute each statement
 			const statements = sql
@@ -52,7 +52,7 @@ async function runMigration(filePath: string, name: string) {
 				});
 
 				if (stmtError) {
-					console.error(`❌ Error in statement:`, stmtError);
+					console.error("❌ Error in statement:", stmtError);
 					throw stmtError;
 				}
 			}

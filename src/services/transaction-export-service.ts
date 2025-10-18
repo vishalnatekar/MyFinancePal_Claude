@@ -28,10 +28,10 @@ export class TransactionExportService {
 		// Create CSV rows
 		const rows = transactions.map((tx) => [
 			format(new Date(tx.date), "yyyy-MM-dd"),
-			this.escapeCSVField(tx.merchant_name || ""),
+			TransactionExportService.escapeCSVField(tx.merchant_name || ""),
 			tx.amount.toFixed(2),
 			tx.category,
-			this.escapeCSVField(tx.description || ""),
+			TransactionExportService.escapeCSVField(tx.description || ""),
 			tx.account_id,
 			tx.id,
 			tx.manual_override ? "Yes" : "No",
@@ -104,9 +104,10 @@ export class TransactionExportService {
 			throw new Error("No transactions to export");
 		}
 
-		const csvContent = this.generateCSV(transactions);
-		const exportFilename = filename || this.generateFilename();
+		const csvContent = TransactionExportService.generateCSV(transactions);
+		const exportFilename =
+			filename || TransactionExportService.generateFilename();
 
-		this.downloadCSV(csvContent, exportFilename);
+		TransactionExportService.downloadCSV(csvContent, exportFilename);
 	}
 }

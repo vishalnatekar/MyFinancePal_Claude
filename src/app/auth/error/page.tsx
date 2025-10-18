@@ -105,7 +105,7 @@ export default function AuthErrorPage() {
 						<h1 className="text-3xl font-bold tracking-tight mb-4">
 							MyFinancePal
 						</h1>
-						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
 					</div>
 				</div>
 			}

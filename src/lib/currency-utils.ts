@@ -25,7 +25,7 @@ export function formatCurrency(
 	} = options || {};
 
 	// Default to GBP if currency is undefined/null/empty
-	const safeCurrency = currency && currency.trim() ? currency : "GBP";
+	const safeCurrency = currency?.trim() ? currency : "GBP";
 
 	const formatted = new Intl.NumberFormat(locale, {
 		style: showSymbol ? "currency" : "decimal",

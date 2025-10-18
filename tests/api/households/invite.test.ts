@@ -50,7 +50,7 @@ describe("Household Invitation API Endpoints", () => {
 			.select()
 			.single();
 
-		householdId = household!.id;
+		householdId = household?.id;
 
 		// Add user as creator
 		await supabaseAdmin.from("household_members").insert({
@@ -250,7 +250,7 @@ describe("Household Invitation API Endpoints", () => {
 			const decliningAuthToken = sessionData?.properties.access_token || "";
 
 			const response = await fetch(
-				`http://localhost:3000/api/households/invite/${newInvitation!.token}/decline`,
+				`http://localhost:3000/api/households/invite/${newInvitation?.token}/decline`,
 				{
 					method: "POST",
 					headers: {
@@ -265,7 +265,7 @@ describe("Household Invitation API Endpoints", () => {
 			const { data: updatedInvitation } = await supabaseAdmin
 				.from("household_invitations")
 				.select("status")
-				.eq("id", newInvitation!.id)
+				.eq("id", newInvitation?.id)
 				.single();
 
 			expect(updatedInvitation?.status).toBe("declined");

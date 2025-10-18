@@ -16,7 +16,7 @@
  *   - Rolls back on any errors
  */
 
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
 // OLD INSECURE METHOD (for decryption only)
@@ -24,7 +24,7 @@ class LegacyCryptoService {
 	private static encryptionKey: Buffer | null = null;
 
 	private static getEncryptionKey(): Buffer {
-		if (!this.encryptionKey) {
+		if (!LegacyCryptoService.encryptionKey) {
 			const keyString = process.env.ENCRYPTION_KEY;
 			if (!keyString) {
 				throw new Error("ENCRYPTION_KEY environment variable is required");
@@ -34,7 +34,7 @@ class LegacyCryptoService {
 				.createHash("sha256")
 				.update("myfpencryption")
 				.digest();
-			this.encryptionKey = crypto.pbkdf2Sync(
+			LegacyCryptoService.encryptionKey = crypto.pbkdf2Sync(
 				keyString,
 				salt,
 				100000,
@@ -42,13 +42,13 @@ class LegacyCryptoService {
 				"sha256",
 			);
 		}
-		return this.encryptionKey;
+		return LegacyCryptoService.encryptionKey;
 	}
 
 	// OLD insecure decrypt method (deprecated createCipher format)
 	static decrypt(encryptedData: string): string {
 		try {
-			const key = this.getEncryptionKey();
+			const key = LegacyCryptoService.getEncryptionKey();
 			const combined = Buffer.from(encryptedData, "base64");
 
 			// Old format: IV (16) + Encrypted Data (no auth tag)
@@ -62,7 +62,7 @@ class LegacyCryptoService {
 
 			return decrypted.toString("utf8");
 		} catch (error) {
-			throw new Error("Failed to decrypt with legacy method: " + error);
+			throw new Error(`Failed to decrypt with legacy method: ${error}`);
 		}
 	}
 }
@@ -72,7 +72,7 @@ class NewCryptoService {
 	private static encryptionKey: Buffer | null = null;
 
 	private static getEncryptionKey(): Buffer {
-		if (!this.encryptionKey) {
+		if (!NewCryptoService.encryptionKey) {
 			const keyString = process.env.ENCRYPTION_KEY;
 			if (!keyString) {
 				throw new Error("ENCRYPTION_KEY environment variable is required");
@@ -83,7 +83,7 @@ class NewCryptoService {
 				process.env.ENCRYPTION_KEY ||
 				"default-fallback-salt-CHANGE-IN-PROD";
 			const salt = crypto.createHash("sha256").update(SALT).digest();
-			this.encryptionKey = crypto.pbkdf2Sync(
+			NewCryptoService.encryptionKey = crypto.pbkdf2Sync(
 				keyString,
 				salt,
 				100000,
@@ -91,13 +91,13 @@ class NewCryptoService {
 				"sha256",
 			);
 		}
-		return this.encryptionKey;
+		return NewCryptoService.encryptionKey;
 	}
 
 	// NEW secure encrypt method with GCM auth tag
 	static encrypt(data: string): string {
 		try {
-			const key = this.getEncryptionKey();
+			const key = NewCryptoService.getEncryptionKey();
 			const iv = crypto.randomBytes(16);
 
 			const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
@@ -110,7 +110,7 @@ class NewCryptoService {
 			const combined = Buffer.concat([iv, authTag, encrypted]);
 			return combined.toString("base64");
 		} catch (error) {
-			throw new Error("Failed to encrypt with new method: " + error);
+			throw new Error(`Failed to encrypt with new method: ${error}`);
 		}
 	}
 }

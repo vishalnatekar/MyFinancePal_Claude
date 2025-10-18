@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("Household Dashboard", () => {
 	test.beforeEach(async ({ page }) => {
@@ -42,9 +42,9 @@ test.describe("Household Dashboard", () => {
 		await page.goto("/household/test-household-id");
 
 		// Check for member contribution section
-		const contributionSection = page.locator(
-			'text="Member Contributions"',
-		).locator("..");
+		const contributionSection = page
+			.locator('text="Member Contributions"')
+			.locator("..");
 
 		// Should show member names and amounts
 		await expect(contributionSection).toBeVisible();
@@ -121,9 +121,7 @@ test.describe("Household Dashboard", () => {
 			await syncButton.click();
 
 			// Should show loading state or success message
-			await expect(
-				page.getByText(/Syncing|Success|Synced/i),
-			).toBeVisible({
+			await expect(page.getByText(/Syncing|Success|Synced/i)).toBeVisible({
 				timeout: 10000,
 			});
 		}
@@ -226,7 +224,7 @@ test.describe("Household Dashboard", () => {
 
 		// Look for transaction items in activity feed
 		const activityFeed = page.locator('text="Activity Feed"').locator("..");
-		const transactionItems = activityFeed.locator('text=/£\\d+/');
+		const transactionItems = activityFeed.locator("text=/£\\d+/");
 
 		if ((await transactionItems.count()) > 0) {
 			// Should show amount and merchant

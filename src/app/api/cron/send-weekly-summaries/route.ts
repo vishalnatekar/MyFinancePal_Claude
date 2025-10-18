@@ -139,9 +139,7 @@ export async function POST(request: NextRequest) {
 						!prefsError && prefs ? prefs.weekly_digest_enabled : true;
 
 					if (!weeklyDigestEnabled) {
-						console.log(
-							`Skipping ${user.email} - weekly digest disabled`,
-						);
+						console.log(`Skipping ${user.email} - weekly digest disabled`);
 						continue;
 					}
 
@@ -173,11 +171,13 @@ export async function POST(request: NextRequest) {
 						weekEnd: endDate,
 						totalSpending: summary.total_shared_spending,
 						transactionCount: summary.transaction_count,
-						memberContributions: summary.member_contributions.map((contrib) => ({
-							name: contrib.member_name,
-							amount: contrib.amount,
-							count: contrib.transaction_count,
-						})),
+						memberContributions: summary.member_contributions.map(
+							(contrib) => ({
+								name: contrib.member_name,
+								amount: contrib.amount,
+								count: contrib.transaction_count,
+							}),
+						),
 						topCategories: summary.top_categories,
 					});
 
@@ -198,10 +198,7 @@ export async function POST(request: NextRequest) {
 					await new Promise((resolve) => setTimeout(resolve, 100));
 				}
 			} catch (error) {
-				console.error(
-					`Error processing household ${household.id}:`,
-					error,
-				);
+				console.error(`Error processing household ${household.id}:`, error);
 				failCount++;
 			}
 

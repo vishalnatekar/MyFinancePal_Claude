@@ -67,10 +67,7 @@ export function NotificationList({
 				</>
 			)}
 
-			<div
-				className="overflow-y-auto"
-				style={{ maxHeight }}
-			>
+			<div className="overflow-y-auto" style={{ maxHeight }}>
 				<div className="flex flex-col">
 					{notifications.map((notification, index) => (
 						<div key={notification.id}>
