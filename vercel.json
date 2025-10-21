@@ -7,10 +7,6 @@
 		{
 			"path": "/api/cron/sync-accounts",
 			"schedule": "0 3 * * *"
-		},
-		{
-			"path": "/api/cron/send-weekly-summaries",
-			"schedule": "0 18 * * 0"
 		}
 	]
 }
