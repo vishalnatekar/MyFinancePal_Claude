@@ -1,13 +1,4 @@
 {
-	"framework": "nextjs",
-	"functions": {
-		"src/app/api/**/*.ts": {
-			"runtime": "nodejs20.x"
-		},
-		"src/app/api/accounts/sync-all/route.ts": {
-			"maxDuration": 300
-		}
-	},
 	"crons": [
 		{
 			"path": "/api/cron/cleanup-oauth-states",
@@ -21,6 +12,5 @@
 			"path": "/api/cron/send-weekly-summaries",
 			"schedule": "0 18 * * 0"
 		}
-	],
-	"regions": ["iad1"]
+	]
 }
