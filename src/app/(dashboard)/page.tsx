@@ -37,11 +37,13 @@ export default function DashboardPage() {
 	const hasAccounts = accounts.length > 0;
 
 	const handleAddAccount = () => {
-		router.push("/accounts?action=connect");
+		// Navigate to accounts page where they can use the Add Account button
+		router.push("/accounts");
 	};
 
 	const handleReconnect = (accountId: string) => {
-		router.push(`/accounts/${accountId}/reconnect`);
+		// Navigate to accounts page - user can reconnect from there
+		router.push("/accounts");
 	};
 
 	return (
