@@ -87,7 +87,7 @@ export class HouseholdService {
 		}
 	}
 
-	// Leave a household
+	// Leave a household (self-removal)
 	static async leaveHousehold(
 		householdId: string,
 		userId: string,
@@ -102,6 +102,24 @@ export class HouseholdService {
 		if (!response.ok) {
 			const errorData = await response.json();
 			throw new Error(errorData.error || "Failed to leave household");
+		}
+	}
+
+	// Remove a member from household (creator action)
+	static async removeMember(
+		householdId: string,
+		userId: string,
+	): Promise<void> {
+		const response = await fetch(
+			`/api/households/${householdId}/members/${userId}`,
+			{
+				method: "DELETE",
+			},
+		);
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || "Failed to remove member");
 		}
 	}
 

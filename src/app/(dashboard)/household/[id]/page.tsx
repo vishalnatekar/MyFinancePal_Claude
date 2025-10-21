@@ -82,6 +82,10 @@ export default function HouseholdDetailPage({
 	const { household, members, recent_shared_transactions, activity_feed } =
 		dashboard;
 
+	// Determine if current user is the household creator
+	const currentUserMember = members.find((m) => m.user_id === currentUserId);
+	const isCurrentUserCreator = currentUserMember?.role === "creator";
+
 	return (
 		<div className="space-y-4 md:space-y-6">
 			{/* Header - responsive */}
@@ -165,6 +169,9 @@ export default function HouseholdDetailPage({
 									},
 								}))}
 								currentUserId={currentUserId || undefined}
+								householdId={params.id}
+								isCurrentUserCreator={isCurrentUserCreator}
+								onMemberRemoved={refetchDashboard}
 							/>
 							<PendingInvitations householdId={params.id} />
 						</div>
@@ -203,6 +210,9 @@ export default function HouseholdDetailPage({
 							},
 						}))}
 						currentUserId={currentUserId || undefined}
+						householdId={params.id}
+						isCurrentUserCreator={isCurrentUserCreator}
+						onMemberRemoved={refetchDashboard}
 					/>
 
 					<PendingInvitations householdId={params.id} />

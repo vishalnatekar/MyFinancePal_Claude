@@ -16,42 +16,82 @@ export const DELETE = withHouseholdAuth(
 		request: NextRequest,
 		user: User,
 		householdId: string,
-		{ params }: RouteParams,
+		context?: RouteParams,
 	) => {
 		try {
-			const { userId } = params;
-
-			// Rate limiting check for leave operations
-			if (!checkRateLimit(`leave_household_${user.id}`, 5, 300000)) {
-				// 5 leave operations per 5 minutes
-				return createAuthErrorResponse("Too many leave requests", 429);
-			}
-
-			// Only the user themselves can leave (unless we add admin kick functionality later)
-			if (userId !== user.id) {
+			if (!context?.params) {
 				return NextResponse.json(
-					{ error: "You can only remove yourself from households" },
-					{ status: 403 },
+					{ error: "Invalid request parameters" },
+					{ status: 400 },
 				);
 			}
+			const { userId } = context.params;
 
-			// Check if user is a member of this household
-			const { data: membership, error: membershipError } = await supabaseAdmin
-				.from("household_members")
-				.select("role")
-				.eq("household_id", householdId)
-				.eq("user_id", userId)
-				.single();
+			// Rate limiting check for member removal operations
+			if (!checkRateLimit(`remove_member_${user.id}`, 5, 300000)) {
+				// 5 removal operations per 5 minutes
+				return createAuthErrorResponse("Too many removal requests", 429);
+			}
 
-			if (membershipError || !membership) {
+			// Check the requesting user's membership and role
+			const { data: requestingUserMembership, error: requestingUserError } =
+				await supabaseAdmin
+					.from("household_members")
+					.select("role")
+					.eq("household_id", householdId)
+					.eq("user_id", user.id)
+					.single();
+
+			if (requestingUserError || !requestingUserMembership) {
 				return NextResponse.json(
 					{ error: "You are not a member of this household" },
 					{ status: 404 },
 				);
 			}
 
-			// Check if user is the creator and sole member
-			if (membership.role === "creator") {
+			// Check if target user is a member of this household
+			const { data: targetMembership, error: membershipError } =
+				await supabaseAdmin
+					.from("household_members")
+					.select("role")
+					.eq("household_id", householdId)
+					.eq("user_id", userId)
+					.single();
+
+			if (membershipError || !targetMembership) {
+				return NextResponse.json(
+					{ error: "User is not a member of this household" },
+					{ status: 404 },
+				);
+			}
+
+			// Authorization logic:
+			// 1. User can remove themselves (leave household)
+			// 2. Creator can remove other members (but not themselves via this endpoint)
+			const isSelfRemoval = userId === user.id;
+			const isCreator = requestingUserMembership.role === "creator";
+
+			if (!isSelfRemoval && !isCreator) {
+				return NextResponse.json(
+					{ error: "You don't have permission to remove this member" },
+					{ status: 403 },
+				);
+			}
+
+			// Prevent creator from being removed by themselves through this endpoint
+			// (they should use transfer ownership or leave household functionality)
+			if (isCreator && isSelfRemoval && targetMembership.role === "creator") {
+				return NextResponse.json(
+					{
+						error:
+							"Creators should use the 'Leave Household' option in settings",
+					},
+					{ status: 400 },
+				);
+			}
+
+			// Check if removing the creator and they're the sole member
+			if (targetMembership.role === "creator" && isSelfRemoval) {
 				const { count, error: countError } = await supabaseAdmin
 					.from("household_members")
 					.select("*", { count: "exact", head: true })
@@ -89,7 +129,7 @@ export const DELETE = withHouseholdAuth(
 			if (removeMemberError) {
 				console.error("Error removing household member:", removeMemberError);
 				return NextResponse.json(
-					{ error: "Failed to leave household" },
+					{ error: "Failed to remove member from household" },
 					{ status: 500 },
 				);
 			}
@@ -102,7 +142,9 @@ export const DELETE = withHouseholdAuth(
 			// The RLS policies and ON DELETE CASCADE should handle most cleanup
 
 			return NextResponse.json({
-				message: "Successfully left household",
+				message: isSelfRemoval
+					? "Successfully left household"
+					: "Successfully removed member from household",
 			});
 		} catch (error) {
 			console.error(
