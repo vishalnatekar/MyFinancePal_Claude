@@ -40,6 +40,12 @@ export default function AccountsPage() {
 			const params = new URLSearchParams(window.location.search);
 			setUrlParams(params);
 
+			// If account connection was successful, refetch accounts to show new data
+			if (params.has("success")) {
+				console.log("Account connected successfully, refetching accounts...");
+				refetch();
+			}
+
 			// Clear URL parameters after showing messages
 			if (params.has("success") || params.has("error")) {
 				const timer = setTimeout(() => {
@@ -49,7 +55,7 @@ export default function AccountsPage() {
 				return () => clearTimeout(timer);
 			}
 		}
-	}, []);
+	}, [refetch]);
 
 	const handleSync = async (accountId: string) => {
 		try {
