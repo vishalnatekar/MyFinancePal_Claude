@@ -72,7 +72,7 @@ export default function ReportsPage() {
 				title="Reports coming soon"
 				description="Financial reports and analytics will be available once you have connected your accounts and have transaction data to analyze."
 				actionText="Connect Accounts"
-				actionHref="/finances"
+				actionHref="/accounts"
 			/>
 		</div>
 	);

@@ -13,7 +13,6 @@ const pathLabels: Record<string, string> = {
 	"/": "Dashboard",
 	"/profile": "Profile",
 	"/settings": "Settings",
-	"/finances": "My Finances",
 	"/household": "Household",
 	"/household/create": "Create Household",
 	"/reports": "Reports",

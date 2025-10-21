@@ -44,12 +44,6 @@ const navigation = [
 		description: "View and manage transaction history",
 	},
 	{
-		name: "My Finances",
-		href: "/finances",
-		icon: CreditCard,
-		description: "Personal accounts and transactions",
-	},
-	{
 		name: "Household",
 		href: "/household",
 		icon: Users,

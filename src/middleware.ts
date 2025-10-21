@@ -7,7 +7,6 @@ import { type NextRequest, NextResponse } from "next/server";
 const protectedPaths = [
 	"/profile",
 	"/settings",
-	"/finances",
 	"/reports",
 	"/household",
 	"/accounts",

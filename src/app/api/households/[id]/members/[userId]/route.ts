@@ -134,7 +134,47 @@ export const DELETE = withHouseholdAuth(
 				);
 			}
 
-			// 2. Clean up any expense splitting rules that reference this user
+			// 2. Unshare all transactions that were shared by this user to this household
+			const { error: unshareError } = await supabaseAdmin
+				.from("transactions")
+				.update({
+					shared_with_household_id: null,
+					shared_at: null,
+					shared_by: null,
+				})
+				.eq("shared_by", userId)
+				.eq("shared_with_household_id", householdId);
+
+			if (unshareError) {
+				console.error(
+					"Error unsharing transactions for removed member:",
+					unshareError,
+				);
+				// Don't fail the whole operation, just log the error
+				// The member has already been removed
+			}
+
+			// 3. Log the unsharing action in history
+			// Get all accounts owned by the removed user to log the unsharing
+			const { data: userAccounts } = await supabaseAdmin
+				.from("financial_accounts")
+				.select("id")
+				.eq("user_id", userId);
+
+			if (userAccounts && userAccounts.length > 0) {
+				const sharingHistoryEntries = userAccounts.map((account) => ({
+					account_id: account.id,
+					household_id: householdId,
+					action: "unshared",
+					changed_by: user.id, // The user who performed the removal
+				}));
+
+				await supabaseAdmin
+					.from("account_sharing_history")
+					.insert(sharingHistoryEntries);
+			}
+
+			// 4. Clean up any expense splitting rules that reference this user
 			// Note: This is a simplified cleanup. Full implementation would need to:
 			// - Recalculate split percentages for affected expenses
 			// - Handle edge cases where user was only split recipient
