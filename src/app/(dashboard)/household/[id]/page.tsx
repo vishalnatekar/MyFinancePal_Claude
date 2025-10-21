@@ -2,7 +2,6 @@
 
 import { HouseholdActivityFeed } from "@/components/household/HouseholdActivityFeed";
 import { HouseholdMemberList } from "@/components/household/HouseholdMemberList";
-import { HouseholdNetWorthCard } from "@/components/household/HouseholdNetWorthCard";
 import { InviteMemberModal } from "@/components/household/InviteMemberModal";
 import { MemberContributionSummary } from "@/components/household/MemberContributionSummary";
 import { PendingInvitations } from "@/components/household/PendingInvitations";
@@ -124,11 +123,8 @@ export default function HouseholdDetailPage({
 				</div>
 			</div>
 
-			{/* Overview Cards - responsive grid */}
-			<div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
-				<HouseholdNetWorthCard dashboard={dashboard} />
-				<MemberContributionSummary members={members} />
-			</div>
+			{/* Member Contributions */}
+			<MemberContributionSummary members={members} />
 
 			{/* Main Content - mobile tabs, desktop grid */}
 			<div className="block lg:hidden">
