@@ -88,7 +88,7 @@ export function WelcomeCard() {
 							size="sm"
 							className="justify-start"
 						>
-							<Link href="/accounts/connect">
+							<Link href="/accounts">
 								<Plus className="w-4 h-4 mr-2" />
 								Add Bank Account
 							</Link>
