@@ -29,7 +29,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import type { ManualAccountInput } from "@/types/account";
+import type { Database } from "@/types/database";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	AlertCircle,
@@ -64,8 +64,11 @@ const manualAccountSchema = z.object({
 
 type FormData = z.infer<typeof manualAccountSchema>;
 
+type FinancialAccountRow =
+	Database["public"]["Tables"]["financial_accounts"]["Row"];
+
 interface ManualAccountFormProps {
-	onSuccess: (account: any) => void;
+	onSuccess: (account: FinancialAccountRow) => void;
 	onCancel: () => void;
 	isSubmitting?: boolean;
 }

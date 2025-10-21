@@ -14,6 +14,8 @@ import {
 import type { TrueLayerConnectionCallback } from "@/types/truelayer";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
 	console.log("\n=== TrueLayer OAuth Callback Started ===");
 	console.log("Timestamp:", new Date().toISOString());

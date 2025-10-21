@@ -105,11 +105,11 @@ export const PUT = withHouseholdAuth(
 			const validatedData = updateHouseholdSchema.parse(body);
 
 			// Check if user is the creator of this household
-			const { data: household, error: householdError } = (await supabaseAdmin
+			const { data: household, error: householdError } = await supabaseAdmin
 				.from("households")
 				.select("created_by")
 				.eq("id", householdId)
-				.single()) as { data: { created_by: string } | null; error: any };
+				.single<{ created_by: string }>();
 
 			if (householdError || !household) {
 				return NextResponse.json(
@@ -126,7 +126,7 @@ export const PUT = withHouseholdAuth(
 			}
 
 			// Update household
-			const { data: updatedHousehold, error } = await (supabaseAdmin as any)
+			const { data: updatedHousehold, error } = await supabaseAdmin
 				.from("households")
 				.update({
 					name: validatedData.name,
@@ -174,11 +174,11 @@ export const DELETE = withHouseholdAuth(
 			}
 
 			// Check if user is the creator of this household
-			const { data: household, error: householdError } = (await supabaseAdmin
+			const { data: household, error: householdError } = await supabaseAdmin
 				.from("households")
 				.select("created_by")
 				.eq("id", householdId)
-				.single()) as { data: { created_by: string } | null; error: any };
+				.single<{ created_by: string }>();
 
 			if (householdError || !household) {
 				return NextResponse.json(

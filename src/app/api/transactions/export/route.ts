@@ -1,5 +1,6 @@
 import { config } from "@/lib/config";
 import type { Database } from "@/types/database";
+import type { Transaction } from "@/types/transaction";
 import { createServerClient } from "@supabase/ssr";
 import { format } from "date-fns";
 import { cookies } from "next/headers";
@@ -161,7 +162,7 @@ export async function GET(request: NextRequest) {
 /**
  * Generate CSV content from transactions
  */
-function generateCSV(transactions: any[]): string {
+function generateCSV(transactions: Transaction[]): string {
 	// Define CSV headers
 	const headers = [
 		"Date",

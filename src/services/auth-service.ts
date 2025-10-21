@@ -20,6 +20,7 @@ export interface ProfileResponse {
 	error?: string;
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Auth utilities rely on static orchestration helpers
 export class AuthService {
 	// Sign in with Google OAuth
 	static async signInWithGoogle(redirectTo?: string): Promise<AuthResponse> {
@@ -128,8 +129,17 @@ export class AuthService {
 	static async handleOAuthCallback(user: User): Promise<ProfileResponse> {
 		try {
 			// Extract user data from OAuth response
+			const userEmail =
+				user.email ?? (user.user_metadata?.email as string | undefined);
+			if (!userEmail) {
+				return {
+					success: false,
+					error: "User email missing from OAuth response",
+				};
+			}
+
 			const profileData: Partial<Profile> = {
-				email: user.email!,
+				email: userEmail,
 				full_name:
 					user.user_metadata?.full_name || user.user_metadata?.name || null,
 				avatar_url:

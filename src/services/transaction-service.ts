@@ -10,6 +10,7 @@ import type {
  * Handles all transaction-related API communication
  */
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Static methods wrap HTTP API requests
 export class TransactionService {
 	/**
 	 * Fetch transactions with filters and pagination

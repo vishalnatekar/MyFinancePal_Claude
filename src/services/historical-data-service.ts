@@ -12,6 +12,7 @@
 
 import { supabaseAdmin } from "@/lib/supabase";
 import type { FinancialAccount } from "@/types/account";
+import type { Database } from "@/types/database";
 
 /**
  * Balance history record
@@ -53,6 +54,16 @@ export interface ExportOptions {
 	endDate?: Date;
 }
 
+type TransactionRow = Database["public"]["Tables"]["transactions"]["Row"];
+
+interface AccountHistoryExport {
+	accountId: string;
+	exportedAt: string;
+	balanceHistory?: BalanceHistoryEntry[];
+	transactions?: TransactionRow[];
+}
+
+// biome-ignore lint/complexity/noStaticOnlyClass: Service provides namespaced static helpers
 export class HistoricalDataService {
 	/**
 	 * Record account balance for historical tracking
@@ -346,7 +357,7 @@ export class HistoricalDataService {
 		accountId: string,
 		options: ExportOptions,
 	): Promise<string> {
-		const exportData: any = {
+		const exportData: AccountHistoryExport = {
 			accountId,
 			exportedAt: new Date().toISOString(),
 		};
@@ -387,7 +398,7 @@ export class HistoricalDataService {
 	 * @param data - Export data object
 	 * @returns CSV string
 	 */
-	private static convertToCSV(data: any): string {
+	private static convertToCSV(data: AccountHistoryExport): string {
 		let csv = "";
 
 		// Balance History CSV

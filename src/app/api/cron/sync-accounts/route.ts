@@ -2,6 +2,8 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { AccountSyncService } from "@/services/account-sync-service";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Account Sync Cron Job
  *

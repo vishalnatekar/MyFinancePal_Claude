@@ -52,8 +52,9 @@ export function NotificationItem({
 	});
 
 	return (
-		<div
-			className={`flex items-start gap-3 p-3 rounded-lg transition-colors cursor-pointer hover:bg-muted/50 ${
+		<button
+			type="button"
+			className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left hover:bg-muted/50 ${
 				notification.is_read ? "opacity-60" : "bg-muted/30"
 			}`}
 			onClick={handleClick}
@@ -95,6 +96,6 @@ export function NotificationItem({
 					)}
 				</div>
 			</div>
-		</div>
+		</button>
 	);
 }

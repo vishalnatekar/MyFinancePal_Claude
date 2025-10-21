@@ -149,15 +149,10 @@ describe("AccountManagementSection", () => {
 			/>,
 		);
 
-		// Click delete button for first account
-		const deleteButtons = screen.getAllByRole("button");
-		const trashButton = deleteButtons.find((btn) =>
-			btn.querySelector("svg")?.classList.contains("lucide-trash-2"),
-		);
-
-		if (trashButton) {
-			fireEvent.click(trashButton);
-		}
+		const deleteButton = screen.getByRole("button", {
+			name: "Remove Checking Account",
+		});
+		fireEvent.click(deleteButton);
 
 		await waitFor(() => {
 			expect(screen.getByText("Remove Account")).toBeInTheDocument();
@@ -179,15 +174,10 @@ describe("AccountManagementSection", () => {
 			/>,
 		);
 
-		// Click delete button
-		const deleteButtons = screen.getAllByRole("button");
-		const trashButton = deleteButtons.find((btn) =>
-			btn.querySelector("svg")?.classList.contains("lucide-trash-2"),
-		);
-
-		if (trashButton) {
-			fireEvent.click(trashButton);
-		}
+		const deleteButton = screen.getByRole("button", {
+			name: "Remove Checking Account",
+		});
+		fireEvent.click(deleteButton);
 
 		// Confirm deletion
 		await waitFor(() => {

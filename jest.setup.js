@@ -1,4 +1,79 @@
-import "@testing-library/jest-dom";
+require("@testing-library/jest-dom");
+
+// Polyfill encoders required by undici in the Jest environment
+const { TextDecoder, TextEncoder } = require("util");
+const {
+	setTimeout: nodeSetTimeout,
+	setInterval: nodeSetInterval,
+	clearTimeout: nodeClearTimeout,
+	clearInterval: nodeClearInterval,
+} = require("timers");
+
+if (!global.TextEncoder) {
+	global.TextEncoder = TextEncoder;
+}
+
+if (!global.TextDecoder) {
+	// @ts-ignore - TextDecoder constructor signature mismatch is acceptable for tests
+	global.TextDecoder = TextDecoder;
+}
+
+const { ReadableStream, WritableStream, TransformStream } = require("stream/web");
+
+if (!global.ReadableStream) {
+	global.ReadableStream = ReadableStream;
+}
+
+if (!global.WritableStream) {
+	global.WritableStream = WritableStream;
+}
+
+if (!global.TransformStream) {
+	global.TransformStream = TransformStream;
+}
+
+if (global.setTimeout !== nodeSetTimeout) {
+	global.setTimeout = nodeSetTimeout;
+	global.clearTimeout = nodeClearTimeout;
+	global.setInterval = nodeSetInterval;
+	global.clearInterval = nodeClearInterval;
+
+	if (global.window) {
+		global.window.setTimeout = nodeSetTimeout;
+		global.window.clearTimeout = nodeClearTimeout;
+		global.window.setInterval = nodeSetInterval;
+		global.window.clearInterval = nodeClearInterval;
+	}
+}
+
+const { MessageChannel, MessagePort } = require("worker_threads");
+
+if (!global.MessagePort) {
+	global.MessagePort = MessagePort;
+}
+
+if (!global.MessageChannel) {
+	global.MessageChannel = MessageChannel;
+}
+
+// Provide fetch polyfill for API route tests
+const { fetch, Headers, Request, Response } = require("undici");
+
+if (!global.fetch) {
+	global.fetch = fetch;
+}
+
+if (!global.Headers) {
+	global.Headers = Headers;
+}
+
+if (!global.Request) {
+	global.Request = Request;
+}
+
+if (!global.Response) {
+	global.Response = Response;
+}
 
 // Mock Next.js router
 jest.mock("next/navigation", () => ({
@@ -23,9 +98,3 @@ jest.mock("next/navigation", () => ({
 // Supabase mocks will be handled in individual test files
 
 // Mock environment variables
-process.env.NEXT_PUBLIC_SUPABASE_URL = "http://localhost:54321";
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
-process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";
-process.env.MONEYHUB_CLIENT_ID = "test-client-id";
-process.env.MONEYHUB_CLIENT_SECRET = "test-client-secret";
-process.env.ENCRYPTION_KEY = "test-encryption-key-12345678";

@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 import { AlertCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 const REDIRECT_STORAGE_KEY = "auth:redirectTo";
 
@@ -23,6 +23,14 @@ function consumeStoredRedirect(): string {
 }
 
 export default function AuthCallbackPage() {
+	return (
+		<Suspense fallback={<AuthCallbackLoading />}>
+			<AuthCallbackContent />
+		</Suspense>
+	);
+}
+
+function AuthCallbackContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [error, setError] = useState<string | null>(null);
@@ -240,16 +248,7 @@ export default function AuthCallbackPage() {
 	}, [searchParams, router]);
 
 	if (isLoading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="text-center">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-					<p className="text-sm text-muted-foreground">
-						Completing authentication...
-					</p>
-				</div>
-			</div>
-		);
+		return <AuthCallbackLoading />;
 	}
 
 	if (error) {
@@ -262,6 +261,7 @@ export default function AuthCallbackPage() {
 					</Alert>
 					<div className="mt-4 text-center">
 						<button
+							type="button"
 							onClick={() => router.push("/login")}
 							className="text-sm text-primary hover:underline"
 						>
@@ -274,4 +274,17 @@ export default function AuthCallbackPage() {
 	}
 
 	return null;
+}
+
+function AuthCallbackLoading() {
+	return (
+		<div className="min-h-screen flex items-center justify-center">
+			<div className="text-center">
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+				<p className="text-sm text-muted-foreground">
+					Completing authentication...
+				</p>
+			</div>
+		</div>
+	);
 }

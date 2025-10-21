@@ -4,6 +4,7 @@ import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuthStore } from "@/stores/auth-store";
 import { AlertCircle } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
@@ -77,13 +78,19 @@ function LoginPageContent() {
 				<div className="text-center text-sm text-muted-foreground">
 					<p>
 						By signing in, you agree to our{" "}
-						<a href="#" className="font-medium text-primary hover:underline">
+						<Link
+							href="/legal/terms"
+							className="font-medium text-primary hover:underline"
+						>
 							Terms of Service
-						</a>{" "}
+						</Link>{" "}
 						and{" "}
-						<a href="#" className="font-medium text-primary hover:underline">
+						<Link
+							href="/legal/privacy"
+							className="font-medium text-primary hover:underline"
+						>
 							Privacy Policy
-						</a>
+						</Link>
 					</p>
 				</div>
 			</div>

@@ -37,6 +37,16 @@ interface AccountExportData {
 	lastSynced: string | null;
 }
 
+interface ExportData {
+	accounts: AccountExportData[];
+	history: NetWorthHistoryPoint[];
+	exportedAt: string;
+	dateRange: {
+		from: string;
+		to: string;
+	};
+}
+
 export class DataExportService {
 	constructor(private userId: string) {}
 
@@ -61,7 +71,7 @@ export class DataExportService {
 	/**
 	 * Gather all data for export
 	 */
-	private async gatherExportData(options: ExportOptions) {
+	private async gatherExportData(options: ExportOptions): Promise<ExportData> {
 		const { dateFrom, dateTo, accountIds } = options;
 
 		// Fetch accounts
@@ -182,7 +192,7 @@ export class DataExportService {
 	/**
 	 * Generate CSV export
 	 */
-	private generateCSV(data: any): ExportResult {
+	private generateCSV(data: ExportData): ExportResult {
 		const lines: string[] = [];
 
 		// Accounts section
@@ -237,7 +247,7 @@ export class DataExportService {
 	/**
 	 * Generate JSON export
 	 */
-	private generateJSON(data: any): ExportResult {
+	private generateJSON(data: ExportData): ExportResult {
 		const jsonContent = JSON.stringify(data, null, 2);
 		const timestamp = new Date().toISOString().split("T")[0];
 

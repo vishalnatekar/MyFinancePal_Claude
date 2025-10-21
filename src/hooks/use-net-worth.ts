@@ -1,7 +1,7 @@
 "use client";
 
 import type { NetWorthSummary } from "@/types/dashboard";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UseNetWorthReturn {
 	netWorth: NetWorthSummary | null;
@@ -15,7 +15,7 @@ export function useNetWorth(): UseNetWorthReturn {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const fetchNetWorth = async () => {
+	const fetchNetWorth = useCallback(async () => {
 		try {
 			setLoading(true);
 			setError(null);
@@ -36,11 +36,11 @@ export function useNetWorth(): UseNetWorthReturn {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
 	useEffect(() => {
-		fetchNetWorth();
-	}, []);
+		void fetchNetWorth();
+	}, [fetchNetWorth]);
 
 	return {
 		netWorth,

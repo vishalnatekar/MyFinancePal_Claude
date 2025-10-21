@@ -1,24 +1,48 @@
-import HomePage from "@/app/page";
+import DashboardPage from "@/app/(dashboard)/page";
 import { render, screen } from "@testing-library/react";
 
-// Mock the auth functions
-jest.mock("@/lib/auth", () => ({
-	signInWithGoogle: jest.fn(),
+jest.mock("@/hooks/use-dashboard-data", () => ({
+	useDashboardData: () => ({
+		netWorth: null,
+		accounts: [],
+		history: [],
+		loading: false,
+		error: null,
+		refetchAll: jest.fn(),
+		updateDateRange: jest.fn(),
+	}),
 }));
 
-describe("HomePage", () => {
-	it("renders welcome message", () => {
-		render(<HomePage />);
+jest.mock("@/hooks/use-account-management", () => ({
+	useAccountManagement: () => ({
+		syncStatus: [],
+		managedAccounts: [],
+		loading: false,
+		error: null,
+		handleRefresh: jest.fn(),
+		handleRemoveAccount: jest.fn(),
+		refetch: jest.fn(),
+	}),
+}));
 
-		expect(screen.getByText("Welcome to MyFinancePal")).toBeInTheDocument();
-		expect(
-			screen.getByText("Your household financial management solution"),
-		).toBeInTheDocument();
+// Stub complex child components to keep the test focused on page layout
+jest.mock("@/components/dashboard/WelcomeCard", () => ({
+	WelcomeCard: () => <div>Welcome Card</div>,
+}));
+
+describe("DashboardPage", () => {
+	it("renders dashboard tabs", () => {
+		render(<DashboardPage />);
+
+		expect(screen.getByText("Welcome Card")).toBeInTheDocument();
+		expect(screen.getByText("My Finances")).toBeInTheDocument();
+		expect(screen.getByText("Household")).toBeInTheDocument();
 	});
 
-	it("renders sign in button when user is not authenticated", () => {
-		render(<HomePage />);
+	it("shows empty state when no accounts are connected", () => {
+		render(<DashboardPage />);
 
-		expect(screen.getByText("Sign in with Google")).toBeInTheDocument();
+		expect(screen.getByText("Account Management")).toBeInTheDocument();
+		expect(screen.getByText("No accounts connected yet")).toBeInTheDocument();
 	});
 });

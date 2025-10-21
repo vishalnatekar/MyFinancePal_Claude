@@ -10,33 +10,27 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase";
 import { HouseholdService } from "@/services/household-service";
-import { createBrowserClient } from "@supabase/ssr";
+import type { HouseholdInvitationDetails } from "@/types/household";
 import { AlertCircle, Check, Home, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function InvitationAcceptancePage() {
 	const params = useParams();
 	const router = useRouter();
 	const token = params.token as string;
 
-	const [invitation, setInvitation] = useState<any>(null);
+	const [invitation, setInvitation] =
+		useState<HouseholdInvitationDetails | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const supabase = useMemo(() => createClient(), []);
 
-	const supabase = createBrowserClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-	);
-
-	useEffect(() => {
-		checkAuthAndLoadInvitation();
-	}, [token]);
-
-	const checkAuthAndLoadInvitation = async () => {
+	const checkAuthAndLoadInvitation = useCallback(async () => {
 		try {
 			setIsLoading(true);
 			setError(null);
@@ -58,7 +52,11 @@ export default function InvitationAcceptancePage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [supabase, token]);
+
+	useEffect(() => {
+		void checkAuthAndLoadInvitation();
+	}, [checkAuthAndLoadInvitation]);
 
 	const handleAccept = async () => {
 		if (!isAuthenticated) {

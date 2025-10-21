@@ -22,6 +22,7 @@ export interface BulkSyncResult {
 	duration: number;
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Static helpers provide procedural sync operations
 export class AccountSyncService {
 	/**
 	 * Sync a single account with TrueLayer

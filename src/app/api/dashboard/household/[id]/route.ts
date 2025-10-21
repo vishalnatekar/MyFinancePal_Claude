@@ -118,12 +118,19 @@ export const GET = withHouseholdAuth(
 						const { data: userData } =
 							await supabaseAdmin.auth.admin.getUserById(userId);
 						if (userData.user) {
+							const userEmail =
+								userData.user.email ??
+								(userData.user.user_metadata?.email as string | undefined);
+							if (!userEmail) {
+								console.warn(
+									`Household dashboard: missing email for user ${userId}`,
+								);
+								continue;
+							}
 							userProfiles[userId] = {
 								id: userId,
-								email: userData.user.email!,
-								full_name:
-									userData.user.user_metadata?.full_name ||
-									userData.user.email!,
+								email: userEmail,
+								full_name: userData.user.user_metadata?.full_name || userEmail,
 								avatar_url: userData.user.user_metadata?.avatar_url,
 							};
 						}

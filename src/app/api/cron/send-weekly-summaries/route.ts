@@ -18,6 +18,8 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { generateWeeklySummary } from "@/services/notification-service";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
 	try {
 		// Verify cron secret for security

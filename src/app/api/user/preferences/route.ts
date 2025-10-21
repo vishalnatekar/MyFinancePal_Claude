@@ -3,8 +3,19 @@ import { supabase } from "@/lib/supabase";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 // Default preferences
-const DEFAULT_PREFERENCES = {
+const PreferencesSchema = z.object({
+	email_notifications: z.boolean(),
+	shared_expense_alerts: z.boolean(),
+	settlement_reminders: z.boolean(),
+	timezone: z.string(),
+});
+
+type UserPreferences = z.infer<typeof PreferencesSchema>;
+
+const DEFAULT_PREFERENCES: UserPreferences = {
 	email_notifications: true,
 	shared_expense_alerts: true,
 	settlement_reminders: true,
@@ -39,8 +50,12 @@ export async function GET(request: NextRequest) {
 		}
 
 		// Return preferences with defaults if not set
-		const preferences =
-			(profile as any)?.notification_preferences || DEFAULT_PREFERENCES;
+		const parsedPreferences = PreferencesSchema.safeParse(
+			profile?.notification_preferences,
+		);
+		const preferences = parsedPreferences.success
+			? parsedPreferences.data
+			: DEFAULT_PREFERENCES;
 
 		return NextResponse.json(preferences);
 	} catch (error) {
@@ -81,15 +96,19 @@ export async function PUT(request: NextRequest) {
 		}
 
 		// Merge with existing preferences
-		const currentPreferences =
-			(profile as any)?.notification_preferences || DEFAULT_PREFERENCES;
-		const updatedPreferences = {
+		const parsedPreferences = PreferencesSchema.safeParse(
+			profile?.notification_preferences,
+		);
+		const currentPreferences = parsedPreferences.success
+			? parsedPreferences.data
+			: DEFAULT_PREFERENCES;
+		const updatedPreferences: UserPreferences = {
 			...currentPreferences,
 			...validatedData,
 		};
 
 		// Update preferences in database
-		const { error: updateError } = await (supabase as any)
+		const { error: updateError } = await supabase
 			.from("profiles")
 			.update({
 				notification_preferences: updatedPreferences,

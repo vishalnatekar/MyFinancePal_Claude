@@ -20,6 +20,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type {
+	CreateSplittingRuleRequest,
+	RuleType,
+} from "@/types/splitting-rule";
 import { useState } from "react";
 
 interface CreateRuleDialogProps {
@@ -36,12 +40,24 @@ export function CreateRuleDialog({
 	onRuleCreated,
 }: CreateRuleDialogProps) {
 	const [loading, setLoading] = useState(false);
-	const [ruleType, setRuleType] = useState<string>("merchant");
+	const [ruleType, setRuleType] = useState<RuleType>("merchant");
 	const [ruleName, setRuleName] = useState("");
 	const [merchantPattern, setMerchantPattern] = useState("");
 	const [categoryMatch, setCategoryMatch] = useState("");
 	const [minAmount, setMinAmount] = useState("");
 	const [priority, setPriority] = useState("100");
+
+	const handleRuleTypeChange = (value: string) => {
+		const allowed: RuleType[] = [
+			"merchant",
+			"category",
+			"amount_threshold",
+			"default",
+		];
+		if (allowed.includes(value as RuleType)) {
+			setRuleType(value as RuleType);
+		}
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -49,19 +65,30 @@ export function CreateRuleDialog({
 
 		try {
 			// Build request body based on rule type
-			const requestBody: any = {
+			const baseRequest: CreateSplittingRuleRequest = {
 				rule_name: ruleName,
 				rule_type: ruleType,
-				priority: Number.parseInt(priority),
 				split_percentage: {}, // TODO: Implement split percentage selector
+				priority: Number.parseInt(priority, 10),
 			};
 
+			let requestBody: CreateSplittingRuleRequest = baseRequest;
+
 			if (ruleType === "merchant") {
-				requestBody.merchant_pattern = merchantPattern;
+				requestBody = {
+					...baseRequest,
+					merchant_pattern: merchantPattern,
+				};
 			} else if (ruleType === "category") {
-				requestBody.category_match = categoryMatch;
+				requestBody = {
+					...baseRequest,
+					category_match: categoryMatch,
+				};
 			} else if (ruleType === "amount_threshold") {
-				requestBody.min_amount = Number.parseFloat(minAmount);
+				requestBody = {
+					...baseRequest,
+					min_amount: Number.parseFloat(minAmount),
+				};
 			}
 
 			const response = await fetch(`/api/households/${householdId}/rules`, {
@@ -119,7 +146,7 @@ export function CreateRuleDialog({
 
 					<div>
 						<Label htmlFor="rule-type">Rule Type</Label>
-						<Select value={ruleType} onValueChange={setRuleType}>
+						<Select value={ruleType} onValueChange={handleRuleTypeChange}>
 							<SelectTrigger id="rule-type">
 								<SelectValue />
 							</SelectTrigger>

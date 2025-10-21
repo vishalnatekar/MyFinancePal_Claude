@@ -20,6 +20,7 @@ const SALT =
  * - Environment-specific salt for key derivation
  * - Constant-time comparison for auth tags
  */
+// biome-ignore lint/complexity/noStaticOnlyClass: Utilities operate as pure static helpers
 export class CryptoService {
 	private static encryptionKey: Buffer | null = null;
 

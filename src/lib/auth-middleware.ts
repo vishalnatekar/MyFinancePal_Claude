@@ -94,14 +94,17 @@ export async function authenticateRequest(
 }
 
 // Middleware wrapper for API routes
-export function withAuth<T = any>(
+export function withAuth<TContext = Record<string, unknown>>(
 	handler: (
 		request: NextRequest,
 		user: User,
-		context?: T,
+		context?: TContext,
 	) => Promise<NextResponse> | NextResponse,
 ) {
-	return async (request: NextRequest, context?: T): Promise<NextResponse> => {
+	return async (
+		request: NextRequest,
+		context?: TContext,
+	): Promise<NextResponse> => {
 		const authResult = await authenticateRequest(request);
 
 		if (!authResult.success || !authResult.user) {
@@ -145,15 +148,20 @@ export async function verifyHouseholdAccess(
 }
 
 // Middleware wrapper for household-specific API routes
-export function withHouseholdAuth<T = any>(
+export function withHouseholdAuth<
+	TContext extends { params: { id: string } } = { params: { id: string } },
+>(
 	handler: (
 		request: NextRequest,
 		user: User,
 		householdId: string,
-		context?: T,
+		context?: TContext,
 	) => Promise<NextResponse> | NextResponse,
 ) {
-	return async (request: NextRequest, context: any): Promise<NextResponse> => {
+	return async (
+		request: NextRequest,
+		context: TContext,
+	): Promise<NextResponse> => {
 		const authResult = await authenticateRequest(request);
 
 		if (!authResult.success || !authResult.user) {

@@ -53,6 +53,7 @@ export function TransactionFilterBar({
 						<Badge key={category} variant="secondary">
 							{category}
 							<button
+								type="button"
 								className="ml-1 hover:text-gray-900"
 								onClick={() => {
 									const newCategories = filters.categories?.filter(
@@ -76,6 +77,7 @@ export function TransactionFilterBar({
 				<Badge variant="secondary">
 					Merchant: {filters.merchant_search}
 					<button
+						type="button"
 						className="ml-1 hover:text-gray-900"
 						onClick={() => onRemoveFilter("merchant_search")}
 					>
@@ -88,6 +90,7 @@ export function TransactionFilterBar({
 				<Badge variant="secondary">
 					From: {filters.date_from}
 					<button
+						type="button"
 						className="ml-1 hover:text-gray-900"
 						onClick={() => onRemoveFilter("date_from")}
 					>
@@ -100,6 +103,7 @@ export function TransactionFilterBar({
 				<Badge variant="secondary">
 					To: {filters.date_to}
 					<button
+						type="button"
 						className="ml-1 hover:text-gray-900"
 						onClick={() => onRemoveFilter("date_to")}
 					>
@@ -113,6 +117,7 @@ export function TransactionFilterBar({
 				<Badge variant="secondary">
 					Amount: {filters.amount_min ?? "0"} - {filters.amount_max ?? "∞"}
 					<button
+						type="button"
 						className="ml-1 hover:text-gray-900"
 						onClick={() => {
 							onRemoveFilter("amount_min");

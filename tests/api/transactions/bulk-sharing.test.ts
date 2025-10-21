@@ -15,6 +15,7 @@ jest.mock("@/lib/config", () => ({
 		supabase: {
 			url: "http://localhost:54321",
 			anonKey: "test-anon-key",
+			serviceRoleKey: "test-service-role-key",
 		},
 	},
 }));

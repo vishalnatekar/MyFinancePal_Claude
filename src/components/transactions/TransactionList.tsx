@@ -3,6 +3,14 @@
 import type { Transaction } from "@/types/transaction";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
+
+const TRANSACTION_SKELETON_KEYS = [
+	"transaction-skeleton-1",
+	"transaction-skeleton-2",
+	"transaction-skeleton-3",
+	"transaction-skeleton-4",
+	"transaction-skeleton-5",
+];
 import { TransactionListItem } from "./TransactionListItem";
 
 interface TransactionListProps {
@@ -14,7 +22,7 @@ interface TransactionListProps {
 	accountsMap?: Map<string, string>;
 	showSharing?: boolean;
 	households?: Array<{ id: string; name: string }>;
-	onSharingChange?: () => void;
+	onChange?: () => void;
 	selectable?: boolean;
 	selectedIds?: Set<string>;
 	onToggleSelect?: (transactionId: string) => void;
@@ -32,7 +40,7 @@ export function TransactionList({
 	accountsMap,
 	showSharing = false,
 	households = [],
-	onSharingChange,
+	onChange,
 	selectable = false,
 	selectedIds = new Set(),
 	onToggleSelect,
@@ -73,7 +81,9 @@ export function TransactionList({
 						strokeWidth="2"
 						viewBox="0 0 24 24"
 						stroke="currentColor"
+						role="img"
 					>
+						<title>Receipt icon</title>
 						<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
 					</svg>
 				</div>
@@ -93,8 +103,8 @@ export function TransactionList({
 			{/* Loading skeleton */}
 			{loading && transactions.length === 0 && (
 				<div className="divide-y divide-gray-200">
-					{[...Array(5)].map((_, i) => (
-						<div key={i} className="p-4 animate-pulse">
+					{TRANSACTION_SKELETON_KEYS.map((key) => (
+						<div key={key} className="p-4 animate-pulse">
 							<div className="flex items-center justify-between">
 								<div className="flex-1">
 									<div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
@@ -118,7 +128,7 @@ export function TransactionList({
 							accountName={accountsMap?.get(transaction.account_id)}
 							showSharing={showSharing}
 							households={households}
-							onSharingChange={onSharingChange}
+							onChange={onChange}
 							selectable={selectable}
 							selected={selectedIds.has(transaction.id)}
 							onToggleSelect={onToggleSelect}

@@ -11,6 +11,8 @@ import {
 } from "@/lib/auth-middleware";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getNotificationPreferences } from "@/services/notification-service";
+import type { Database } from "@/types/database";
+import type { NotificationPreferences } from "@/types/notification";
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -26,6 +28,9 @@ const updatePreferencesSchema = z.object({
 		.optional(),
 	weekly_digest_enabled: z.boolean().optional(),
 });
+
+type HouseholdNotificationPreference =
+	Database["public"]["Tables"]["notification_preferences"]["Row"];
 
 /**
  * GET /api/notifications/preferences/[householdId]
@@ -134,7 +139,7 @@ export const PUT = withAuth(
 				.eq("household_id", householdId)
 				.single();
 
-			let preferences;
+			let preferences: NotificationPreferences;
 
 			if (fetchError && fetchError.code !== "PGRST116") {
 				// PGRST116 is "no rows returned"
@@ -163,7 +168,17 @@ export const PUT = withAuth(
 					);
 				}
 
-				preferences = updated;
+				preferences = {
+					id: updated.id,
+					user_id: updated.user_id,
+					household_id: updated.household_id,
+					email_notifications: updated.email_notifications,
+					in_app_notifications: updated.in_app_notifications,
+					large_transaction_threshold: updated.large_transaction_threshold,
+					weekly_digest_enabled: updated.weekly_digest_enabled,
+					created_at: updated.created_at,
+					updated_at: updated.updated_at,
+				};
 			} else {
 				// Create new preferences with provided values
 				const { data: created, error: createError } = await supabaseAdmin
@@ -188,7 +203,17 @@ export const PUT = withAuth(
 					);
 				}
 
-				preferences = created;
+				preferences = {
+					id: created.id,
+					user_id: created.user_id,
+					household_id: created.household_id,
+					email_notifications: created.email_notifications,
+					in_app_notifications: created.in_app_notifications,
+					large_transaction_threshold: created.large_transaction_threshold,
+					weekly_digest_enabled: created.weekly_digest_enabled,
+					created_at: created.created_at,
+					updated_at: created.updated_at,
+				};
 			}
 
 			return NextResponse.json({ preferences });

@@ -70,6 +70,7 @@ const SYNC_INTERVALS = {
 	[SyncPriority.LOW]: 1440, // Low priority: every 24 hours
 };
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Scheduler maintains global state and static helpers
 export class SyncSchedulerService {
 	private static activeSyncs = new Map<
 		string,

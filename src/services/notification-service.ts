@@ -391,8 +391,8 @@ export async function generateWeeklySummary(
 			const userName = financialAccount.profiles?.full_name || "Unknown";
 			const amount = Math.abs(Number(tx.amount));
 
-			if (memberContributionsMap.has(userId)) {
-				const existing = memberContributionsMap.get(userId)!;
+			const existing = memberContributionsMap.get(userId);
+			if (existing) {
 				existing.amount += amount;
 				existing.count += 1;
 			} else {

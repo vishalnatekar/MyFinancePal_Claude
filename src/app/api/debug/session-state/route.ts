@@ -1,5 +1,6 @@
 import { config } from "@/lib/config";
 import { createServerClient } from "@supabase/ssr";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -15,10 +16,14 @@ export async function GET(request: NextRequest) {
 					get(name: string) {
 						return cookieStore.get(name)?.value;
 					},
-					set(name: string, value: string, options: any) {
+					set(
+						name: string,
+						value: string,
+						options: Partial<ResponseCookie> = {},
+					) {
 						cookieStore.set({ name, value, ...options });
 					},
-					remove(name: string, options: any) {
+					remove(name: string, options: Partial<ResponseCookie> = {}) {
 						cookieStore.set({ name, value: "", ...options });
 					},
 				},
@@ -31,12 +36,12 @@ export async function GET(request: NextRequest) {
 		const { data: userData, error: userError } = await supabase.auth.getUser();
 
 		// Get all auth-related cookies
-		const authCookies = {};
-		cookieStore.getAll().forEach((cookie) => {
+		const authCookies: Record<string, string> = {};
+		for (const cookie of cookieStore.getAll()) {
 			if (cookie.name.includes("supabase") || cookie.name.includes("auth")) {
 				authCookies[cookie.name] = `${cookie.value.substring(0, 50)}...`; // Truncate for security
 			}
-		});
+		}
 
 		return NextResponse.json({
 			timestamp: new Date().toISOString(),

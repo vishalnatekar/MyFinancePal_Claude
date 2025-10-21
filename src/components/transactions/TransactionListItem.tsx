@@ -14,7 +14,7 @@ interface TransactionListItemProps {
 	accountName?: string;
 	showSharing?: boolean;
 	households?: Array<{ id: string; name: string }>;
-	onSharingChange?: () => void;
+	onChange?: () => void;
 	selectable?: boolean;
 	selected?: boolean;
 	onToggleSelect?: (transactionId: string) => void;
@@ -29,7 +29,7 @@ export function TransactionListItem({
 	accountName,
 	showSharing = false,
 	households = [],
-	onSharingChange,
+	onChange,
 	selectable = false,
 	selected = false,
 	onToggleSelect,
@@ -54,21 +54,10 @@ export function TransactionListItem({
 	};
 
 	return (
-		<div
-			className="flex items-center gap-3 p-4 border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
-			onClick={handleClick}
-			role="button"
-			tabIndex={0}
-			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
-					onEdit(transaction);
-				}
-			}}
-		>
+		<div className="flex items-center gap-3 p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
 			{/* Checkbox for bulk selection */}
 			{selectable && (
-				<div data-checkbox onClick={(e) => e.stopPropagation()}>
+				<div data-checkbox onPointerDown={(e) => e.stopPropagation()}>
 					<Checkbox
 						checked={selected}
 						onCheckedChange={() => onToggleSelect?.(transaction.id)}
@@ -76,7 +65,11 @@ export function TransactionListItem({
 				</div>
 			)}
 
-			<div className="flex-1 min-w-0">
+			<button
+				type="button"
+				onClick={handleClick}
+				className="flex-1 min-w-0 text-left"
+			>
 				<div className="flex items-center gap-2">
 					<span className="font-medium text-gray-900 truncate">
 						{transaction.merchant_name ||
@@ -89,24 +82,27 @@ export function TransactionListItem({
 						</span>
 					)}
 					{/* Sharing status badge */}
-					{showSharing && (
-						<Badge
-							variant={isShared ? "default" : "secondary"}
-							className={isShared ? "bg-green-500 hover:bg-green-600" : ""}
-						>
-							{isShared ? (
-								<>
-									<Users className="h-3 w-3 mr-1" />
-									{currentHousehold?.name || "Shared"}
-								</>
-							) : (
-								<>
-									<Lock className="h-3 w-3 mr-1" />
-									Private
-								</>
-							)}
-						</Badge>
-					)}
+	{showSharing && (
+		<Badge
+			variant={isShared ? "default" : "secondary"}
+			className={isShared ? "bg-green-500 hover:bg-green-600" : ""}
+		>
+			{isShared ? (
+				<>
+					<Users className="h-3 w-3 mr-1" />
+					<span>
+						Shared
+						{currentHousehold?.name ? ` (${currentHousehold.name})` : ""}
+					</span>
+				</>
+			) : (
+				<>
+					<Lock className="h-3 w-3 mr-1" />
+					Private
+				</>
+			)}
+		</Badge>
+	)}
 				</div>
 				<div className="flex items-center gap-2 mt-1">
 					<span
@@ -128,15 +124,15 @@ export function TransactionListItem({
 						{transaction.description}
 					</p>
 				)}
-			</div>
+			</button>
 
 			{/* Sharing toggle */}
 			{showSharing && households.length > 0 && (
-				<div data-sharing-toggle onClick={(e) => e.stopPropagation()}>
+				<div data-sharing-toggle onPointerDown={(e) => e.stopPropagation()}>
 					<TransactionSharingToggle
 						transaction={transaction}
 						households={households}
-						onSharingChange={onSharingChange}
+						onChange={onChange}
 					/>
 				</div>
 			)}

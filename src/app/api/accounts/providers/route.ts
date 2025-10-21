@@ -4,8 +4,11 @@ import {
 	withAuth,
 } from "@/lib/auth-middleware";
 import { trueLayerService } from "@/services/truelayer-service";
+import type { TrueLayerProvider } from "@/types/truelayer";
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 
 export const GET = withAuth(async (request: NextRequest, user: User) => {
 	try {
@@ -19,7 +22,7 @@ export const GET = withAuth(async (request: NextRequest, user: User) => {
 		const search = searchParams.get("search");
 		const type = searchParams.get("type");
 
-		let providers;
+		let providers: TrueLayerProvider[];
 
 		if (search) {
 			// Search for providers

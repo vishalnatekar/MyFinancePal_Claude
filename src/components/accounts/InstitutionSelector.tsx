@@ -18,6 +18,15 @@ import type { TrueLayerProvider } from "@/types/truelayer";
 import { AlertCircle, Building, Loader2, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+const LOADING_SKELETON_KEYS = [
+	"provider-skeleton-1",
+	"provider-skeleton-2",
+	"provider-skeleton-3",
+	"provider-skeleton-4",
+	"provider-skeleton-5",
+	"provider-skeleton-6",
+];
+
 interface InstitutionSelectorProps {
 	onConnectionSuccess: () => void;
 	onConnectionError: (error: string) => void;
@@ -237,8 +246,8 @@ export function InstitutionSelector({
 					<Skeleton className="h-10 pl-8" />
 				</div>
 				<div className="grid gap-3">
-					{Array.from({ length: 6 }).map((_, i) => (
-						<Skeleton key={i} className="h-20" />
+					{LOADING_SKELETON_KEYS.map((key) => (
+						<Skeleton key={key} className="h-20" />
 					))}
 				</div>
 			</div>

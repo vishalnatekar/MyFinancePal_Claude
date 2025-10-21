@@ -9,6 +9,8 @@ import { testDraftRule } from "@/services/rule-matching-service";
 import type { Transaction } from "@/types/transaction";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/households/[id]/rules/test
  * Test a draft rule against recent transactions (dry-run, no database changes)

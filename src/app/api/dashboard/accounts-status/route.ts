@@ -2,6 +2,8 @@ import { authenticateRequest } from "@/lib/auth-middleware";
 import { supabaseAdmin } from "@/lib/supabase";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Get Account Sync Status
  * GET /api/dashboard/accounts-status

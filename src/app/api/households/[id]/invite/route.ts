@@ -148,9 +148,7 @@ export const POST = withHouseholdAuth(
 			expiresAt.setDate(expiresAt.getDate() + 7);
 
 			// Create invitation record
-			const { data: invitation, error: invitationError } = await (
-				supabaseAdmin as any
-			)
+			const { data: invitation, error: invitationError } = await supabaseAdmin
 				.from("household_invitations")
 				.insert({
 					household_id: householdId,

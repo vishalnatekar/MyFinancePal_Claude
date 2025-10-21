@@ -2,6 +2,8 @@ import { checkRateLimit } from "@/lib/auth-middleware";
 import { supabaseAdmin } from "@/lib/supabase";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 interface RouteParams {
 	params: { token: string };
 }

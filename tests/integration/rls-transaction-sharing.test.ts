@@ -7,12 +7,13 @@ import type { Database } from "@/types/database";
 import { createClient } from "@supabase/supabase-js";
 
 // Test environment configuration
-const supabaseUrl =
-	process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:54321";
-const supabaseAnonKey =
-	process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "test-anon-key";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-describe("RLS Policies: Transaction Sharing", () => {
+const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
+const describeOrSkip = hasSupabaseConfig ? describe : describe.skip;
+
+describeOrSkip("RLS Policies: Transaction Sharing", () => {
 	let adminClient: ReturnType<typeof createClient<Database>>;
 	let user1Client: ReturnType<typeof createClient<Database>>;
 	let user2Client: ReturnType<typeof createClient<Database>>;
@@ -27,7 +28,7 @@ describe("RLS Policies: Transaction Sharing", () => {
 
 	beforeAll(async () => {
 		// Create admin client
-		adminClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+		adminClient = createClient<Database>(supabaseUrl!, supabaseAnonKey!);
 
 		// Create test users
 		const { data: user1 } = await adminClient.auth.signUp({
@@ -43,13 +44,13 @@ describe("RLS Policies: Transaction Sharing", () => {
 		user2Id = user2?.user?.id || "";
 
 		// Create authenticated clients for each user
-		user1Client = createClient<Database>(supabaseUrl, supabaseAnonKey);
+		user1Client = createClient<Database>(supabaseUrl!, supabaseAnonKey!);
 		await user1Client.auth.signInWithPassword({
 			email: "user1-sharing-test@example.com",
 			password: "password123",
 		});
 
-		user2Client = createClient<Database>(supabaseUrl, supabaseAnonKey);
+		user2Client = createClient<Database>(supabaseUrl!, supabaseAnonKey!);
 		await user2Client.auth.signInWithPassword({
 			email: "user2-sharing-test@example.com",
 			password: "password123",

@@ -1,6 +1,8 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
 	try {
 		// Get all accounts (for debugging - remove auth check temporarily)

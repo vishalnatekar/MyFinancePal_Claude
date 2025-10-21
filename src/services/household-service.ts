@@ -2,12 +2,15 @@ import { supabase } from "@/lib/supabase";
 import type {
 	CreateHouseholdData,
 	HouseholdDashboardData,
+	HouseholdInvitationDetailsResponse,
 	HouseholdResponse,
 	HouseholdSyncResponse,
 	HouseholdsResponse,
+	InvitationResponse,
 	UpdateHouseholdData,
 } from "@/types/household";
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Service exposes stateless HTTP helpers for households
 export class HouseholdService {
 	// Get all households for the current user
 	static async getUserHouseholds(): Promise<HouseholdsResponse> {
@@ -106,7 +109,7 @@ export class HouseholdService {
 	static async sendInvitation(
 		householdId: string,
 		email: string,
-	): Promise<{ invitation: any }> {
+	): Promise<InvitationResponse> {
 		const response = await fetch(`/api/households/${householdId}/invite`, {
 			method: "POST",
 			headers: {
@@ -142,7 +145,9 @@ export class HouseholdService {
 	}
 
 	// Get invitation details by token
-	static async getInvitationByToken(token: string): Promise<any> {
+	static async getInvitationByToken(
+		token: string,
+	): Promise<HouseholdInvitationDetailsResponse> {
 		const response = await fetch(`/api/households/invite/${token}`);
 
 		if (!response.ok) {

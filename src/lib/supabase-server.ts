@@ -7,6 +7,7 @@
 import { config } from "@/lib/config";
 import type { Database } from "@/types/database";
 import { createServerClient } from "@supabase/ssr";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { cookies } from "next/headers";
 
 /**
@@ -27,10 +28,14 @@ export async function createClient() {
 				get(name: string) {
 					return cookieStore.get(name)?.value;
 				},
-				set(name: string, value: string, options: any) {
+				set(
+					name: string,
+					value: string,
+					options: Partial<ResponseCookie> = {},
+				) {
 					cookieStore.set({ name, value, ...options });
 				},
-				remove(name: string, options: any) {
+				remove(name: string, options: Partial<ResponseCookie> = {}) {
 					cookieStore.set({ name, value: "", ...options });
 				},
 			},

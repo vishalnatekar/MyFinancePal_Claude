@@ -1,6 +1,8 @@
 import { oauthStateManager } from "@/lib/oauth-state";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * OAuth State Cleanup Cron Job
  *

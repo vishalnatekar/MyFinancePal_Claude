@@ -9,8 +9,11 @@ import {
 	withAuth,
 } from "@/lib/auth-middleware";
 import { supabaseAdmin } from "@/lib/supabase";
+import type { NotificationWithActor } from "@/types/notification";
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 
 /**
  * GET /api/notifications
@@ -65,11 +68,14 @@ export const GET = withAuth(async (request: NextRequest, user: User) => {
 			);
 		}
 
+		let enrichedNotifications: NotificationWithActor[] =
+			notifications?.map((notification) => ({ ...notification })) ?? [];
+
 		// Manually fetch actor profiles
-		if (notifications && notifications.length > 0) {
+		if (enrichedNotifications.length > 0) {
 			const actorIds = Array.from(
 				new Set(
-					notifications
+					enrichedNotifications
 						.map((n) => n.actor_id)
 						.filter((id): id is string => id !== null),
 				),
@@ -82,13 +88,29 @@ export const GET = withAuth(async (request: NextRequest, user: User) => {
 					.in("id", actorIds);
 
 				// Map actors to notifications
-				const actorsMap = new Map(actors?.map((a) => [a.id, a]) || []);
+				const actorsMap = new Map(
+					(actors ?? []).map((actor) => [actor.id, actor] as const),
+				);
 
-				for (const notification of notifications) {
-					if (notification.actor_id) {
-						(notification as any).actor = actorsMap.get(notification.actor_id);
+				enrichedNotifications = enrichedNotifications.map((notification) => {
+					if (!notification.actor_id) {
+						return notification;
 					}
-				}
+
+					const actor = actorsMap.get(notification.actor_id);
+					if (!actor) {
+						return notification;
+					}
+
+					return {
+						...notification,
+						actor: {
+							id: actor.id,
+							full_name: actor.full_name ?? actor.id,
+							avatar_url: actor.avatar_url ?? undefined,
+						},
+					};
+				});
 			}
 		}
 
@@ -104,9 +126,9 @@ export const GET = withAuth(async (request: NextRequest, user: User) => {
 		}
 
 		return NextResponse.json({
-			notifications,
+			notifications: enrichedNotifications,
 			unread_count: unreadCount || 0,
-			has_more: notifications.length === limit,
+			has_more: enrichedNotifications.length === limit,
 		});
 	} catch (error) {
 		console.error("Error in GET /api/notifications:", error);

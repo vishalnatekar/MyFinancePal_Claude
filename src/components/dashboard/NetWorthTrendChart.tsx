@@ -13,6 +13,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import type { TooltipProps } from "recharts";
 
 interface NetWorthTrendChartProps {
 	history: NetWorthHistoryPoint[];
@@ -146,9 +147,9 @@ export function NetWorthTrendChart({
 		maxValue + padding,
 	];
 
-	const CustomTooltip = ({ active, payload, label }: any) => {
+	const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
 		if (active && payload && payload.length) {
-			const data = payload[0].payload;
+			const data = payload[0].payload as NetWorthHistoryPoint;
 			return (
 				<div className="bg-white p-3 border rounded-lg shadow-lg">
 					<p className="font-medium">

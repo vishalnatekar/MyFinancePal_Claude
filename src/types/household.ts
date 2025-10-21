@@ -91,6 +91,19 @@ export interface InvitationsResponse {
 	invitations: HouseholdInvitationWithDetails[];
 }
 
+// Public-facing invitation details served to unauthenticated users
+export interface HouseholdInvitationDetails {
+	household_name: string;
+	household_description?: string | null;
+	inviter_name: string;
+	invited_email?: string | null;
+	expires_at: string;
+}
+
+export interface HouseholdInvitationDetailsResponse {
+	invitation: HouseholdInvitationDetails;
+}
+
 // Story 3.3: Household Dashboard Types
 
 export interface HouseholdDashboardData {

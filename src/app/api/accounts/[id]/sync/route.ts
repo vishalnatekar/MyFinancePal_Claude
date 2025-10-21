@@ -3,6 +3,8 @@ import { AccountSyncService } from "@/services/account-sync-service";
 import { SyncSchedulerService } from "@/services/sync-scheduler-service";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Manual Account Sync Endpoint
  * POST /api/accounts/[id]/sync

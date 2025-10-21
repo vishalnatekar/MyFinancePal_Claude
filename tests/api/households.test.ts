@@ -34,7 +34,9 @@ const mockSupabaseAdmin = {
 };
 
 jest.mock("@/lib/supabase", () => ({
-	supabaseAdmin: mockSupabaseAdmin,
+	get supabaseAdmin() {
+		return mockSupabaseAdmin;
+	},
 }));
 
 describe("/api/households", () => {

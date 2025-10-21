@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
+import type { Database } from "@/types/database";
 import type { NotificationWithActor } from "@/types/notification";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
@@ -157,18 +158,14 @@ export function useNotifications(
 					filter: `recipient_id=eq.${userId}`,
 				},
 				async (
-					payload: RealtimePostgresChangesPayload<{
-						[key: string]: any;
-					}>,
+					payload: RealtimePostgresChangesPayload<
+						Database["public"]["Tables"]["notifications"]["Row"]
+					>,
 				) => {
 					console.log("New notification received:", payload);
 
 					// Type the payload.new properly
-					const newRecord = payload.new as {
-						id: string;
-						household_id: string;
-						[key: string]: any;
-					};
+					const newRecord = payload.new;
 
 					// If householdId filter is active, only add notifications for that household
 					if (householdId && newRecord.household_id !== householdId) {

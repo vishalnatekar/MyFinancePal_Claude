@@ -54,7 +54,7 @@ export function TransactionFiltersDialog({
 		if (open) {
 			setLocalFilters(filters);
 		}
-	}, [open]); // Only depend on 'open', not 'filters'
+	}, [filters, open]);
 
 	const handleCategoryToggle = (category: TransactionCategory) => {
 		const currentCategories = localFilters.categories || [];

@@ -11,7 +11,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { AlertCircle, Loader2, Mail, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Invitation {
 	id: string;
@@ -32,7 +32,7 @@ export function PendingInvitations({ householdId }: PendingInvitationsProps) {
 	const [error, setError] = useState<string | null>(null);
 	const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-	const loadInvitations = async () => {
+	const loadInvitations = useCallback(async () => {
 		try {
 			setLoading(true);
 			setError(null);
@@ -55,11 +55,11 @@ export function PendingInvitations({ householdId }: PendingInvitationsProps) {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [householdId]);
 
 	useEffect(() => {
-		loadInvitations();
-	}, [householdId]);
+		void loadInvitations();
+	}, [loadInvitations]);
 
 	const handleResend = async (invitationId: string) => {
 		try {

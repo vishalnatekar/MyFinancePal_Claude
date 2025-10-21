@@ -3,9 +3,17 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 export default function TrueLayerCallbackPage() {
+	return (
+		<Suspense fallback={<TrueLayerCallbackLoading />}>
+			<TrueLayerCallbackContent />
+		</Suspense>
+	);
+}
+
+function TrueLayerCallbackContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [error, setError] = useState<string | null>(null);
@@ -64,16 +72,7 @@ export default function TrueLayerCallbackPage() {
 	}, [searchParams]);
 
 	if (isLoading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="text-center">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-					<p className="text-sm text-muted-foreground">
-						Processing TrueLayer connection...
-					</p>
-				</div>
-			</div>
-		);
+		return <TrueLayerCallbackLoading />;
 	}
 
 	if (error) {
@@ -86,6 +85,7 @@ export default function TrueLayerCallbackPage() {
 					</Alert>
 					<div className="mt-4 text-center">
 						<button
+							type="button"
 							onClick={() => router.push("/accounts")}
 							className="text-sm text-primary hover:underline"
 						>
@@ -98,4 +98,17 @@ export default function TrueLayerCallbackPage() {
 	}
 
 	return null;
+}
+
+function TrueLayerCallbackLoading() {
+	return (
+		<div className="min-h-screen flex items-center justify-center">
+			<div className="text-center">
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+				<p className="text-sm text-muted-foreground">
+					Processing TrueLayer connection...
+				</p>
+			</div>
+		</div>
+	);
 }

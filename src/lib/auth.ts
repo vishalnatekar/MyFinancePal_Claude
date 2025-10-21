@@ -43,7 +43,7 @@ export async function upsertUserProfile(
 	userId: string,
 	profileData: Partial<Profile>,
 ): Promise<Profile | null> {
-	const { data, error } = await (supabase as any)
+	const { data, error } = await supabase
 		.from("profiles")
 		.upsert({
 			id: userId,
@@ -112,7 +112,7 @@ export async function signOut() {
 	const { error } = await supabase.auth.signOut();
 	if (error) {
 		// Supabase throws AuthSessionMissingError when the client session is already gone
-		if ((error as any).name !== "AuthSessionMissingError") {
+		if (error.name !== "AuthSessionMissingError") {
 			console.error("Error signing out:", error);
 			throw error;
 		}

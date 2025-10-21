@@ -10,6 +10,7 @@ import type { TransactionCategory } from "@/types/transaction";
  * - Transactions where TrueLayer didn't provide a category
  * - User overrides of TrueLayer categories
  */
+// biome-ignore lint/complexity/noStaticOnlyClass: Static utilities map transaction metadata to categories
 export class TransactionCategorizationService {
 	private static categoryPatterns: Record<TransactionCategory, RegExp[]> = {
 		groceries: [

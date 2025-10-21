@@ -10,6 +10,7 @@ import {
 	ResponsiveContainer,
 	Tooltip,
 } from "recharts";
+import type { LegendPayload, LegendProps, TooltipProps } from "recharts";
 
 interface AssetCategoryChartProps {
 	assets: AssetBreakdown | undefined;
@@ -125,9 +126,9 @@ export function AssetCategoryChart({
 		);
 	}
 
-	const CustomTooltip = ({ active, payload }: any) => {
+	const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
 		if (active && payload && payload.length) {
-			const data = payload[0].payload;
+			const data = payload[0].payload as (typeof chartData)[number];
 			return (
 				<div className="bg-white p-3 border rounded-lg shadow-lg">
 					<p className="font-medium">{data.name}</p>
@@ -140,12 +141,15 @@ export function AssetCategoryChart({
 		return null;
 	};
 
-	const renderLegend = (props: any) => {
-		const { payload } = props;
+	const renderLegend = ({ payload }: LegendProps) => {
+		if (!payload) return null;
 		return (
 			<div className="flex flex-wrap justify-center gap-4 mt-4">
-				{payload.map((entry: any, index: number) => (
-					<div key={index} className="flex items-center gap-2">
+				{payload.map((entry: LegendPayload) => (
+					<div
+						key={String(entry.value ?? entry.dataKey)}
+						className="flex items-center gap-2"
+					>
 						<div
 							className="w-3 h-3 rounded-full"
 							style={{ backgroundColor: entry.color }}
@@ -174,8 +178,8 @@ export function AssetCategoryChart({
 							paddingAngle={2}
 							dataKey="value"
 						>
-							{chartData.map((entry, index) => (
-								<Cell key={`cell-${index}`} fill={entry.color} />
+							{chartData.map((entry) => (
+								<Cell key={entry.name} fill={entry.color} />
 							))}
 						</Pie>
 						<Tooltip content={<CustomTooltip />} />

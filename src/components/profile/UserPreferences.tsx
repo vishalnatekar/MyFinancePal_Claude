@@ -60,8 +60,13 @@ export function UserPreferences() {
 
 	if (loading) {
 		return (
-			<div className="flex items-center justify-center py-8">
-				<Loader2 className="w-6 h-6 animate-spin" />
+			<div
+				className="flex items-center justify-center py-8"
+				role="status"
+				aria-live="polite"
+				aria-label="Loading preferences"
+			>
+				<Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
 			</div>
 		);
 	}

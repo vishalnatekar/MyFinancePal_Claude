@@ -2,6 +2,7 @@ import { config } from "@/lib/config";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Database } from "@/types/database";
 import { createServerClient } from "@supabase/ssr";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -28,18 +29,18 @@ export async function POST(request: NextRequest) {
 					get(name: string) {
 						return cookieStore.get(name)?.value;
 					},
-					set(name: string, value: string, options: Record<string, unknown>) {
+					set(
+						name: string,
+						value: string,
+						options: Partial<ResponseCookie> = {},
+					) {
 						// Set cookies on the response with proper attributes
 						cookieStore.set({ name, value, ...options });
-						response.cookies.set({
-							name,
-							value,
-							...(options as any),
-						});
+						response.cookies.set({ name, value, ...options });
 					},
-					remove(name: string, options: Record<string, unknown>) {
+					remove(name: string, options: Partial<ResponseCookie> = {}) {
 						cookieStore.set({ name, value: "", ...options });
-						response.cookies.set({ name, value: "", ...(options as any) });
+						response.cookies.set({ name, value: "", ...options });
 					},
 				},
 			},
@@ -74,11 +75,20 @@ export async function POST(request: NextRequest) {
 
 		// Create or update user profile using the service role client to bypass RLS
 		const user = data.session.user;
+		const userEmail =
+			user.email ?? (user.user_metadata?.email as string | undefined);
+		if (!userEmail) {
+			console.error("Authenticated user is missing an email address");
+			return NextResponse.json(
+				{ error: "Failed to upsert profile: email missing" },
+				{ status: 500 },
+			);
+		}
 		const { error: profileError } = await supabaseAdmin
 			.from("profiles")
 			.upsert({
 				id: user.id,
-				email: user.email!,
+				email: userEmail,
 				full_name:
 					user.user_metadata?.full_name || user.user_metadata?.name || null,
 				avatar_url:

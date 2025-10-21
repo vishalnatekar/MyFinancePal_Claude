@@ -5,7 +5,7 @@ import "@testing-library/jest-dom";
 // Mock the auth store
 const mockUseAuthStore = jest.fn();
 jest.mock("@/stores/auth-store", () => ({
-	useAuthStore: mockUseAuthStore,
+	useAuthStore: (...args: unknown[]) => mockUseAuthStore(...args),
 }));
 
 describe("UserProfile Component", () => {

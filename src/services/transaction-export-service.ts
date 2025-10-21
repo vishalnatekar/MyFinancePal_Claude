@@ -4,6 +4,7 @@ import { format } from "date-fns";
 /**
  * Service for exporting transactions to CSV format
  */
+// biome-ignore lint/complexity/noStaticOnlyClass: Static helper orchestrates export workflow
 export class TransactionExportService {
 	/**
 	 * Generate CSV content from transactions

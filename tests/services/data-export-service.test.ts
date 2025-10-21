@@ -1,19 +1,18 @@
 import { DataExportService } from "@/services/data-export-service";
 
-// Mock Supabase
-const mockSupabase = {
-	from: jest.fn().mockReturnThis(),
-	select: jest.fn().mockReturnThis(),
-	eq: jest.fn().mockReturnThis(),
-	in: jest.fn().mockReturnThis(),
-	gte: jest.fn().mockReturnThis(),
-	lte: jest.fn().mockReturnThis(),
-	order: jest.fn().mockReturnThis(),
-};
-
 jest.mock("@/lib/supabase", () => ({
-	supabaseAdmin: mockSupabase,
+	supabaseAdmin: {
+		from: jest.fn().mockReturnThis(),
+		select: jest.fn().mockReturnThis(),
+		eq: jest.fn().mockReturnThis(),
+		in: jest.fn().mockReturnThis(),
+		gte: jest.fn().mockReturnThis(),
+		lte: jest.fn().mockReturnThis(),
+		order: jest.fn().mockReturnThis(),
+	},
 }));
+
+const { supabaseAdmin: mockSupabase } = jest.requireMock("@/lib/supabase");
 
 describe("DataExportService", () => {
 	let service: DataExportService;

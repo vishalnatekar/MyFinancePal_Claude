@@ -1,5 +1,6 @@
 import { config as appConfig } from "@/lib/config";
 import { createServerClient } from "@supabase/ssr";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
 // Define which paths require authentication
@@ -35,10 +36,14 @@ export async function middleware(request: NextRequest) {
 				get(name: string) {
 					return request.cookies.get(name)?.value;
 				},
-				set(name: string, value: string, options: any) {
+				set(
+					name: string,
+					value: string,
+					options: Partial<ResponseCookie> = {},
+				) {
 					response.cookies.set({ name, value, ...options });
 				},
-				remove(name: string, options: any) {
+				remove(name: string, options: Partial<ResponseCookie> = {}) {
 					response.cookies.set({ name, value: "", ...options });
 				},
 			},

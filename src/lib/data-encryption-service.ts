@@ -37,6 +37,7 @@ export interface EncryptedData<T> {
 	data: T;
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Service exposes static encryption helpers
 export class DataEncryptionService {
 	/**
 	 * Encrypt sensitive transaction fields

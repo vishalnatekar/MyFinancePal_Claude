@@ -17,13 +17,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase";
 import { HouseholdService } from "@/services/household-service";
 import type { Household, HouseholdWithMembers } from "@/types/household";
-import { createBrowserClient } from "@supabase/ssr";
 import { AlertCircle, ArrowLeft, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function HouseholdSettingsPage() {
 	const params = useParams();
@@ -36,16 +36,9 @@ export default function HouseholdSettingsPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [isLeaving, setIsLeaving] = useState(false);
 
-	const supabase = createBrowserClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-	);
+	const supabase = useMemo(() => createClient(), []);
 
-	useEffect(() => {
-		loadHousehold();
-	}, [householdId]);
-
-	const loadHousehold = async () => {
+	const loadHousehold = useCallback(async () => {
 		try {
 			setIsLoading(true);
 			setError(null);
@@ -65,7 +58,11 @@ export default function HouseholdSettingsPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [householdId, supabase]);
+
+	useEffect(() => {
+		void loadHousehold();
+	}, [loadHousehold]);
 
 	const handleLeaveHousehold = async () => {
 		if (!currentUserId) return;

@@ -3,27 +3,20 @@
 import { HouseholdCard } from "@/components/household/HouseholdCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase";
 import { HouseholdService } from "@/services/household-service";
-import { createBrowserClient } from "@supabase/ssr";
+import type { HouseholdWithMembers } from "@/types/household";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function HouseholdPage() {
-	const [households, setHouseholds] = useState<any[]>([]);
+	const [households, setHouseholds] = useState<HouseholdWithMembers[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+	const supabase = useMemo(() => createClient(), []);
 
-	const supabase = createBrowserClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-	);
-
-	useEffect(() => {
-		loadHouseholds();
-	}, []);
-
-	const loadHouseholds = async () => {
+	const loadHouseholds = useCallback(async () => {
 		try {
 			setLoading(true);
 
@@ -41,7 +34,11 @@ export default function HouseholdPage() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [supabase]);
+
+	useEffect(() => {
+		void loadHouseholds();
+	}, [loadHouseholds]);
 
 	if (loading) {
 		return (
@@ -80,7 +77,7 @@ export default function HouseholdPage() {
 				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{households.map((household) => {
 						const userMembership = household.household_members?.find(
-							(m: any) => m.user_id === currentUserId,
+							(m) => m.user_id === currentUserId,
 						);
 						return (
 							<HouseholdCard

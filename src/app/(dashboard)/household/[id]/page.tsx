@@ -11,11 +11,10 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHouseholdDashboard } from "@/hooks/use-household-dashboard";
-import { useToast } from "@/hooks/use-toast";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase";
 import { ArrowLeft, Settings, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface HouseholdDetailPageProps {
 	params: {
@@ -28,12 +27,8 @@ export default function HouseholdDetailPage({
 }: HouseholdDetailPageProps) {
 	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 	const [inviteModalOpen, setInviteModalOpen] = useState(false);
-	const { toast } = useToast();
 
-	const supabase = createBrowserClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-	);
+	const supabase = useMemo(() => createClient(), []);
 
 	// Use the comprehensive household dashboard hook
 	const {
@@ -52,8 +47,9 @@ export default function HouseholdDetailPage({
 				setCurrentUserId(user.id);
 			}
 		};
-		loadUser();
-	}, []);
+
+		void loadUser();
+	}, [supabase]);
 
 	const handleInviteSent = () => {
 		// Refetch dashboard data to show updated member list

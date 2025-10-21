@@ -12,6 +12,7 @@ export interface UserPreferencesResponse {
 	error?: string;
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Service methods are stateless HTTP helpers
 export class UserService {
 	private static async request<T>(
 		endpoint: string,

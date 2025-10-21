@@ -12,8 +12,8 @@ export const config = {
 	// Authentication configuration
 	auth: {
 		google: {
-			clientId: process.env.GOOGLE_CLIENT_ID!,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+			clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
 		},
 	},
 
@@ -25,15 +25,15 @@ export const config = {
 
 	// TrueLayer API configuration
 	truelayer: {
-		clientId: process.env.TRUELAYER_CLIENT_ID!,
-		clientSecret: process.env.TRUELAYER_CLIENT_SECRET!,
+		clientId: process.env.TRUELAYER_CLIENT_ID ?? "",
+		clientSecret: process.env.TRUELAYER_CLIENT_SECRET ?? "",
 		apiUrl: process.env.TRUELAYER_API_URL || "https://api.truelayer.com",
 		environment: process.env.TRUELAYER_ENVIRONMENT || "sandbox",
 	},
 
 	// Security configuration
 	security: {
-		encryptionKey: process.env.ENCRYPTION_KEY!,
+		encryptionKey: process.env.ENCRYPTION_KEY ?? "",
 	},
 
 	// Bundle analyzer

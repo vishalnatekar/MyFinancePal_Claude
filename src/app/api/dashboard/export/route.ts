@@ -2,6 +2,8 @@ import { authenticateRequest } from "@/lib/auth-middleware";
 import { DataExportService } from "@/services/data-export-service";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Data Export Endpoint
  * GET /api/dashboard/export

@@ -2,6 +2,8 @@ import { authenticateRequest } from "@/lib/auth-helpers";
 import { NetWorthCalculationService } from "@/services/net-worth-calculation-service";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
 	try {
 		// Authentication

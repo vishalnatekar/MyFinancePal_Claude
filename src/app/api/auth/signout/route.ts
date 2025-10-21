@@ -1,6 +1,7 @@
 import { config } from "@/lib/config";
 import type { Database } from "@/types/database";
 import { createServerClient } from "@supabase/ssr";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -19,13 +20,17 @@ export async function POST() {
 					get(name: string) {
 						return cookieStore.get(name)?.value;
 					},
-					set(name: string, value: string, options: Record<string, unknown>) {
+					set(
+						name: string,
+						value: string,
+						options: Partial<ResponseCookie> = {},
+					) {
 						cookieStore.set({ name, value, ...options });
-						response.cookies.set({ name, value, ...(options as any) });
+						response.cookies.set({ name, value, ...options });
 					},
-					remove(name: string, options: Record<string, unknown>) {
+					remove(name: string, options: Partial<ResponseCookie> = {}) {
 						cookieStore.set({ name, value: "", ...options });
-						response.cookies.set({ name, value: "", ...(options as any) });
+						response.cookies.set({ name, value: "", ...options });
 					},
 				},
 			},

@@ -1,5 +1,8 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { AccountSyncService } from "@/services/account-sync-service";
+import { getValidAccessToken } from "@/lib/token-refresh-utils";
+import { dataValidationService } from "@/services/data-validation-service";
+import { trueLayerDataProcessor } from "@/services/truelayer-data-processor";
 import { trueLayerService } from "@/services/truelayer-service";
 
 // Mock dependencies
@@ -16,17 +19,46 @@ jest.mock("@/services/truelayer-service", () => ({
 	},
 }));
 
+jest.mock("@/lib/token-refresh-utils", () => ({
+	getValidAccessToken: jest.fn(),
+}));
+
+jest.mock("@/services/data-validation-service", () => ({
+	dataValidationService: {
+		validateBalance: jest.fn(),
+	},
+}));
+
+jest.mock("@/services/truelayer-data-processor", () => ({
+	trueLayerDataProcessor: {
+		normalizeAmount: jest.fn(),
+	},
+}));
+
 describe("AccountSyncService", () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
+
+		(getValidAccessToken as jest.Mock).mockResolvedValue("test-access-token");
+		(dataValidationService.validateBalance as jest.Mock).mockReturnValue({
+			valid: true,
+			errors: [],
+		});
+		(trueLayerDataProcessor.normalizeAmount as jest.Mock).mockImplementation(
+			(amount: number) => amount,
+		);
+		(trueLayerService.getAccountBalance as jest.Mock).mockResolvedValue({
+			current: 1250.75,
+		});
 	});
 
 	describe("syncAccount", () => {
 		const mockAccount = {
 			id: "account-123",
 			user_id: "user-123",
-			moneyhub_account_id: "mh-account-123",
-			moneyhub_connection_id: "mh-connection-123",
+			truelayer_account_id: "tl-account-123",
+			truelayer_connection_id: "tl-connection-123",
+			encrypted_access_token: "encrypted-token",
 			account_type: "checking",
 			account_name: "Test Account",
 			institution_name: "Test Bank",
@@ -104,20 +136,6 @@ describe("AccountSyncService", () => {
 				.mockReturnValueOnce({
 					eq: jest.fn().mockResolvedValue({ error: null }),
 				});
-
-			// Mock MoneyHub response
-			const mockMoneyHubAccounts = [
-				{
-					id: "mh-account-123",
-					accountName: "Updated Test Account",
-					balance: { amount: 1250.75 },
-					status: "active",
-				},
-			];
-
-			(moneyHubService.getAccounts as jest.Mock).mockResolvedValue(
-				mockMoneyHubAccounts,
-			);
 
 			const result = await AccountSyncService.syncAccount("account-123");
 
@@ -228,7 +246,7 @@ describe("AccountSyncService", () => {
 			expect(result.error).toBe("Sync already in progress");
 		});
 
-		it("should handle MoneyHub account not found", async () => {
+		it("should handle TrueLayer service errors gracefully", async () => {
 			// Setup successful account fetch and sync history creation
 			const mockSelect = jest.fn().mockReturnThis();
 			const mockEq = jest.fn().mockReturnThis();
@@ -279,21 +297,22 @@ describe("AccountSyncService", () => {
 					eq: jest.fn().mockResolvedValue({ error: null }),
 				});
 
-			// Mock MoneyHub response with no matching account
-			(moneyHubService.getAccounts as jest.Mock).mockResolvedValue([]);
+			(trueLayerService.getAccountBalance as jest.Mock).mockRejectedValueOnce(
+				new Error("Account not found"),
+			);
 
 			const result = await AccountSyncService.syncAccount("account-123");
 
 			expect(result.success).toBe(false);
-			expect(result.error).toBe("Account no longer exists in MoneyHub");
+			expect(result.error).toBe("Failed to sync with TrueLayer");
 		});
 	});
 
 	describe("syncUserAccounts", () => {
 		it("should sync all user accounts", async () => {
 			const mockAccounts = [
-				{ id: "account-1", moneyhub_connection_id: "connection-1" },
-				{ id: "account-2", moneyhub_connection_id: "connection-2" },
+				{ id: "account-1", truelayer_connection_id: "connection-1" },
+				{ id: "account-2", truelayer_connection_id: "connection-2" },
 			];
 
 			const mockSelect = jest.fn().mockReturnThis();

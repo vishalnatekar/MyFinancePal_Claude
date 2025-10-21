@@ -9,6 +9,7 @@ import {
 	createNotification,
 	getHouseholdRecipients,
 } from "@/services/notification-service";
+import type { Database } from "@/types/database";
 import type { User } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -54,7 +55,11 @@ export const POST = withAuth(
 				`,
 				)
 				.eq("token", token)
-				.single();
+				.single<
+					Database["public"]["Tables"]["household_invitations"]["Row"] & {
+						households: { id: string; name: string | null } | null;
+					}
+				>();
 
 			if (invitationError || !invitation) {
 				return NextResponse.json(
@@ -113,7 +118,7 @@ export const POST = withAuth(
 			}
 
 			// Add user as household member
-			const { error: memberError } = await (supabaseAdmin as any)
+			const { error: memberError } = await supabaseAdmin
 				.from("household_members")
 				.insert({
 					household_id: invitation.household_id,
@@ -178,15 +183,25 @@ export const POST = withAuth(
 				`,
 				)
 				.eq("household_id", invitation.household_id)
-				.neq("user_id", user.id);
+				.neq("user_id", user.id)
+				.returns<
+					Array<
+						Database["public"]["Tables"]["household_members"]["Row"] & {
+							profiles: Pick<
+								Database["public"]["Tables"]["profiles"]["Row"],
+								"email" | "full_name"
+							> | null;
+						}
+					>
+				>();
 
 			if (householdMembers && householdMembers.length > 0) {
 				const acceptedUserName = userProfile.full_name || userProfile.email;
-				const householdName = (invitation.households as any)?.name || "Unknown";
+				const householdName = invitation.households?.name || "Unknown";
 
 				// Send notifications to all existing members
 				for (const member of householdMembers) {
-					const profile = (member as any).profiles;
+					const profile = member.profiles;
 					if (profile?.email) {
 						sendAcceptanceNotificationEmail({
 							to: profile.email,

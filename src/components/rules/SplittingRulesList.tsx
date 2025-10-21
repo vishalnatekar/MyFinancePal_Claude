@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import type { SplittingRuleWithCreator } from "@/types/splitting-rule";
 import { Edit, GripVertical, Play, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CreateRuleDialog } from "./CreateRuleDialog";
 
 interface SplittingRulesListProps {
@@ -33,12 +33,7 @@ export function SplittingRulesList({
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	// Fetch rules
-	useEffect(() => {
-		fetchRules();
-	}, [householdId]);
-
-	const fetchRules = async () => {
+	const fetchRules = useCallback(async () => {
 		try {
 			setLoading(true);
 			const response = await fetch(
@@ -56,7 +51,12 @@ export function SplittingRulesList({
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [householdId]);
+
+	// Fetch rules
+	useEffect(() => {
+		void fetchRules();
+	}, [fetchRules]);
 
 	const handleToggleActive = async (ruleId: string, currentStatus: boolean) => {
 		try {
@@ -74,7 +74,7 @@ export function SplittingRulesList({
 			}
 
 			// Refresh rules
-			fetchRules();
+			void fetchRules();
 		} catch (err) {
 			console.error("Error toggling rule:", err);
 		}
@@ -102,7 +102,7 @@ export function SplittingRulesList({
 			}
 
 			// Refresh rules
-			fetchRules();
+			void fetchRules();
 		} catch (err) {
 			console.error("Error deleting rule:", err);
 		}

@@ -1,6 +1,8 @@
 import { authenticateRequest } from "@/lib/auth-helpers";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
 	console.log("Test auth endpoint called");
 

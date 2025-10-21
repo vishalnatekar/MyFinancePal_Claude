@@ -5,7 +5,10 @@
 import { authenticateRequest } from "@/lib/auth-middleware";
 import { CreateSplittingRuleSchema } from "@/lib/splitting-rule-validation";
 import { createClient } from "@/lib/supabase-server";
+import type { Database } from "@/types/database";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
+import type { z } from "zod";
 
 /**
  * GET /api/households/[id]/rules
@@ -101,6 +104,8 @@ export async function GET(
  * POST /api/households/[id]/rules
  * Create a new splitting rule for a household
  */
+type CreateRulePayload = z.infer<typeof CreateSplittingRuleSchema>;
+
 export async function POST(
 	request: NextRequest,
 	{ params }: { params: { id: string } },
@@ -227,9 +232,9 @@ export async function POST(
  * Check for potentially conflicting rules
  */
 async function checkRuleConflicts(
-	supabase: any,
+	supabase: SupabaseClient<Database>,
 	householdId: string,
-	newRule: any,
+	newRule: CreateRulePayload,
 ): Promise<Array<{ rule_id: string; rule_name: string; reason: string }>> {
 	const conflicts: Array<{
 		rule_id: string;

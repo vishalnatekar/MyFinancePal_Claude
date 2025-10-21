@@ -123,7 +123,7 @@ export function HouseholdActivityFeed({
 					<p className="text-sm text-muted-foreground text-center py-8">
 						{eventTypeFilter !== "all"
 							? "No activities of this type"
-							: "No household activity yet"}
+							: "No activity yet"}
 					</p>
 				) : (
 					<>

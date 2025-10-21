@@ -93,11 +93,19 @@ export async function GET(request: NextRequest) {
 
 		// Create or update user profile using the service role to bypass RLS
 		const user = data.session.user;
+		const userEmail =
+			user.email ?? (user.user_metadata?.email as string | undefined);
+		if (!userEmail) {
+			console.error("OAuth callback user missing email");
+			return NextResponse.redirect(
+				new URL("/auth/error?message=email_missing", request.url),
+			);
+		}
 		const { error: profileError } = await supabaseAdmin
 			.from("profiles")
 			.upsert({
 				id: user.id,
-				email: user.email!,
+				email: userEmail,
 				full_name:
 					user.user_metadata?.full_name || user.user_metadata?.name || null,
 				avatar_url:

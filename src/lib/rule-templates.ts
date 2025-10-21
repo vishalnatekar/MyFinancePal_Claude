@@ -2,7 +2,7 @@
 // Story 4.1: Expense Splitting Rules Engine
 // Predefined templates for common household scenarios
 
-import type { RuleTemplate } from "@/types/splitting-rule";
+import type { RuleTemplate, SplittingRule } from "@/types/splitting-rule";
 
 /**
  * Predefined rule templates for common household scenarios
@@ -252,8 +252,8 @@ export function createRuleFromTemplate(
 	template: RuleTemplate,
 	householdMemberIds: string[],
 	currentUserId: string,
-	customizations?: Partial<Record<string, any>>,
-): Record<string, any> {
+	customizations?: Partial<SplittingRule>,
+): Partial<SplittingRule> {
 	// Start with template defaults
 	const rule = { ...template.default_config };
 

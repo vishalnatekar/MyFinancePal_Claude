@@ -5,13 +5,15 @@
 
 import { config } from "@/lib/config";
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import type { NextRequest } from "next/server";
 
 export interface AuthResult {
 	authenticated: boolean;
 	success: boolean;
 	userId?: string;
-	user?: any;
+	user?: User;
 	error?: string;
 }
 
@@ -33,10 +35,14 @@ export async function authenticateRequest(
 						const cookie = request.cookies.get(name);
 						return cookie?.value;
 					},
-					set(name: string, value: string, options: any) {
+					set(
+						name: string,
+						value: string,
+						options: Partial<ResponseCookie> = {},
+					) {
 						// We don't modify cookies in this read-only context
 					},
-					remove(name: string, options: any) {
+					remove(name: string, options: Partial<ResponseCookie> = {}) {
 						// We don't modify cookies in this read-only context
 					},
 				},

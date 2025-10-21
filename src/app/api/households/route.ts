@@ -90,9 +90,7 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 		}
 
 		// Create household
-		const { data: household, error: householdError } = await (
-			supabaseAdmin as any
-		)
+		const { data: household, error: householdError } = await supabaseAdmin
 			.from("households")
 			.insert({
 				name: validatedData.name,
@@ -112,7 +110,7 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 		}
 
 		// Add creator as household member
-		const { error: memberError } = await (supabaseAdmin as any)
+		const { error: memberError } = await supabaseAdmin
 			.from("household_members")
 			.insert({
 				household_id: household.id,

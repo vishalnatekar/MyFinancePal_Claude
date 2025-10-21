@@ -61,7 +61,7 @@ async function fetchTransactions(
 }
 
 export function useTransactions(filters: TransactionFilter = {}) {
-	return useInfiniteQuery({
+	return useInfiniteQuery<PaginatedTransactions, Error>({
 		queryKey: ["transactions", filters],
 		queryFn: ({ pageParam }) =>
 			fetchTransactions({ ...filters, cursor: pageParam }),

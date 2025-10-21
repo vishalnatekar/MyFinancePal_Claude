@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface BalanceHistoryChartProps {
 	accountId: string;
@@ -13,19 +13,23 @@ interface BalanceDataPoint {
 	balance: number;
 }
 
+interface BalanceStatistics {
+	currentBalance: number;
+	changeAmount: number;
+	changePercent: number;
+	highestBalance: number;
+	lowestBalance: number;
+}
+
 export function BalanceHistoryChart({
 	accountId,
 	accountName,
 }: BalanceHistoryChartProps) {
 	const [history, setHistory] = useState<BalanceDataPoint[]>([]);
-	const [stats, setStats] = useState<any>(null);
+	const [stats, setStats] = useState<BalanceStatistics | null>(null);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		fetchBalanceHistory();
-	}, [accountId]);
-
-	const fetchBalanceHistory = async () => {
+	const fetchBalanceHistory = useCallback(async () => {
 		try {
 			setLoading(true);
 
@@ -48,7 +52,11 @@ export function BalanceHistoryChart({
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [accountId]);
+
+	useEffect(() => {
+		void fetchBalanceHistory();
+	}, [fetchBalanceHistory]);
 
 	if (loading) {
 		return (
@@ -145,9 +153,9 @@ export function BalanceHistoryChart({
 						Balance Snapshots (Last 30 Days)
 					</h3>
 					<div className="max-h-64 overflow-y-auto space-y-1">
-						{history.map((point, index) => (
+						{history.map((point) => (
 							<div
-								key={index}
+								key={point.date}
 								className="flex justify-between items-center py-2 px-3 rounded-md hover:bg-muted/50"
 							>
 								<span className="text-sm text-muted-foreground">

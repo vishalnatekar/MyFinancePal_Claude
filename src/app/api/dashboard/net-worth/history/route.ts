@@ -1,8 +1,10 @@
 import { authenticateRequest } from "@/lib/auth-helpers";
 import { NetWorthHistoryService } from "@/services/net-worth-history-service";
-import type { DateRange } from "@/types/dashboard";
+import type { DateRange, NetWorthHistoryPoint } from "@/types/dashboard";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+export const dynamic = "force-dynamic";
 
 const QuerySchema = z.object({
 	range: z.enum(["1M", "3M", "6M", "1Y", "ALL"]).optional().default("6M"),
@@ -35,15 +37,17 @@ export async function GET(request: NextRequest) {
 			range as DateRange,
 		);
 
-		const response: any = { history };
+		const response: {
+			history: NetWorthHistoryPoint[];
+			trend?: Awaited<ReturnType<NetWorthHistoryService["getTrendAnalysis"]>>;
+		} = { history };
 
 		// Include trend analysis if requested
 		if (includeTrend) {
-			const trendAnalysis = await historyService.getTrendAnalysis(
+			response.trend = await historyService.getTrendAnalysis(
 				user.id,
 				range as DateRange,
 			);
-			response.trend = trendAnalysis;
 		}
 
 		return NextResponse.json(response);

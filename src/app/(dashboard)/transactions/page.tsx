@@ -15,10 +15,28 @@ import { useTransactionFilters } from "@/hooks/use-transaction-filters";
 import { useTransactions } from "@/hooks/use-transactions";
 import { supabase } from "@/lib/supabase";
 import { TransactionExportService } from "@/services/transaction-export-service";
-import type { Transaction, TransactionFilter } from "@/types/transaction";
-import { useQueryClient } from "@tanstack/react-query";
+import type { Database } from "@/types/database";
+import type {
+	PaginatedTransactions,
+	Transaction,
+	TransactionFilter,
+} from "@/types/transaction";
+import { type InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+
+type AccountSummary = Pick<
+	Database["public"]["Tables"]["financial_accounts"]["Row"],
+	"id" | "account_name"
+>;
+
+interface HouseholdMemberWithHousehold {
+	household_id: string;
+	households: {
+		id: string;
+		name: string;
+	} | null;
+}
 
 /**
  * Transactions page - displays transaction history with filtering and search
@@ -46,8 +64,8 @@ export default function TransactionsPage() {
 		useTransactions(filters);
 
 	// Flatten paginated data into single array
-	const transactions =
-		data?.pages.flatMap((page: any) => page.transactions) ?? [];
+	const transactions: Transaction[] =
+		data?.pages.flatMap((page) => page.transactions) ?? [];
 
 	// Fetch user accounts and households for display
 	useEffect(() => {
@@ -55,7 +73,8 @@ export default function TransactionsPage() {
 			// Fetch accounts
 			const { data: accounts } = await supabase
 				.from("financial_accounts")
-				.select("id, account_name");
+				.select("id, account_name")
+				.returns<AccountSummary[]>();
 
 			if (accounts) {
 				const map = new Map(accounts.map((acc) => [acc.id, acc.account_name]));
@@ -65,16 +84,26 @@ export default function TransactionsPage() {
 			// Fetch households
 			const { data: householdsData } = await supabase
 				.from("household_members")
-				.select("household_id, households(id, name)");
+				.select("household_id, households(id, name)")
+				.returns<HouseholdMemberWithHousehold[]>();
 
 			if (householdsData) {
 				const uniqueHouseholds = Array.from(
 					new Map(
 						householdsData
-							.filter((hm: any) => hm.households)
-							.map((hm: any) => [
-								hm.households.id,
-								{ id: hm.households.id, name: hm.households.name },
+							.filter(
+								(
+									householdMembership,
+								): householdMembership is HouseholdMemberWithHousehold & {
+									households: { id: string; name: string };
+								} => householdMembership.households !== null,
+							)
+							.map((householdMembership) => [
+								householdMembership.households.id,
+								{
+									id: householdMembership.households.id,
+									name: householdMembership.households.name,
+								},
 							]),
 					).values(),
 				);
@@ -97,19 +126,22 @@ export default function TransactionsPage() {
 
 	const handleTransactionUpdate = (updatedTransaction: Transaction) => {
 		// Optimistic update: update the cached transaction data
-		queryClient.setQueryData(["transactions", filters], (oldData: any) => {
-			if (!oldData) return oldData;
+		queryClient.setQueryData<InfiniteData<PaginatedTransactions>>(
+			["transactions", filters],
+			(oldData) => {
+				if (!oldData) return oldData;
 
-			return {
-				...oldData,
-				pages: oldData.pages.map((page: any) => ({
-					...page,
-					transactions: page.transactions.map((tx: Transaction) =>
-						tx.id === updatedTransaction.id ? updatedTransaction : tx,
-					),
-				})),
-			};
-		});
+				return {
+					...oldData,
+					pages: oldData.pages.map((page) => ({
+						...page,
+						transactions: page.transactions.map((tx: Transaction) =>
+							tx.id === updatedTransaction.id ? updatedTransaction : tx,
+						),
+					})),
+				};
+			},
+		);
 
 		setSelectedTransaction(updatedTransaction);
 	};
@@ -210,7 +242,7 @@ export default function TransactionsPage() {
 				accountsMap={accountsMap}
 				showSharing={households.length > 0}
 				households={households}
-				onSharingChange={handleSharingComplete}
+				onChange={handleSharingComplete}
 				selectable={households.length > 0}
 				selectedIds={selectedTransactionIds}
 				onToggleSelect={handleToggleSelect}

@@ -29,11 +29,12 @@ interface DataExportCardProps {
 	accountIds?: string[];
 }
 
+type ExportFormat = "csv" | "json";
+type DateRangeOption = "1m" | "3m" | "6m" | "1y" | "all";
+
 export function DataExportCard({ accountIds }: DataExportCardProps) {
-	const [format, setFormat] = useState<"csv" | "json">("csv");
-	const [dateRange, setDateRange] = useState<"1m" | "3m" | "6m" | "1y" | "all">(
-		"3m",
-	);
+	const [format, setFormat] = useState<ExportFormat>("csv");
+	const [dateRange, setDateRange] = useState<DateRangeOption>("3m");
 	const [exporting, setExporting] = useState(false);
 	const [message, setMessage] = useState<{
 		type: "success" | "error";
@@ -133,7 +134,11 @@ export function DataExportCard({ accountIds }: DataExportCardProps) {
 					<Label htmlFor="export-format">Export Format</Label>
 					<Select
 						value={format}
-						onValueChange={(value) => setFormat(value as "csv" | "json")}
+						onValueChange={(value) => {
+							if (value === "csv" || value === "json") {
+								setFormat(value);
+							}
+						}}
 					>
 						<SelectTrigger id="export-format">
 							<SelectValue />
@@ -159,7 +164,18 @@ export function DataExportCard({ accountIds }: DataExportCardProps) {
 					<Label htmlFor="date-range">Date Range</Label>
 					<Select
 						value={dateRange}
-						onValueChange={(value) => setDateRange(value as any)}
+						onValueChange={(value) => {
+							const allowed: DateRangeOption[] = [
+								"1m",
+								"3m",
+								"6m",
+								"1y",
+								"all",
+							];
+							if (allowed.includes(value as DateRangeOption)) {
+								setDateRange(value as DateRangeOption);
+							}
+						}}
 					>
 						<SelectTrigger id="date-range">
 							<SelectValue />

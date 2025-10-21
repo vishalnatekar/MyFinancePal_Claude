@@ -6,7 +6,7 @@ import type {
 	NetWorthHistoryPoint,
 	NetWorthSummary,
 } from "@/types/dashboard";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UseDashboardDataReturn {
 	netWorth: NetWorthSummary | null;
@@ -28,7 +28,7 @@ export function useDashboardData(
 	const [error, setError] = useState<string | null>(null);
 	const [dateRange, setDateRange] = useState<DateRange>(initialDateRange);
 
-	const fetchNetWorth = async () => {
+	const fetchNetWorth = useCallback(async () => {
 		const response = await fetch("/api/dashboard/net-worth", {
 			credentials: "same-origin",
 			headers: {
@@ -39,9 +39,9 @@ export function useDashboardData(
 			throw new Error(`Failed to fetch net worth: ${response.statusText}`);
 		}
 		return response.json();
-	};
+	}, []);
 
-	const fetchAccounts = async () => {
+	const fetchAccounts = useCallback(async () => {
 		const response = await fetch("/api/accounts", {
 			credentials: "same-origin",
 			headers: {
@@ -53,9 +53,9 @@ export function useDashboardData(
 		}
 		const data = await response.json();
 		return data.accounts || data; // Handle both { accounts: [] } and direct array
-	};
+	}, []);
 
-	const fetchHistory = async (range: DateRange) => {
+	const fetchHistory = useCallback(async (range: DateRange) => {
 		const response = await fetch(
 			`/api/dashboard/net-worth/history?range=${range}&includeTrend=true`,
 			{
@@ -69,47 +69,50 @@ export function useDashboardData(
 			throw new Error(`Failed to fetch history: ${response.statusText}`);
 		}
 		return response.json();
-	};
+	}, []);
 
-	const fetchAllData = async (range: DateRange = dateRange) => {
-		try {
-			setLoading(true);
-			setError(null);
+	const fetchAllData = useCallback(
+		async (range: DateRange) => {
+			try {
+				setLoading(true);
+				setError(null);
 
-			// Fetch accounts first (most critical)
-			const accountsData = await fetchAccounts().catch((err) => {
-				console.error("Failed to fetch accounts:", err);
-				return [];
-			});
-			setAccounts(accountsData);
+				// Fetch accounts first (most critical)
+				const accountsData = await fetchAccounts().catch((err) => {
+					console.error("Failed to fetch accounts:", err);
+					return [];
+				});
+				setAccounts(accountsData);
 
-			// Fetch net worth and history in parallel (less critical)
-			const [netWorthData, historyData] = await Promise.allSettled([
-				fetchNetWorth(),
-				fetchHistory(range),
-			]);
+				// Fetch net worth and history in parallel (less critical)
+				const [netWorthData, historyData] = await Promise.allSettled([
+					fetchNetWorth(),
+					fetchHistory(range),
+				]);
 
-			if (netWorthData.status === "fulfilled") {
-				setNetWorth(netWorthData.value);
-			} else {
-				console.error("Failed to fetch net worth:", netWorthData.reason);
+				if (netWorthData.status === "fulfilled") {
+					setNetWorth(netWorthData.value);
+				} else {
+					console.error("Failed to fetch net worth:", netWorthData.reason);
+				}
+
+				if (historyData.status === "fulfilled") {
+					setHistory(historyData.value.history || []);
+				} else {
+					console.error("Failed to fetch history:", historyData.reason);
+					setHistory([]);
+				}
+			} catch (err) {
+				const errorMessage =
+					err instanceof Error ? err.message : "Failed to fetch dashboard data";
+				setError(errorMessage);
+				console.error("Dashboard data fetch error:", err);
+			} finally {
+				setLoading(false);
 			}
-
-			if (historyData.status === "fulfilled") {
-				setHistory(historyData.value.history || []);
-			} else {
-				console.error("Failed to fetch history:", historyData.reason);
-				setHistory([]);
-			}
-		} catch (err) {
-			const errorMessage =
-				err instanceof Error ? err.message : "Failed to fetch dashboard data";
-			setError(errorMessage);
-			console.error("Dashboard data fetch error:", err);
-		} finally {
-			setLoading(false);
-		}
-	};
+		},
+		[fetchAccounts, fetchHistory, fetchNetWorth],
+	);
 
 	const updateDateRange = async (newRange: DateRange) => {
 		setDateRange(newRange);
@@ -127,9 +130,13 @@ export function useDashboardData(
 	};
 
 	useEffect(() => {
-		fetchAllData();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		void fetchAllData(dateRange);
+	}, [dateRange, fetchAllData]);
+
+	const refetchAll = useCallback(
+		() => fetchAllData(dateRange),
+		[dateRange, fetchAllData],
+	);
 
 	return {
 		netWorth,
@@ -137,7 +144,7 @@ export function useDashboardData(
 		history,
 		loading,
 		error,
-		refetchAll: () => fetchAllData(dateRange),
+		refetchAll,
 		updateDateRange,
 	};
 }

@@ -70,7 +70,7 @@ describe("UserPreferences Component", () => {
 		expect(screen.getByLabelText("Email Notifications")).toBeChecked();
 		expect(screen.getByLabelText("Shared Expense Alerts")).toBeChecked();
 		expect(screen.getByLabelText("Settlement Reminders")).not.toBeChecked();
-		expect(screen.getByDisplayValue("Eastern Time (ET)")).toBeInTheDocument();
+		expect(screen.getByText("Eastern Time (ET)")).toBeInTheDocument();
 	});
 
 	it("disables dependent settings when email notifications are off", async () => {

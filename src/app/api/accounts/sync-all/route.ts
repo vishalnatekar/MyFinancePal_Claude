@@ -1,6 +1,8 @@
 import { accountSyncService } from "@/services/account-sync-service";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // This endpoint can be called by cron jobs or background services
 export async function POST(request: NextRequest) {
 	try {
