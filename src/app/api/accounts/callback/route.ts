@@ -236,6 +236,78 @@ export async function GET(request: NextRequest) {
 				createdAccounts?.map((a) => a.id),
 			);
 
+			// Fetch and store initial transactions for each account
+			if (createdAccounts && createdAccounts.length > 0) {
+				console.log(
+					"📡 Step 5: Fetching initial transactions for connected accounts...",
+				);
+
+				for (const account of createdAccounts) {
+					try {
+						// Fetch transactions from last 3 months
+						const threeMonthsAgo = new Date();
+						threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+						const from = threeMonthsAgo.toISOString().split("T")[0];
+
+						const transactions =
+							await trueLayerService.getAccountTransactions(
+								account.truelayer_account_id || "",
+								access_token,
+								from,
+								undefined,
+								500, // Get up to 500 transactions
+							);
+
+						console.log(
+							`✅ Fetched ${transactions.length} transactions for ${account.account_name}`,
+						);
+
+						// Save transactions to database
+						if (transactions.length > 0) {
+							const transactionsToInsert = transactions.map((txn) => ({
+								account_id: account.id,
+								truelayer_transaction_id: txn.transaction_id,
+								date: txn.timestamp.split("T")[0],
+								amount: Math.abs(txn.amount),
+								currency: txn.currency || account.currency || "GBP",
+								transaction_type: txn.transaction_type,
+								description: txn.description || "",
+								merchant_name: txn.merchant_name || null,
+								category: txn.transaction_category || "uncategorized",
+								created_at: new Date().toISOString(),
+								updated_at: new Date().toISOString(),
+							}));
+
+							const { error: txnError } = await supabaseAdmin
+								.from("transactions")
+								.upsert(transactionsToInsert, {
+									onConflict: "truelayer_transaction_id",
+									ignoreDuplicates: false,
+								});
+
+							if (txnError) {
+								console.error(
+									`⚠️  Error saving transactions for ${account.account_name}:`,
+									txnError,
+								);
+							} else {
+								console.log(
+									`✅ Saved ${transactions.length} transactions for ${account.account_name}`,
+								);
+							}
+						}
+					} catch (error) {
+						console.error(
+							`⚠️  Failed to fetch transactions for account ${account.account_name}:`,
+							error,
+						);
+						// Don't fail the whole flow if transactions fail for one account
+					}
+				}
+
+				console.log("✅ Initial transaction sync complete");
+			}
+
 			// Create sync history entry
 			if (createdAccounts && createdAccounts.length > 0) {
 				const syncHistoryEntries = createdAccounts.map((account) => ({
