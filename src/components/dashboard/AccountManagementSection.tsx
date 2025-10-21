@@ -1,5 +1,6 @@
 "use client";
 
+import { ConnectAccountButton } from "@/components/accounts/ConnectAccountButton";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -18,7 +19,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Link as LinkIcon, Plus, Trash2 } from "lucide-react";
+import { Link as LinkIcon, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 export interface ManagedAccount {
@@ -33,7 +34,6 @@ export interface ManagedAccount {
 
 interface AccountManagementSectionProps {
 	accounts: ManagedAccount[];
-	onAddAccount: () => void;
 	onRemoveAccount: (accountId: string) => Promise<void>;
 	onReconnect: (accountId: string) => void;
 	loading?: boolean;
@@ -41,7 +41,6 @@ interface AccountManagementSectionProps {
 
 export function AccountManagementSection({
 	accounts,
-	onAddAccount,
 	onRemoveAccount,
 	onReconnect,
 	loading = false,
@@ -117,10 +116,7 @@ export function AccountManagementSection({
 								Add or remove connected financial accounts
 							</CardDescription>
 						</div>
-						<Button onClick={onAddAccount} size="sm">
-							<Plus className="h-4 w-4 mr-2" />
-							Add Account
-						</Button>
+						<ConnectAccountButton size="sm" />
 					</div>
 				</CardHeader>
 				<CardContent>
@@ -129,10 +125,7 @@ export function AccountManagementSection({
 							<p className="text-sm text-muted-foreground mb-4">
 								No accounts connected yet
 							</p>
-							<Button onClick={onAddAccount} variant="outline">
-								<Plus className="h-4 w-4 mr-2" />
-								Connect Your First Account
-							</Button>
+							<ConnectAccountButton variant="outline" />
 						</div>
 					) : (
 						<div className="space-y-4">

@@ -36,11 +36,6 @@ export default function DashboardPage() {
 
 	const hasAccounts = accounts.length > 0;
 
-	const handleAddAccount = () => {
-		// Navigate to accounts page where they can use the Add Account button
-		router.push("/accounts");
-	};
-
 	const handleReconnect = (accountId: string) => {
 		// Navigate to accounts page - user can reconnect from there
 		router.push("/accounts");
@@ -112,7 +107,6 @@ export default function DashboardPage() {
 								/>
 								<AccountManagementSection
 									accounts={managedAccounts}
-									onAddAccount={handleAddAccount}
 									onRemoveAccount={handleRemoveAccount}
 									onReconnect={handleReconnect}
 									loading={accountsLoading}

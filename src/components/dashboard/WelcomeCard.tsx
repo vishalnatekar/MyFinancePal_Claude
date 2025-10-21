@@ -1,10 +1,11 @@
 "use client";
 
+import { ConnectAccountButton } from "@/components/accounts/ConnectAccountButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAuthStore } from "@/stores/auth-store";
-import { Plus, Settings, Users } from "lucide-react";
+import { Settings, Users } from "lucide-react";
 import Link from "next/link";
 
 export function WelcomeCard() {
@@ -82,17 +83,7 @@ export function WelcomeCard() {
 				<div className="bg-white/50 dark:bg-gray-900/50 rounded-lg p-4 mb-4">
 					<h3 className="font-semibold mb-2">Quick Actions</h3>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-						<Button
-							asChild
-							variant="outline"
-							size="sm"
-							className="justify-start"
-						>
-							<Link href="/accounts">
-								<Plus className="w-4 h-4 mr-2" />
-								Add Bank Account
-							</Link>
-						</Button>
+						<ConnectAccountButton variant="outline" size="sm" />
 						<Button
 							asChild
 							variant="outline"
