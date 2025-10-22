@@ -249,14 +249,13 @@ export async function GET(request: NextRequest) {
 						threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 						const from = threeMonthsAgo.toISOString().split("T")[0];
 
-						const transactions =
-							await trueLayerService.getAccountTransactions(
-								account.truelayer_account_id || "",
-								access_token,
-								from,
-								undefined,
-								500, // Get up to 500 transactions
-							);
+						const transactions = await trueLayerService.getAccountTransactions(
+							account.truelayer_account_id || "",
+							access_token,
+							from,
+							undefined,
+							500, // Get up to 500 transactions
+						);
 
 						console.log(
 							`✅ Fetched ${transactions.length} transactions for ${account.account_name}`,

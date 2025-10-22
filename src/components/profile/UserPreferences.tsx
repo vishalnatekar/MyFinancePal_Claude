@@ -62,8 +62,8 @@ export function UserPreferences() {
 		return (
 			<div
 				className="flex items-center justify-center py-8"
-				role="status"
 				aria-live="polite"
+				aria-busy="true"
 				aria-label="Loading preferences"
 			>
 				<Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />

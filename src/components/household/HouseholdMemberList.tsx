@@ -20,9 +20,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { HouseholdService } from "@/services/household-service";
 import type { HouseholdMemberWithProfile } from "@/types/household";
-import { useToast } from "@/hooks/use-toast";
 import { Crown, User, UserX } from "lucide-react";
 import { useState } from "react";
 

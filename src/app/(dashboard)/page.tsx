@@ -12,13 +12,14 @@ import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
 import { HouseholdCard } from "@/components/household/HouseholdCard";
 import { Breadcrumb } from "@/components/layout/Breadcrumb";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAccountManagement } from "@/hooks/use-account-management";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useHouseholds } from "@/hooks/use-households";
 import { createClient } from "@/lib/supabase";
-import { Plus } from "lucide-react";
+import { AlertCircle, Info, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -67,35 +68,47 @@ export default function DashboardPage() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-8">
 			<Breadcrumb />
 			<WelcomeCard />
 
-			{/* Debug Info - Remove after testing */}
 			{error && (
-				<div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-					<p className="font-bold">Error loading dashboard:</p>
-					<p className="text-sm">{error}</p>
-				</div>
+				<Alert variant="destructive" className="border-destructive/40">
+					<AlertCircle className="h-4 w-4" />
+					<AlertTitle className="text-base font-semibold">
+						We hit a snag loading your dashboard
+					</AlertTitle>
+					<AlertDescription className="text-sm text-destructive">
+						{error}
+					</AlertDescription>
+				</Alert>
 			)}
 			{!loading && accounts.length === 0 && !error && (
-				<div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
-					<p className="text-sm">
-						Debug: No accounts found. Check console for errors.
-					</p>
-				</div>
+				<Alert className="border-border/70 bg-background/80">
+					<Info className="h-4 w-4 text-primary" />
+					<AlertTitle className="text-base font-semibold text-foreground">
+						No accounts are connected yet
+					</AlertTitle>
+					<AlertDescription>
+						Connect your first bank or investment account to unlock insights
+						across the dashboard.
+					</AlertDescription>
+				</Alert>
 			)}
 
 			<Tabs defaultValue="finances" className="w-full">
 				<TabsList className="grid w-full grid-cols-2">
-					<TabsTrigger value="finances">My Finances</TabsTrigger>
-					<TabsTrigger value="household">Household</TabsTrigger>
+					<TabsTrigger value="finances" className="gap-2 text-sm">
+						My Finances
+					</TabsTrigger>
+					<TabsTrigger value="household" className="gap-2 text-sm">
+						Household
+					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="finances" className="space-y-6">
+				<TabsContent value="finances" className="space-y-8">
 					{hasAccounts ? (
-						<>
-							{/* Net Worth Summary - Full Width */}
+						<div className="space-y-8">
 							<div className="w-full">
 								<NetWorthSummaryCard
 									netWorth={netWorth}
@@ -105,8 +118,7 @@ export default function DashboardPage() {
 								/>
 							</div>
 
-							{/* Dashboard Grid */}
-							<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+							<div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:gap-8">
 								<AccountBreakdownCard accounts={accounts} loading={loading} />
 								<AssetCategoryChart
 									assets={netWorth?.asset_breakdown}
@@ -114,7 +126,6 @@ export default function DashboardPage() {
 								/>
 							</div>
 
-							{/* Net Worth Trend - Full Width */}
 							<div className="w-full">
 								<NetWorthTrendChart
 									history={history}
@@ -123,8 +134,7 @@ export default function DashboardPage() {
 								/>
 							</div>
 
-							{/* Account Management Grid */}
-							<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+							<div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
 								<AccountSyncStatus
 									accounts={syncStatus}
 									onRefresh={handleRefresh}
@@ -138,11 +148,10 @@ export default function DashboardPage() {
 								/>
 							</div>
 
-							{/* Data Export - Full Width */}
 							<div className="w-full lg:max-w-md">
 								<DataExportCard accountIds={accounts.map((a) => a.id)} />
 							</div>
-						</>
+						</div>
 					) : (
 						<EmptyState
 							icon="💰"
@@ -154,7 +163,7 @@ export default function DashboardPage() {
 					)}
 				</TabsContent>
 
-				<TabsContent value="household" className="space-y-6">
+				<TabsContent value="household" className="space-y-8">
 					{householdsLoading ? (
 						<div className="flex justify-center items-center min-h-[400px]">
 							<LoadingSpinner size="lg" />

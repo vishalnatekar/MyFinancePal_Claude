@@ -34,18 +34,18 @@ function getAccountIcon(accountType: string) {
 	}
 }
 
-function getAccountTypeBadgeColor(accountType: string): string {
+function getAccountTypeBadgeClasses(accountType: string): string {
 	switch (accountType) {
 		case "checking":
 		case "savings":
-			return "bg-blue-100 text-blue-800";
+			return "border-primary/30 bg-primary/10 text-primary";
 		case "investment":
-			return "bg-green-100 text-green-800";
+			return "border-accent/40 bg-accent/40 text-foreground";
 		case "credit":
 		case "loan":
-			return "bg-red-100 text-red-800";
+			return "border-destructive/30 bg-destructive/15 text-destructive";
 		default:
-			return "bg-gray-100 text-gray-800";
+			return "border-border/50 bg-muted/30 text-foreground";
 	}
 }
 
@@ -72,18 +72,18 @@ function AccountSkeleton() {
 			{[1, 2, 3].map((i) => (
 				<div
 					key={i}
-					className="flex items-center justify-between p-3 border rounded-lg"
+					className="flex items-center justify-between rounded-2xl border border-border/50 bg-muted/30 p-4"
 				>
 					<div className="flex items-center gap-3">
-						<div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+						<div className="h-10 w-10 animate-pulse rounded-2xl bg-muted/70" />
 						<div className="space-y-1">
-							<div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-							<div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+							<div className="h-4 w-28 animate-pulse rounded-full bg-muted/70" />
+							<div className="h-3 w-32 animate-pulse rounded-full bg-muted/70" />
 						</div>
 					</div>
-					<div className="text-right space-y-1">
-						<div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
-						<div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+					<div className="space-y-1 text-right">
+						<div className="h-4 w-20 animate-pulse rounded-full bg-muted/70" />
+						<div className="h-3 w-16 animate-pulse rounded-full bg-muted/70" />
 					</div>
 				</div>
 			))}
@@ -104,9 +104,9 @@ export function AccountBreakdownCard({
 				{loading ? (
 					<AccountSkeleton />
 				) : accounts.length === 0 ? (
-					<div className="text-center py-8 text-gray-500">
-						<Building2 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-						<p>No accounts connected</p>
+					<div className="py-10 text-center text-muted-foreground">
+						<Building2 className="mx-auto mb-3 h-12 w-12 text-primary/60" />
+						<p className="font-medium text-foreground">No accounts connected</p>
 						<p className="text-sm">
 							Connect your first account to see your balance breakdown
 						</p>
@@ -116,23 +116,25 @@ export function AccountBreakdownCard({
 						{accounts.map((account) => (
 							<div
 								key={account.id}
-								className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+								className="flex items-center justify-between rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm transition hover:border-border/80 hover:bg-card/90 hover:shadow-md"
 							>
 								<div className="flex items-center gap-3">
-									<div className="p-2 bg-gray-100 rounded-full">
+									<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
 										{getAccountIcon(account.account_type)}
 									</div>
 									<div className="space-y-1">
-										<p className="font-medium text-sm">
+										<p className="text-sm font-semibold text-foreground">
 											{account.account_name}
 										</p>
 										<div className="flex items-center gap-2">
-											<p className="text-xs text-gray-500">
+											<p className="text-xs text-muted-foreground">
 												{account.institution_name}
 											</p>
 											<Badge
-												variant="secondary"
-												className={`text-xs ${getAccountTypeBadgeColor(account.account_type)}`}
+												variant="outline"
+												className={`border text-xs font-medium ${getAccountTypeBadgeClasses(
+													account.account_type,
+												)}`}
 											>
 												{formatAccountType(account.account_type)}
 											</Badge>
@@ -140,14 +142,14 @@ export function AccountBreakdownCard({
 									</div>
 								</div>
 
-								<div className="text-right space-y-1">
+								<div className="space-y-1 text-right">
 									<p
-										className={`font-semibold text-sm ${
+										className={`text-sm font-semibold ${
 											["credit", "loan"].includes(account.account_type)
-												? "text-red-600"
+												? "text-destructive"
 												: account.current_balance >= 0
-													? "text-green-600"
-													: "text-red-600"
+													? "text-primary"
+													: "text-destructive"
 										}`}
 									>
 										{formatCurrency(
@@ -156,7 +158,7 @@ export function AccountBreakdownCard({
 										)}
 									</p>
 									{account.last_synced && (
-										<p className="text-xs text-gray-500">
+										<p className="text-xs text-muted-foreground">
 											{new Date(account.last_synced).toLocaleDateString(
 												"en-GB",
 											)}

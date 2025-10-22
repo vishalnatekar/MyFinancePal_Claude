@@ -51,7 +51,7 @@ export function WelcomeCard() {
 				: "evening";
 
 	return (
-		<Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+		<Card className="bg-gradient-to-br from-primary/12 via-accent/10 to-primary/4 border-primary/20">
 			<CardHeader>
 				<div className="flex items-center justify-between">
 					<div className="flex items-center space-x-4">
@@ -63,15 +63,20 @@ export function WelcomeCard() {
 							<AvatarFallback>{initials}</AvatarFallback>
 						</Avatar>
 						<div>
-							<h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+							<h2 className="text-2xl font-semibold text-foreground">
 								Good {timeOfDay}, {displayName}!
 							</h2>
-							<p className="text-blue-700 dark:text-blue-300">
+							<p className="text-sm text-foreground/70">
 								Welcome back to MyFinancePal
 							</p>
 						</div>
 					</div>
-					<Button asChild variant="outline" size="sm">
+					<Button
+						asChild
+						variant="outline"
+						size="sm"
+						className="border-white/60"
+					>
 						<Link href="/profile">
 							<Settings className="w-4 h-4 mr-2" />
 							Settings
@@ -80,8 +85,10 @@ export function WelcomeCard() {
 				</div>
 			</CardHeader>
 			<CardContent>
-				<div className="bg-white/50 dark:bg-gray-900/50 rounded-lg p-4 mb-4">
-					<h3 className="font-semibold mb-2">Quick Actions</h3>
+				<div className="rounded-xl border border-white/50 bg-background/60 p-4 shadow-sm">
+					<h3 className="mb-3 text-sm font-semibold text-foreground/80">
+						Quick Actions
+					</h3>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 						<ConnectAccountButton variant="outline" size="sm" />
 						<Button
@@ -97,7 +104,7 @@ export function WelcomeCard() {
 						</Button>
 					</div>
 				</div>
-				<div className="text-sm text-blue-700 dark:text-blue-300">
+				<div className="mt-4 text-sm text-foreground/70">
 					Start by connecting your accounts or setting up a household to track
 					shared expenses.
 				</div>

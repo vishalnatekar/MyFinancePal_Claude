@@ -151,19 +151,21 @@ export function NetWorthTrendChart({
 		if (active && payload && payload.length) {
 			const data = payload[0].payload as NetWorthHistoryPoint;
 			return (
-				<div className="bg-white p-3 border rounded-lg shadow-lg">
-					<p className="font-medium">
+				<div className="bg-card border border-border rounded-lg shadow-lg p-3">
+					<p className="font-medium text-card-foreground text-sm">
 						{new Date(data.date).toLocaleDateString("en-GB")}
 					</p>
-					<p className="text-sm text-green-600">
+					<p className="text-sm text-primary font-semibold mt-1">
 						Net Worth: {formatCurrency(data.net_worth)}
 					</p>
-					<p className="text-xs text-gray-600">
-						Assets: {formatCurrency(data.assets)}
-					</p>
-					<p className="text-xs text-gray-600">
-						Liabilities: {formatCurrency(data.liabilities)}
-					</p>
+					<div className="mt-2 space-y-0.5">
+						<p className="text-xs text-muted-foreground">
+							Assets: {formatCurrency(data.assets)}
+						</p>
+						<p className="text-xs text-muted-foreground">
+							Liabilities: {formatCurrency(data.liabilities)}
+						</p>
+					</div>
 				</div>
 			);
 		}
@@ -174,7 +176,7 @@ export function NetWorthTrendChart({
 	const firstValue = history[0]?.net_worth || 0;
 	const lastValue = history[history.length - 1]?.net_worth || 0;
 	const isPositiveTrend = lastValue >= firstValue;
-	const lineColor = isPositiveTrend ? "#22c55e" : "#ef4444"; // green or red
+	const lineColor = "var(--primary)"; // Use theme primary color (blue)
 
 	return (
 		<Card className="net-worth-trend-chart">
@@ -201,16 +203,28 @@ export function NetWorthTrendChart({
 						data={chartData}
 						margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
 					>
-						<CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+						<defs>
+							<linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
+								<stop offset="5%" stopColor={lineColor} stopOpacity={0.15} />
+								<stop offset="95%" stopColor={lineColor} stopOpacity={0} />
+							</linearGradient>
+						</defs>
+						<CartesianGrid
+							strokeDasharray="3 3"
+							stroke="var(--border)"
+							vertical={false}
+						/>
 						<XAxis
 							dataKey="date_formatted"
-							tick={{ fontSize: 12 }}
-							tickLine={{ stroke: "#e0e0e0" }}
+							tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+							tickLine={false}
+							axisLine={false}
 						/>
 						<YAxis
 							domain={yAxisDomain}
-							tick={{ fontSize: 12 }}
-							tickLine={{ stroke: "#e0e0e0" }}
+							tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+							tickLine={false}
+							axisLine={false}
 							tickFormatter={(value) => formatCurrency(value).replace("£", "£")}
 						/>
 						<Tooltip content={<CustomTooltip />} />
@@ -218,9 +232,16 @@ export function NetWorthTrendChart({
 							type="monotone"
 							dataKey="net_worth"
 							stroke={lineColor}
-							strokeWidth={2}
-							dot={{ fill: lineColor, strokeWidth: 2, r: 4 }}
-							activeDot={{ r: 6, stroke: lineColor, strokeWidth: 2 }}
+							strokeWidth={2.5}
+							dot={false}
+							activeDot={{
+								r: 5,
+								fill: lineColor,
+								stroke: "var(--background)",
+								strokeWidth: 2,
+							}}
+							animationDuration={1000}
+							fill="url(#colorNetWorth)"
 						/>
 					</LineChart>
 				</ResponsiveContainer>

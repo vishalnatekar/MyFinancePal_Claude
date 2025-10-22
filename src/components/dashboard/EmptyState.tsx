@@ -24,11 +24,17 @@ export function EmptyState({
 	secondaryActionHref,
 }: EmptyStateProps) {
 	return (
-		<Card>
-			<CardContent className="flex flex-col items-center justify-center py-12 px-6 text-center">
-				<div className="text-6xl mb-4">{icon}</div>
-				<h3 className="text-lg font-semibold mb-2">{title}</h3>
-				<p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+		<Card className="bg-background/70">
+			<CardContent className="flex flex-col items-center justify-center gap-4 py-12 px-6 text-center">
+				<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-4xl">
+					{icon}
+				</div>
+				<div className="space-y-3">
+					<h3 className="text-lg font-semibold text-foreground">{title}</h3>
+					<p className="mx-auto max-w-md text-sm text-muted-foreground">
+						{description}
+					</p>
+				</div>
 				<div className="flex flex-col sm:flex-row gap-2">
 					<Button asChild>
 						<Link href={actionHref}>{actionText}</Link>

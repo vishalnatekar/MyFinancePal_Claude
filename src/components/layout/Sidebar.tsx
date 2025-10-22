@@ -74,13 +74,20 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 	const pathname = usePathname();
 
 	return (
-		<div className="flex flex-col h-full">
-			<div className="flex items-center justify-between p-6">
+		<div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+			<div className="flex items-center justify-between px-6 py-6">
 				<Link href="/" className="flex items-center space-x-2">
-					<div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-						<CreditCard className="w-5 h-5 text-primary-foreground" />
+					<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sidebar-primary via-primary to-sidebar-primary shadow-lg shadow-primary/20">
+						<CreditCard className="h-5 w-5 text-sidebar-primary-foreground" />
 					</div>
-					<span className="text-xl font-bold">MyFinancePal</span>
+					<div className="flex flex-col">
+						<span className="text-base font-semibold leading-tight">
+							MyFinancePal
+						</span>
+						<span className="text-xs text-sidebar-foreground/70">
+							Intentional money for households
+						</span>
+					</div>
 				</Link>
 				{onClose && (
 					<Button
@@ -94,8 +101,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 				)}
 			</div>
 
-			<nav className="flex-1 px-4 space-y-2">
-				<div className="space-y-1">
+			<nav className="flex-1 space-y-6 px-4">
+				<div className="space-y-1.5">
 					{navigation.map((item) => {
 						const isActive =
 							pathname === item.href ||
@@ -107,16 +114,24 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 								asChild
 								variant={isActive ? "secondary" : "ghost"}
 								className={cn(
-									"w-full justify-start h-12",
-									isActive && "bg-secondary font-medium",
+									"w-full justify-start rounded-xl border border-transparent bg-transparent px-3 py-3 text-left shadow-none transition hover:border-sidebar-border/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",
+									isActive &&
+										"border-sidebar-border/80 bg-sidebar-accent/60 text-sidebar-primary shadow-sm",
 								)}
 								onClick={onClose}
 							>
 								<Link href={item.href}>
-									<item.icon className="mr-3 h-5 w-5" />
-									<div className="text-left">
-										<div className="font-medium">{item.name}</div>
-										<div className="text-xs text-muted-foreground">
+									<item.icon
+										className={cn(
+											"mr-3 h-5 w-5",
+											isActive && "text-sidebar-primary",
+										)}
+									/>
+									<div className="flex flex-col">
+										<div className="font-medium tracking-tight">
+											{item.name}
+										</div>
+										<div className="text-xs text-sidebar-foreground/70">
 											{item.description}
 										</div>
 									</div>
@@ -128,8 +143,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
 				<Separator className="my-4" />
 
-				<div className="space-y-1">
-					<div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+				<div className="space-y-2">
+					<div className="px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
 						Account
 					</div>
 					{accountNavigation.map((item) => {
@@ -141,8 +156,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 								asChild
 								variant={isActive ? "secondary" : "ghost"}
 								className={cn(
-									"w-full justify-start",
-									isActive && "bg-secondary font-medium",
+									"w-full justify-start rounded-lg border border-transparent px-3 py-2 text-sm font-medium transition hover:border-sidebar-border/60 hover:bg-sidebar-accent/30",
+									isActive && "border-sidebar-border/80 bg-sidebar-accent/60",
 								)}
 								onClick={onClose}
 							>
@@ -156,9 +171,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 				</div>
 			</nav>
 
-			<div className="p-4 border-t">
-				<div className="text-xs text-muted-foreground text-center">
-					© 2025 MyFinancePal
+			<div className="border-t border-sidebar-border/60 p-6">
+				<div className="rounded-xl border border-sidebar-border/70 bg-sidebar-accent/30 px-4 py-3 text-xs text-sidebar-foreground/70">
+					<span className="font-semibold text-sidebar-foreground">Tip:</span>{" "}
+					Stay in sync by reconnecting accounts weekly for the freshest
+					insights.
 				</div>
 			</div>
 		</div>
@@ -171,7 +188,7 @@ export function Sidebar({ open, onClose, className }: SidebarProps) {
 			{/* Desktop Sidebar */}
 			<aside
 				className={cn(
-					"hidden md:flex md:flex-col md:fixed md:inset-y-0 md:w-64 md:border-r md:bg-card",
+					"hidden md:fixed md:inset-y-0 md:flex md:w-72 md:flex-col md:border-r md:border-sidebar-border/80 md:bg-sidebar",
 					className,
 				)}
 			>
@@ -180,7 +197,10 @@ export function Sidebar({ open, onClose, className }: SidebarProps) {
 
 			{/* Mobile Sidebar */}
 			<Sheet open={open} onOpenChange={onClose}>
-				<SheetContent side="left" className="p-0 w-64">
+				<SheetContent
+					side="left"
+					className="w-72 border-sidebar-border/80 bg-sidebar p-0"
+				>
 					<SidebarContent onClose={onClose} />
 				</SheetContent>
 			</Sheet>

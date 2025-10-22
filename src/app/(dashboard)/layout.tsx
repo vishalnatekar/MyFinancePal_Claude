@@ -24,19 +24,21 @@ export default function DashboardLayout({
 				redirectTo="/login"
 				requireProfile={false}
 			>
-				<div className="min-h-screen bg-background">
+				<div className="min-h-screen bg-background/80">
 					<Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
 					<div
 						className={cn(
-							"flex flex-col min-h-screen transition-all duration-300",
-							"md:ml-64", // Always offset for desktop sidebar
+							"flex min-h-screen flex-col transition-all duration-300",
+							"md:ml-72", // Always offset for desktop sidebar
 						)}
 					>
 						<Header onMenuClick={toggleSidebar} sidebarOpen={sidebarOpen} />
 
-						<main className="flex-1 p-4 md:p-6">
-							<div className="max-w-7xl mx-auto">{children}</div>
+						<main className="flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-10">
+							<div className="mx-auto w-full max-w-7xl space-y-8">
+								{children}
+							</div>
 						</main>
 					</div>
 				</div>

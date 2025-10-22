@@ -1,5 +1,22 @@
 import type { Config } from "tailwindcss";
 
+const withOpacityValue = (variable: string) => {
+	return ({ opacityValue }: { opacityValue?: string }) => {
+		if (opacityValue === undefined) {
+			return `var(${variable})`;
+		}
+
+		const opacity = Number(opacityValue);
+		if (Number.isNaN(opacity)) {
+			return `var(${variable})`;
+		}
+
+		const percentage = Math.max(0, Math.min(100, Math.round(opacity * 100)));
+
+		return `color-mix(in oklch, var(${variable}) ${percentage}%, transparent)`;
+	};
+};
+
 const config = {
 	darkMode: ["class"],
 	content: [
@@ -19,38 +36,59 @@ const config = {
 		},
 		extend: {
 			colors: {
-				border: "hsl(var(--border))",
-				input: "hsl(var(--input))",
-				ring: "hsl(var(--ring))",
-				background: "hsl(var(--background))",
-				foreground: "hsl(var(--foreground))",
+				border: withOpacityValue("--border"),
+				input: withOpacityValue("--input"),
+				ring: withOpacityValue("--ring"),
+				background: withOpacityValue("--background"),
+				foreground: withOpacityValue("--foreground"),
 				primary: {
-					DEFAULT: "hsl(var(--primary))",
-					foreground: "hsl(var(--primary-foreground))",
+					DEFAULT: withOpacityValue("--primary"),
+					foreground: withOpacityValue("--primary-foreground"),
 				},
 				secondary: {
-					DEFAULT: "hsl(var(--secondary))",
-					foreground: "hsl(var(--secondary-foreground))",
+					DEFAULT: withOpacityValue("--secondary"),
+					foreground: withOpacityValue("--secondary-foreground"),
 				},
 				destructive: {
-					DEFAULT: "hsl(var(--destructive))",
-					foreground: "hsl(var(--destructive-foreground))",
+					DEFAULT: withOpacityValue("--destructive"),
+					foreground: withOpacityValue("--destructive-foreground"),
 				},
 				muted: {
-					DEFAULT: "hsl(var(--muted))",
-					foreground: "hsl(var(--muted-foreground))",
+					DEFAULT: withOpacityValue("--muted"),
+					foreground: withOpacityValue("--muted-foreground"),
 				},
 				accent: {
-					DEFAULT: "hsl(var(--accent))",
-					foreground: "hsl(var(--accent-foreground))",
+					DEFAULT: withOpacityValue("--accent"),
+					foreground: withOpacityValue("--accent-foreground"),
 				},
 				popover: {
-					DEFAULT: "hsl(var(--popover))",
-					foreground: "hsl(var(--popover-foreground))",
+					DEFAULT: withOpacityValue("--popover"),
+					foreground: withOpacityValue("--popover-foreground"),
 				},
 				card: {
-					DEFAULT: "hsl(var(--card))",
-					foreground: "hsl(var(--card-foreground))",
+					DEFAULT: withOpacityValue("--card"),
+					foreground: withOpacityValue("--card-foreground"),
+				},
+				sidebar: {
+					DEFAULT: withOpacityValue("--sidebar"),
+					foreground: withOpacityValue("--sidebar-foreground"),
+					primary: withOpacityValue("--sidebar-primary"),
+					"primary-foreground": withOpacityValue(
+						"--sidebar-primary-foreground",
+					),
+					accent: withOpacityValue("--sidebar-accent"),
+					"accent-foreground": withOpacityValue(
+						"--sidebar-accent-foreground",
+					),
+					border: withOpacityValue("--sidebar-border"),
+					ring: withOpacityValue("--sidebar-ring"),
+				},
+				chart: {
+					"1": withOpacityValue("--chart-1"),
+					"2": withOpacityValue("--chart-2"),
+					"3": withOpacityValue("--chart-3"),
+					"4": withOpacityValue("--chart-4"),
+					"5": withOpacityValue("--chart-5"),
 				},
 			},
 			borderRadius: {

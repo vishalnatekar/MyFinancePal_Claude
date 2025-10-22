@@ -165,29 +165,22 @@ export class NetWorthHistoryService {
 		assets: number;
 		liabilities: number;
 	}> {
-		// Get the latest balance for each account on or before the specified date
-		const { data: balanceHistory, error } = await this.supabase
-			.from("account_balance_history")
-			.select(`
-        account_id,
-        balance,
-        currency,
-        recorded_at,
-        financial_accounts!inner(account_type, user_id)
-      `)
-			.eq("financial_accounts.user_id", userId)
-			.lte("recorded_at", `${date} 23:59:59`)
-			.order("recorded_at", { ascending: false });
+		// First, get all account IDs for this user
+		const { data: userAccounts, error: accountsError } = await this.supabase
+			.from("financial_accounts")
+			.select("id, account_type")
+			.eq("user_id", userId);
 
-		if (error) {
-			throw new Error(`Failed to fetch historical balances: ${error.message}`);
+		if (accountsError) {
+			throw new Error(`Failed to fetch user accounts: ${accountsError.message}`);
 		}
 
-		if (!balanceHistory || balanceHistory.length === 0) {
+		if (!userAccounts || userAccounts.length === 0) {
 			return { total: 0, assets: 0, liabilities: 0 };
 		}
 
-		// Get the most recent balance for each account
+		// For each account, get the most recent balance on or before the date
+		// This is more efficient than fetching all history and filtering
 		const accountBalances = new Map<
 			string,
 			{
@@ -197,12 +190,21 @@ export class NetWorthHistoryService {
 			}
 		>();
 
-		for (const record of balanceHistory) {
-			if (!accountBalances.has(record.account_id)) {
-				accountBalances.set(record.account_id, {
-					balance: record.balance,
-					accountType: record.financial_accounts.account_type,
-					currency: record.currency || "GBP",
+		for (const account of userAccounts) {
+			const { data: latestBalance, error: balanceError } = await this.supabase
+				.from("account_balance_history")
+				.select("balance, currency, recorded_at")
+				.eq("account_id", account.id)
+				.lte("recorded_at", `${date} 23:59:59`)
+				.order("recorded_at", { ascending: false })
+				.limit(1)
+				.single();
+
+			if (!balanceError && latestBalance) {
+				accountBalances.set(account.id, {
+					balance: latestBalance.balance,
+					accountType: account.account_type,
+					currency: latestBalance.currency || "GBP",
 				});
 			}
 		}
@@ -263,10 +265,18 @@ export class NetWorthHistoryService {
 			this.daysBetweenDates(history[0].date, history[history.length - 1].date),
 		);
 		const periodsPerYear = 365 / daysDiff;
-		const growthRate =
-			firstValue !== 0
-				? ((lastValue / Math.abs(firstValue)) ** (1 / periodsPerYear) - 1) * 100
-				: 0;
+
+		// Guard against invalid calculations (e.g., when periodsPerYear is too large/small)
+		let growthRate = 0;
+		if (firstValue !== 0 && Number.isFinite(periodsPerYear) && periodsPerYear > 0) {
+			const ratio = lastValue / Math.abs(firstValue);
+			if (ratio > 0 && Number.isFinite(ratio)) {
+				const annualizedGrowth = ratio ** (1 / periodsPerYear) - 1;
+				if (Number.isFinite(annualizedGrowth)) {
+					growthRate = annualizedGrowth * 100;
+				}
+			}
+		}
 
 		const trend =
 			percentageChange > 1 ? "up" : percentageChange < -1 ? "down" : "stable";

@@ -35,8 +35,8 @@ export function Header({ onMenuClick, sidebarOpen }: HeaderProps) {
 	};
 
 	return (
-		<header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-			<div className="flex h-16 items-center justify-between px-4 md:px-6">
+		<header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+			<div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center space-x-4">
 					<Button
 						variant="ghost"
@@ -47,8 +47,25 @@ export function Header({ onMenuClick, sidebarOpen }: HeaderProps) {
 						<Menu className="w-5 h-5" />
 					</Button>
 
-					<div className="hidden md:flex items-center space-x-2">
-						<h1 className="text-xl font-bold text-primary">MyFinancePal</h1>
+					<div className="hidden items-center space-x-3 md:flex">
+						<div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-primary to-primary/70 shadow-md shadow-primary/30">
+							<span className="text-sm font-black uppercase text-primary-foreground">
+								MF
+							</span>
+						</div>
+						<div>
+							<div className="flex items-center gap-3">
+								<h1 className="text-lg font-semibold tracking-tight text-foreground">
+									MyFinancePal
+								</h1>
+								<span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+									Personal Beta
+								</span>
+							</div>
+							<p className="text-xs text-muted-foreground">
+								Streamline your household finances in one place
+							</p>
+						</div>
 					</div>
 				</div>
 

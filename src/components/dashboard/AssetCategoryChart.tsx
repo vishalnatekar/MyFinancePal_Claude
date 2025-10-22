@@ -18,10 +18,10 @@ interface AssetCategoryChartProps {
 }
 
 const COLORS = {
-	cash: "#22c55e", // green-500
-	investments: "#3b82f6", // blue-500
-	property: "#f59e0b", // amber-500
-	other: "#8b5cf6", // violet-500
+	cash: "var(--chart-1)",
+	investments: "var(--chart-2)",
+	property: "var(--chart-3)",
+	other: "var(--chart-4)",
 };
 
 function formatCurrency(amount: number): string {
@@ -35,19 +35,19 @@ function formatCurrency(amount: number): string {
 
 function ChartSkeleton() {
 	return (
-		<div className="h-[200px] md:h-[300px] bg-gray-100 rounded animate-pulse flex items-center justify-center">
-			<div className="text-gray-400">Loading chart...</div>
+		<div className="flex h-[200px] items-center justify-center rounded-2xl bg-muted/40 md:h-[300px]">
+			<div className="text-sm text-muted-foreground">Loading chart...</div>
 		</div>
 	);
 }
 
 function NoDataMessage() {
 	return (
-		<div className="h-[200px] md:h-[300px] flex items-center justify-center text-gray-500">
-			<div className="text-center">
-				<div className="text-4xl mb-2">📊</div>
-				<p>No asset data available</p>
-				<p className="text-sm">Connect accounts to see your asset breakdown</p>
+		<div className="flex h-[200px] items-center justify-center md:h-[300px]">
+			<div className="text-center text-sm text-muted-foreground">
+				<div className="mb-3 text-4xl">📊</div>
+				<p className="font-medium text-foreground">No asset data available</p>
+				<p>Connect accounts to see your asset breakdown.</p>
 			</div>
 		</div>
 	);
@@ -130,9 +130,9 @@ export function AssetCategoryChart({
 		if (active && payload && payload.length) {
 			const data = payload[0].payload as (typeof chartData)[number];
 			return (
-				<div className="bg-white p-3 border rounded-lg shadow-lg">
-					<p className="font-medium">{data.name}</p>
-					<p className="text-sm text-gray-600">
+				<div className="rounded-lg border border-border/60 bg-background/95 p-3 shadow-lg shadow-black/10 backdrop-blur">
+					<p className="font-medium text-foreground">{data.name}</p>
+					<p className="text-xs text-muted-foreground">
 						{formatCurrency(data.value)} ({data.percentage.toFixed(1)}%)
 					</p>
 				</div>
@@ -144,17 +144,17 @@ export function AssetCategoryChart({
 	const renderLegend = ({ payload }: LegendProps) => {
 		if (!payload) return null;
 		return (
-			<div className="flex flex-wrap justify-center gap-4 mt-4">
+			<div className="mt-6 flex flex-wrap justify-center gap-3">
 				{payload.map((entry: LegendPayload) => (
 					<div
 						key={String(entry.value ?? entry.dataKey)}
-						className="flex items-center gap-2"
+						className="flex items-center gap-2 rounded-xl border border-border/40 bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground"
 					>
 						<div
-							className="w-3 h-3 rounded-full"
+							className="h-2.5 w-2.5 rounded-full"
 							style={{ backgroundColor: entry.color }}
 						/>
-						<span className="text-sm text-gray-600">{entry.value}</span>
+						<span>{entry.value}</span>
 					</div>
 				))}
 			</div>
@@ -188,26 +188,26 @@ export function AssetCategoryChart({
 				</ResponsiveContainer>
 
 				{/* Asset breakdown details */}
-				<div className="mt-4 space-y-2">
+				<div className="mt-6 space-y-3 text-sm">
 					{chartData.map((item) => (
 						<div
 							key={item.name}
-							className="flex justify-between items-center text-sm"
+							className="flex items-center justify-between rounded-xl border border-border/40 bg-muted/20 px-4 py-3"
 						>
 							<div className="flex items-center gap-2">
 								<div
-									className="w-3 h-3 rounded-full"
+									className="h-2.5 w-2.5 rounded-full"
 									style={{ backgroundColor: item.color }}
 								/>
-								<span>{item.name}</span>
+								<span className="font-medium text-foreground">{item.name}</span>
 							</div>
-							<div className="text-right">
-								<span className="font-medium">
+							<div className="text-right text-xs">
+								<div className="font-semibold text-foreground">
 									{formatCurrency(item.value)}
-								</span>
-								<span className="text-gray-500 ml-2">
-									({item.percentage.toFixed(1)}%)
-								</span>
+								</div>
+								<div className="text-muted-foreground">
+									{item.percentage.toFixed(1)}%
+								</div>
 							</div>
 						</div>
 					))}

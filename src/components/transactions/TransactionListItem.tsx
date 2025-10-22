@@ -82,27 +82,33 @@ export function TransactionListItem({
 						</span>
 					)}
 					{/* Sharing status badge */}
-	{showSharing && (
-		<Badge
-			variant={isShared ? "default" : "secondary"}
-			className={isShared ? "bg-green-500 hover:bg-green-600" : ""}
-		>
-			{isShared ? (
-				<>
-					<Users className="h-3 w-3 mr-1" />
-					<span>
-						Shared
-						{currentHousehold?.name ? ` (${currentHousehold.name})` : ""}
-					</span>
-				</>
-			) : (
-				<>
-					<Lock className="h-3 w-3 mr-1" />
-					Private
-				</>
-			)}
-		</Badge>
-	)}
+					{showSharing && (
+						<Badge
+							variant={isShared ? "default" : "secondary"}
+							className={`flex items-center gap-1 rounded-full px-2 py-0.5 ${
+								isShared
+									? "bg-primary/15 text-primary hover:bg-primary/20"
+									: "bg-muted/70 text-muted-foreground hover:bg-muted/80"
+							}`}
+						>
+							{isShared ? (
+								<>
+									<Users className="mr-1 h-3 w-3" />
+									<span>
+										Shared
+										{currentHousehold?.name
+											? ` (${currentHousehold.name})`
+											: ""}
+									</span>
+								</>
+							) : (
+								<>
+									<Lock className="mr-1 h-3 w-3" />
+									Private
+								</>
+							)}
+						</Badge>
+					)}
 				</div>
 				<div className="flex items-center gap-2 mt-1">
 					<span
