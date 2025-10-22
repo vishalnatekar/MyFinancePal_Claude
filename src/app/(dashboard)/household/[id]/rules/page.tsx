@@ -6,16 +6,14 @@
 import { SplittingRulesList } from "@/components/rules/SplittingRulesList";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { use } from "react";
 import { useState } from "react";
 
 export default function HouseholdRulesPage({
 	params,
 }: {
-	params: Promise<{ id: string }>;
+	params: { id: string };
 }) {
-	const resolvedParams = use(params);
-	const householdId = resolvedParams.id;
+	const householdId = params.id;
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
 
 	return (
