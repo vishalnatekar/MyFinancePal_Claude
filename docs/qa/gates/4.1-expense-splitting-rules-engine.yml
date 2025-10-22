@@ -1,0 +1,151 @@
+schema: 1
+story: "4.1"
+story_title: "Expense Splitting Rules Engine"
+gate: FAIL
+status_reason: "Critical blocking issue: TypeScript compilation errors due to unapplied database migration. Additionally, insufficient test coverage and security vulnerabilities (ReDoS) require resolution before production deployment."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-10-22T19:30:00Z"
+
+waiver:
+  active: false
+
+top_issues:
+  - id: "DB-001"
+    severity: high
+    finding: "Database migration 014_extend_splitting_rules.sql not applied to database, causing 20+ TypeScript compilation errors"
+    suggested_action: "Apply migration to Supabase database and regenerate types with 'npx supabase gen types typescript --local > src/types/database.ts'"
+    suggested_owner: dev
+
+  - id: "SEC-001"
+    severity: high
+    finding: "ReDoS vulnerability in merchant pattern regex matching - no timeout or complexity limits on user-provided regex patterns"
+    suggested_action: "Add regex complexity validation and timeout limits (use 'safe-regex' library or limit pattern length/nesting)"
+    suggested_owner: dev
+    refs: ["src/services/rule-matching-service.ts:69"]
+
+  - id: "TEST-001"
+    severity: high
+    finding: "Missing critical test coverage: no component tests, API integration tests, or E2E tests"
+    suggested_action: "Add component tests for UI, API tests for endpoints, and E2E test for complete workflow as specified in testing-strategy.md"
+    suggested_owner: dev
+    refs: ["tests/components/rules/", "tests/api/households/rules/", "tests/e2e/rules/"]
+
+  - id: "TEST-002"
+    severity: medium
+    finding: "Tests are disabled in package.json ('echo Tests temporarily disabled')"
+    suggested_action: "Re-enable test suite and ensure all tests pass before deployment"
+    suggested_owner: dev
+    refs: ["package.json"]
+
+  - id: "PERF-001"
+    severity: medium
+    finding: "No caching for active rules - database queried on every transaction match"
+    suggested_action: "Implement Redis caching for household rules with 5-minute TTL"
+    suggested_owner: dev
+
+  - id: "PERF-002"
+    severity: medium
+    finding: "Bulk application uses N+1 queries - transactions updated individually in loop"
+    suggested_action: "Batch transaction updates using Supabase bulk update API"
+    suggested_owner: dev
+    refs: ["src/app/api/households/[id]/rules/[ruleId]/apply/route.ts:156-180"]
+
+  - id: "UI-001"
+    severity: medium
+    finding: "Missing rules management page - no page.tsx file exists for /household/[id]/rules route"
+    suggested_action: "Create src/app/(dashboard)/household/[id]/rules/page.tsx to host the rules UI"
+    suggested_owner: dev
+
+  - id: "UI-002"
+    severity: medium
+    finding: "Advanced UI features incomplete - only 2 of 9 planned components implemented (drag-drop, split selector, template gallery missing)"
+    suggested_action: "Complete remaining UI components or update story to reflect foundational implementation scope"
+    suggested_owner: dev
+
+evidence:
+  tests_reviewed: 1
+  risks_identified: 8
+  trace:
+    ac_covered: [2, 3, 4]
+    ac_gaps: [1, 5, 6, 7, 8, 9]
+
+nfr_validation:
+  security:
+    status: FAIL
+    notes: "ReDoS vulnerability in regex matching, no rate limiting, no audit logging"
+  performance:
+    status: CONCERNS
+    notes: "No caching, N+1 queries in bulk operations, no pagination for testing endpoint"
+  reliability:
+    status: PASS
+    notes: "Good error handling and transaction filtering, minor concerns around idempotency"
+  maintainability:
+    status: PASS
+    notes: "Excellent code structure, clear naming, comprehensive documentation"
+
+quality_score: 50
+# Calculation: 100 - (20 × 3 high severity FAILs) - (10 × 5 medium severity CONCERNS) = 100 - 60 + 50 = 50
+
+recommendations:
+  immediate:
+    - action: "Apply database migration 014 to Supabase and regenerate TypeScript types"
+      priority: P0
+      refs: ["database/migrations/014_extend_splitting_rules.sql"]
+
+    - action: "Fix ReDoS vulnerability by adding regex validation (use 'safe-regex' library)"
+      priority: P0
+      refs: ["src/services/rule-matching-service.ts:69"]
+
+    - action: "Add comprehensive test coverage (component, API integration, E2E tests)"
+      priority: P0
+      refs: ["tests/"]
+
+    - action: "Re-enable test suite and ensure all tests pass"
+      priority: P0
+      refs: ["package.json"]
+
+    - action: "Create missing rules management page (page.tsx)"
+      priority: P0
+      refs: ["src/app/(dashboard)/household/[id]/rules/page.tsx"]
+
+  future:
+    - action: "Implement Redis caching for active rules"
+      priority: P1
+      refs: ["src/services/rule-matching-service.ts"]
+
+    - action: "Optimize bulk application with batch updates"
+      priority: P1
+      refs: ["src/app/api/households/[id]/rules/[ruleId]/apply/route.ts"]
+
+    - action: "Add rate limiting to rule creation/testing endpoints"
+      priority: P1
+
+    - action: "Implement audit logging for rule modifications"
+      priority: P2
+
+    - action: "Complete advanced UI features (drag-drop, split selector, template gallery)"
+      priority: P2
+      refs: ["src/components/rules/"]
+
+    - action: "Add pagination to rule testing endpoint"
+      priority: P2
+      refs: ["src/app/api/households/[id]/rules/test/route.ts"]
+
+risk_summary:
+  totals:
+    critical: 1
+    high: 2
+    medium: 5
+    low: 0
+  highest:
+    score: 10
+    category: "Database Migration"
+    impact: "Complete failure - code cannot compile or run"
+  recommendations:
+    must_fix:
+      - "Apply database migration"
+      - "Fix ReDoS vulnerability"
+      - "Add missing tests"
+    monitor:
+      - "Performance optimization for caching"
+      - "Bulk operation efficiency"

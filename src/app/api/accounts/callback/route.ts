@@ -244,10 +244,10 @@ export async function GET(request: NextRequest) {
 
 				for (const account of createdAccounts) {
 					try {
-						// Fetch transactions from last 3 months
-						const threeMonthsAgo = new Date();
-						threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-						const from = threeMonthsAgo.toISOString().split("T")[0];
+						// Fetch transactions from last 2 years (or bank's maximum available)
+						const twoYearsAgo = new Date();
+						twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+						const from = twoYearsAgo.toISOString().split("T")[0];
 
 						const transactions = await trueLayerService.getAccountTransactions(
 							account.truelayer_account_id || "",

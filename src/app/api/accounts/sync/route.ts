@@ -137,10 +137,10 @@ export const POST = withAuth(async (request: NextRequest, user: User) => {
 				accessToken,
 			);
 
-			// Fetch transactions from TrueLayer (last 3 months)
-			const threeMonthsAgo = new Date();
-			threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-			const from = threeMonthsAgo.toISOString().split("T")[0];
+			// Fetch transactions from TrueLayer (last 2 years or bank's maximum available)
+			const twoYearsAgo = new Date();
+			twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+			const from = twoYearsAgo.toISOString().split("T")[0];
 
 			const transactions = await trueLayerService.getAccountTransactions(
 				account.truelayer_account_id,
