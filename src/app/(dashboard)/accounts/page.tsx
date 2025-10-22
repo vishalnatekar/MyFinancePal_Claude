@@ -1,7 +1,6 @@
 "use client";
 
 import { AccountConnectionCard } from "@/components/accounts/AccountConnectionCard";
-import { BalanceHistoryChart } from "@/components/accounts/BalanceHistoryChart";
 import { ConnectAccountButton } from "@/components/accounts/ConnectAccountButton";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -21,8 +20,6 @@ import {
 	Building2,
 	CheckCircle,
 	CreditCard,
-	Loader2,
-	Plus,
 	RefreshCw,
 	Wallet,
 } from "lucide-react";
@@ -32,7 +29,6 @@ export default function AccountsPage() {
 	const { accounts, isLoading, error, refetch, syncAccount, deleteAccount } =
 		useAccounts();
 	const [urlParams, setUrlParams] = useState<URLSearchParams | null>(null);
-	const [recordingSnapshots, setRecordingSnapshots] = useState(false);
 
 	// Handle URL parameters (success/error messages from OAuth callback)
 	useEffect(() => {
@@ -80,30 +76,6 @@ export default function AccountsPage() {
 		// In a full implementation, you'd store the provider ID and redirect appropriately
 		console.log("Reconnect account:", accountId);
 		// window.location.href = "/accounts/connect";
-	};
-
-	const handleRecordBalanceSnapshots = async () => {
-		try {
-			setRecordingSnapshots(true);
-			const response = await fetch("/api/accounts/record-balance-snapshot", {
-				method: "POST",
-				credentials: "include",
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to record balance snapshots");
-			}
-
-			const data = await response.json();
-			console.log("Balance snapshots recorded:", data);
-
-			// Refresh the page to show new balance history
-			window.location.reload();
-		} catch (error) {
-			console.error("Failed to record balance snapshots:", error);
-		} finally {
-			setRecordingSnapshots(false);
-		}
 	};
 
 	const connectedAccounts = accounts.filter((account) => !account.is_manual);
@@ -356,46 +328,6 @@ export default function AccountsPage() {
 							))}
 					</TabsContent>
 				</Tabs>
-			)}
-
-			{/* Balance History Section */}
-			{accounts.length > 0 && (
-				<div className="mt-8">
-					<div className="flex justify-between items-center mb-4">
-						<h2 className="text-2xl font-bold">Balance History</h2>
-						<Button
-							variant="outline"
-							onClick={handleRecordBalanceSnapshots}
-							disabled={recordingSnapshots}
-						>
-							{recordingSnapshots ? (
-								<>
-									<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-									Recording...
-								</>
-							) : (
-								<>
-									<CheckCircle className="h-4 w-4 mr-2" />
-									Record Current Balance
-								</>
-							)}
-						</Button>
-					</div>
-					<div className="grid gap-6 md:grid-cols-2">
-						{accounts.slice(0, 4).map((account) => (
-							<BalanceHistoryChart
-								key={account.id}
-								accountId={account.id}
-								accountName={account.account_name}
-							/>
-						))}
-					</div>
-					{accounts.length > 4 && (
-						<p className="text-sm text-muted-foreground mt-4">
-							Showing balance history for your first 4 accounts.
-						</p>
-					)}
-				</div>
 			)}
 		</div>
 	);

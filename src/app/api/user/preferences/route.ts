@@ -1,5 +1,6 @@
-import { authenticateRequest } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { authenticateRequest } from "@/lib/auth-helpers";
+import { config } from "@/lib/config";
+import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -32,21 +33,27 @@ const UpdatePreferencesSchema = z.object({
 
 export async function GET(request: NextRequest) {
 	try {
-		const user = await authenticateRequest();
+		// Authentication
+		const authResult = await authenticateRequest(request);
+		if (!authResult.authenticated || !authResult.user) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		const user = authResult.user;
+		const supabase = createClient(config.supabase.url, config.supabase.anonKey);
 
 		// Get user profile with preferences
 		const { data: profile, error } = await supabase
 			.from("profiles")
 			.select("notification_preferences")
 			.eq("id", user.id)
-			.single();
+			.maybeSingle();
 
+		// If profile doesn't exist or has error, return defaults
 		if (error) {
 			console.error("Database error:", error);
-			return NextResponse.json(
-				{ error: "Failed to fetch preferences" },
-				{ status: 500 },
-			);
+			// Return defaults instead of erroring
+			return NextResponse.json(DEFAULT_PREFERENCES);
 		}
 
 		// Return preferences with defaults if not set
@@ -60,11 +67,6 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json(preferences);
 	} catch (error) {
 		console.error("Error fetching user preferences:", error);
-
-		if (error instanceof Error && error.message === "Unauthorized") {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
 		return NextResponse.json(
 			{ error: "Internal server error" },
 			{ status: 500 },
@@ -74,7 +76,14 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
 	try {
-		const user = await authenticateRequest();
+		// Authentication
+		const authResult = await authenticateRequest(request);
+		if (!authResult.authenticated || !authResult.user) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		const user = authResult.user;
+		const supabase = createClient(config.supabase.url, config.supabase.anonKey);
 		const body = await request.json();
 
 		// Validate the request body
@@ -85,14 +94,10 @@ export async function PUT(request: NextRequest) {
 			.from("profiles")
 			.select("notification_preferences")
 			.eq("id", user.id)
-			.single();
+			.maybeSingle();
 
 		if (fetchError) {
 			console.error("Database error:", fetchError);
-			return NextResponse.json(
-				{ error: "Failed to fetch current preferences" },
-				{ status: 500 },
-			);
 		}
 
 		// Merge with existing preferences
@@ -107,17 +112,18 @@ export async function PUT(request: NextRequest) {
 			...validatedData,
 		};
 
-		// Update preferences in database
-		const { error: updateError } = await supabase
+		// Upsert preferences in database (create or update)
+		const { error: upsertError } = await supabase
 			.from("profiles")
-			.update({
+			.upsert({
+				id: user.id,
 				notification_preferences: updatedPreferences,
 				updated_at: new Date().toISOString(),
 			})
 			.eq("id", user.id);
 
-		if (updateError) {
-			console.error("Database update error:", updateError);
+		if (upsertError) {
+			console.error("Database upsert error:", upsertError);
 			return NextResponse.json(
 				{ error: "Failed to update preferences" },
 				{ status: 500 },
@@ -127,10 +133,6 @@ export async function PUT(request: NextRequest) {
 		return NextResponse.json(updatedPreferences);
 	} catch (error) {
 		console.error("Error updating user preferences:", error);
-
-		if (error instanceof Error && error.message === "Unauthorized") {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
 
 		if (error instanceof z.ZodError) {
 			return NextResponse.json(

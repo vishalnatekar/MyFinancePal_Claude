@@ -25,10 +25,10 @@ export default function SettingsPage() {
 		},
 		{
 			title: "Notifications",
-			description: "Configure email and push notifications",
+			description: "Configure email and notification preferences",
 			icon: Bell,
-			href: "/settings/notifications",
-			available: false,
+			href: "/profile#preferences",
+			available: true,
 		},
 		{
 			title: "Privacy & Security",
