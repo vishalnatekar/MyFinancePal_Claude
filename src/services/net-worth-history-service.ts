@@ -172,7 +172,9 @@ export class NetWorthHistoryService {
 			.eq("user_id", userId);
 
 		if (accountsError) {
-			throw new Error(`Failed to fetch user accounts: ${accountsError.message}`);
+			throw new Error(
+				`Failed to fetch user accounts: ${accountsError.message}`,
+			);
 		}
 
 		if (!userAccounts || userAccounts.length === 0) {
@@ -268,7 +270,11 @@ export class NetWorthHistoryService {
 
 		// Guard against invalid calculations (e.g., when periodsPerYear is too large/small)
 		let growthRate = 0;
-		if (firstValue !== 0 && Number.isFinite(periodsPerYear) && periodsPerYear > 0) {
+		if (
+			firstValue !== 0 &&
+			Number.isFinite(periodsPerYear) &&
+			periodsPerYear > 0
+		) {
 			const ratio = lastValue / Math.abs(firstValue);
 			if (ratio > 0 && Number.isFinite(ratio)) {
 				const annualizedGrowth = ratio ** (1 / periodsPerYear) - 1;

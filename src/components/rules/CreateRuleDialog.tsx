@@ -60,14 +60,18 @@ export function CreateRuleDialog({
 				.then((res) => res.json())
 				.then((data) => {
 					if (data.household?.household_members) {
-						const memberList = data.household.household_members.map((m: any) => ({
-							user_id: m.user_id,
-							name: m.name || m.full_name || 'Member',
-						}));
+						const memberList = data.household.household_members.map(
+							(m: any) => ({
+								user_id: m.user_id,
+								name: m.name || m.full_name || "Member",
+							}),
+						);
 						setMembers(memberList);
 					}
 				})
-				.catch((err) => console.error('Failed to fetch household members:', err));
+				.catch((err) =>
+					console.error("Failed to fetch household members:", err),
+				);
 		}
 	}, [open, householdId]);
 
@@ -92,11 +96,12 @@ export function CreateRuleDialog({
 			const splitPercentage: Record<string, number> = {};
 			if (members.length > 0) {
 				const equalSplit = Math.floor(100 / members.length);
-				const remainder = 100 - (equalSplit * members.length);
+				const remainder = 100 - equalSplit * members.length;
 
 				members.forEach((member, index) => {
 					// Give remainder to first member to ensure sum = 100
-					splitPercentage[member.user_id] = index === 0 ? equalSplit + remainder : equalSplit;
+					splitPercentage[member.user_id] =
+						index === 0 ? equalSplit + remainder : equalSplit;
 				});
 			}
 
@@ -255,11 +260,15 @@ export function CreateRuleDialog({
 					</div>
 
 					<div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
-						<strong>Split Percentage:</strong> This rule will automatically split expenses equally among all {members.length} household member{members.length !== 1 ? 's' : ''}.
-						{members.length === 2 && ' (50/50 split)'}
-						{members.length === 3 && ' (33/33/34 split)'}
+						<strong>Split Percentage:</strong> This rule will automatically
+						split expenses equally among all {members.length} household member
+						{members.length !== 1 ? "s" : ""}.
+						{members.length === 2 && " (50/50 split)"}
+						{members.length === 3 && " (33/33/34 split)"}
 						<br />
-						<span className="text-xs">Advanced split customization coming soon.</span>
+						<span className="text-xs">
+							Advanced split customization coming soon.
+						</span>
 					</div>
 
 					<div className="flex justify-end gap-2 pt-4">

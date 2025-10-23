@@ -7,6 +7,8 @@ import type { Transaction } from "@/types/transaction";
 import { format } from "date-fns";
 import { Lock, Users } from "lucide-react";
 import { TransactionSharingToggle } from "./TransactionSharingToggle";
+import { CategoryIndicator } from "./CategoryIndicator";
+import { ConfidenceBadge } from "./ConfidenceBadge";
 
 interface TransactionListItemProps {
 	transaction: Transaction;
@@ -76,38 +78,21 @@ export function TransactionListItem({
 							transaction.description ||
 							"Unknown Merchant"}
 					</span>
+					{/* Story 4.2: Category indicator (Shared/Personal/Split) */}
+					<CategoryIndicator transaction={transaction} size="sm" />
+					{/* Story 4.2: Confidence badge */}
+					{transaction.confidence_score !== null &&
+						transaction.confidence_score !== undefined && (
+							<ConfidenceBadge
+								confidenceScore={transaction.confidence_score}
+								showText={false}
+								size="sm"
+							/>
+						)}
 					{transaction.manual_override && (
 						<span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
 							Edited
 						</span>
-					)}
-					{/* Sharing status badge */}
-					{showSharing && (
-						<Badge
-							variant={isShared ? "default" : "secondary"}
-							className={`flex items-center gap-1 rounded-full px-2 py-0.5 ${
-								isShared
-									? "bg-primary/15 text-primary hover:bg-primary/20"
-									: "bg-muted/70 text-muted-foreground hover:bg-muted/80"
-							}`}
-						>
-							{isShared ? (
-								<>
-									<Users className="mr-1 h-3 w-3" />
-									<span>
-										Shared
-										{currentHousehold?.name
-											? ` (${currentHousehold.name})`
-											: ""}
-									</span>
-								</>
-							) : (
-								<>
-									<Lock className="mr-1 h-3 w-3" />
-									Private
-								</>
-							)}
-						</Badge>
 					)}
 				</div>
 				<div className="flex items-center gap-2 mt-1">

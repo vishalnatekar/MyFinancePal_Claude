@@ -16,21 +16,7 @@ export const dynamic = "force-dynamic";
 // Validation schema for transaction updates
 const transactionUpdateSchema = z.object({
 	merchant_name: z.string().min(1).max(100).optional(),
-	category: z
-		.enum([
-			"groceries",
-			"utilities",
-			"entertainment",
-			"transport",
-			"dining",
-			"shopping",
-			"healthcare",
-			"housing",
-			"income",
-			"transfer",
-			"other",
-		])
-		.optional(),
+	category: z.string().min(1).max(100).optional(), // Accept any TrueLayer category
 	description: z.string().max(500).optional(),
 });
 
@@ -159,9 +145,11 @@ export async function PUT(
 
 		// Parse and validate request body
 		const body = await request.json();
+		console.log("Transaction update body:", body);
 		const validationResult = transactionUpdateSchema.safeParse(body);
 
 		if (!validationResult.success) {
+			console.error("Validation failed:", validationResult.error.errors);
 			return NextResponse.json(
 				{
 					error: "Invalid request body",

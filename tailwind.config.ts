@@ -77,9 +77,7 @@ const config = {
 						"--sidebar-primary-foreground",
 					),
 					accent: withOpacityValue("--sidebar-accent"),
-					"accent-foreground": withOpacityValue(
-						"--sidebar-accent-foreground",
-					),
+					"accent-foreground": withOpacityValue("--sidebar-accent-foreground"),
 					border: withOpacityValue("--sidebar-border"),
 					ring: withOpacityValue("--sidebar-ring"),
 				},

@@ -18,7 +18,11 @@ if (!global.TextDecoder) {
 	global.TextDecoder = TextDecoder;
 }
 
-const { ReadableStream, WritableStream, TransformStream } = require("stream/web");
+const {
+	ReadableStream,
+	WritableStream,
+	TransformStream,
+} = require("stream/web");
 
 if (!global.ReadableStream) {
 	global.ReadableStream = ReadableStream;

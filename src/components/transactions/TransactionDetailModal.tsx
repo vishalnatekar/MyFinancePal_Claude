@@ -10,19 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/currency-utils";
 import { TransactionService } from "@/services/transaction-service";
 import type {
 	Transaction,
-	TransactionCategory,
 	TransactionUpdateData,
 } from "@/types/transaction";
 import { format } from "date-fns";
@@ -35,20 +27,6 @@ interface TransactionDetailModalProps {
 	onClose: () => void;
 	onUpdate: (transaction: Transaction) => void;
 }
-
-const CATEGORIES: TransactionCategory[] = [
-	"groceries",
-	"utilities",
-	"entertainment",
-	"transport",
-	"dining",
-	"shopping",
-	"healthcare",
-	"housing",
-	"income",
-	"transfer",
-	"other",
-];
 
 /**
  * Modal for viewing and editing transaction details
@@ -70,7 +48,7 @@ export function TransactionDetailModal({
 		setIsEditing(true);
 		setEditedData({
 			merchant_name: transaction.merchant_name,
-			category: transaction.category as TransactionCategory,
+			category: transaction.category,
 			description: transaction.description || "",
 		});
 		setError(null);
@@ -87,9 +65,21 @@ export function TransactionDetailModal({
 			setIsSaving(true);
 			setError(null);
 
+			// Filter out empty strings and undefined values
+			const dataToSend: TransactionUpdateData = {};
+			if (editedData.merchant_name && editedData.merchant_name.trim()) {
+				dataToSend.merchant_name = editedData.merchant_name.trim();
+			}
+			if (editedData.category && editedData.category.trim()) {
+				dataToSend.category = editedData.category.trim();
+			}
+			if (editedData.description !== undefined) {
+				dataToSend.description = editedData.description;
+			}
+
 			const updatedTransaction = await TransactionService.updateTransaction(
 				transaction.id,
-				editedData,
+				dataToSend,
 			);
 
 			onUpdate(updatedTransaction);
@@ -153,26 +143,17 @@ export function TransactionDetailModal({
 					<div>
 						<Label htmlFor="category">Category</Label>
 						{isEditing ? (
-							<Select
-								value={editedData.category}
-								onValueChange={(value) =>
+							<Input
+								id="category"
+								value={editedData.category || ""}
+								onChange={(e) =>
 									setEditedData({
 										...editedData,
-										category: value as TransactionCategory,
+										category: e.target.value,
 									})
 								}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select category" />
-								</SelectTrigger>
-								<SelectContent>
-									{CATEGORIES.map((category) => (
-										<SelectItem key={category} value={category}>
-											<span className="capitalize">{category}</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								placeholder="Enter category (e.g., food and drink, bills and services)"
+							/>
 						) : (
 							<div className="mt-1">
 								<span className="inline-block px-3 py-1 text-sm rounded-full capitalize bg-gray-100 text-gray-800">

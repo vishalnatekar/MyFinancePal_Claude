@@ -123,7 +123,7 @@ export class TrueLayerDataProcessor {
 
 	/**
 	 * Normalize transaction category
-	 * Uses TrueLayer category if available, falls back to our categorization service
+	 * Uses TrueLayer category as-is, falls back to our categorization service
 	 */
 	private normalizeCategory(
 		category: string,
@@ -131,15 +131,9 @@ export class TrueLayerDataProcessor {
 		amount?: number,
 		description?: string,
 	): string {
-		// If TrueLayer provided a category, use it
+		// If TrueLayer provided a category, use it as-is (just lowercase and remove underscores)
 		if (category && category !== "UNCATEGORIZED") {
-			// Clean up category string
-			return category
-				.split("_")
-				.map(
-					(word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-				)
-				.join(" ");
+			return category.toLowerCase().replace(/_/g, " ");
 		}
 
 		// Fallback: Use our categorization service for transactions without TrueLayer category

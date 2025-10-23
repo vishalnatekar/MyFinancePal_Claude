@@ -61,7 +61,8 @@ export default function InvitationAcceptancePage() {
 	const handleAccept = async () => {
 		if (!isAuthenticated) {
 			// Redirect to sign in with return URL
-			router.push(`/auth/signin?returnUrl=/household/invite/${token}`);
+			const redirectTarget = encodeURIComponent(`/household/invite/${token}`);
+			router.push(`/login?redirectTo=${redirectTarget}`);
 			return;
 		}
 

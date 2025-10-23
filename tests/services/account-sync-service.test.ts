@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase";
-import { AccountSyncService } from "@/services/account-sync-service";
 import { getValidAccessToken } from "@/lib/token-refresh-utils";
+import { AccountSyncService } from "@/services/account-sync-service";
 import { dataValidationService } from "@/services/data-validation-service";
 import { trueLayerDataProcessor } from "@/services/truelayer-data-processor";
 import { trueLayerService } from "@/services/truelayer-service";

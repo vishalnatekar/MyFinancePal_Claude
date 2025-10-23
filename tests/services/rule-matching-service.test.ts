@@ -206,6 +206,32 @@ describe("Rule Matching Service", () => {
 				"Invalid regex pattern in merchant_pattern",
 			);
 		});
+
+		it("should reject regex patterns that are too long (ReDoS protection)", () => {
+			const longPattern = "a".repeat(250); // Exceeds MAX_REGEX_LENGTH (200)
+			const invalidRule = {
+				...merchantRule,
+				merchant_pattern: longPattern,
+			};
+			const result = validateRuleConfiguration(invalidRule);
+
+			expect(result.isValid).toBe(false);
+			expect(result.errors.some((e) => e.includes("too long"))).toBe(true);
+		});
+
+		it("should reject unsafe regex patterns (ReDoS protection)", () => {
+			const unsafePattern = "(a+)+b"; // Known ReDoS pattern
+			const invalidRule = {
+				...merchantRule,
+				merchant_pattern: unsafePattern,
+			};
+			const result = validateRuleConfiguration(invalidRule);
+
+			expect(result.isValid).toBe(false);
+			expect(
+				result.errors.some((e) => e.includes("Unsafe regex pattern")),
+			).toBe(true);
+		});
 	});
 
 	describe("getRuleMatchStatistics", () => {
@@ -214,10 +240,11 @@ describe("Rule Matching Service", () => {
 			const stats = getRuleMatchStatistics(mockTransactions, rules);
 
 			expect(stats.total_transactions).toBe(3);
-			expect(stats.matched_transactions).toBe(2); // Tesco + Nando's
-			expect(stats.unmatched_transactions).toBe(1); // John Lewis
-			expect(stats.matches_by_rule[merchantRule.id]).toBe(1);
-			expect(stats.matches_by_rule[categoryRule.id]).toBe(1);
+			expect(stats.matched_transactions).toBe(3); // Tesco + Nando's + John Lewis (matches default)
+			expect(stats.unmatched_transactions).toBe(0); // All match due to default rule
+			expect(stats.matches_by_rule[merchantRule.id]).toBe(1); // Tesco
+			expect(stats.matches_by_rule[categoryRule.id]).toBe(1); // Nando's
+			expect(stats.matches_by_rule[defaultRule.id]).toBe(1); // John Lewis
 		});
 	});
 });

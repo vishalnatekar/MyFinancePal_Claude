@@ -7,122 +7,33 @@ export type Json =
 	| Json[];
 
 export type Database = {
-	// Allows to automatically instantiate createClient with right options
-	// instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-	__InternalSupabase: {
-		PostgrestVersion: "13.0.5";
+	graphql_public: {
+		Tables: {
+			[_ in never]: never;
+		};
+		Views: {
+			[_ in never]: never;
+		};
+		Functions: {
+			graphql: {
+				Args: {
+					extensions?: Json;
+					operationName?: string;
+					query?: string;
+					variables?: Json;
+				};
+				Returns: Json;
+			};
+		};
+		Enums: {
+			[_ in never]: never;
+		};
+		CompositeTypes: {
+			[_ in never]: never;
+		};
 	};
 	public: {
 		Tables: {
-			account_balance_history: {
-				Row: {
-					account_id: string;
-					balance: number;
-					currency: string;
-					id: string;
-					recorded_at: string | null;
-				};
-				Insert: {
-					account_id: string;
-					balance: number;
-					currency: string;
-					id?: string;
-					recorded_at?: string | null;
-				};
-				Update: {
-					account_id?: string;
-					balance?: number;
-					currency?: string;
-					id?: string;
-					recorded_at?: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "account_balance_history_account_id_fkey";
-						columns: ["account_id"];
-						isOneToOne: false;
-						referencedRelation: "financial_accounts";
-						referencedColumns: ["id"];
-					},
-				];
-			};
-			account_sharing_history: {
-				Row: {
-					account_id: string;
-					action: string;
-					changed_at: string | null;
-					changed_by: string;
-					household_id: string;
-					id: string;
-					sharing_level: string | null;
-				};
-				Insert: {
-					account_id: string;
-					action: string;
-					changed_at?: string | null;
-					changed_by: string;
-					household_id: string;
-					id?: string;
-					sharing_level?: string | null;
-				};
-				Update: {
-					account_id?: string;
-					action?: string;
-					changed_at?: string | null;
-					changed_by?: string;
-					household_id?: string;
-					id?: string;
-					sharing_level?: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "account_sharing_history_account_id_fkey";
-						columns: ["account_id"];
-						isOneToOne: false;
-						referencedRelation: "financial_accounts";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "account_sharing_history_household_id_fkey";
-						columns: ["household_id"];
-						isOneToOne: false;
-						referencedRelation: "households";
-						referencedColumns: ["id"];
-					},
-				];
-			};
-			account_sync_history: {
-				Row: {
-					account_id: string;
-					error_message: string | null;
-					id: string;
-					sync_status: string;
-					synced_at: string | null;
-				};
-				Insert: {
-					account_id: string;
-					error_message?: string | null;
-					id?: string;
-					sync_status: string;
-					synced_at?: string | null;
-				};
-				Update: {
-					account_id?: string;
-					error_message?: string | null;
-					id?: string;
-					sync_status?: string;
-					synced_at?: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "account_sync_history_account_id_fkey";
-						columns: ["account_id"];
-						isOneToOne: false;
-						referencedRelation: "financial_accounts";
-						referencedColumns: ["id"];
-					},
-				];
-			};
 			categories: {
 				Row: {
 					color: string | null;
@@ -161,50 +72,6 @@ export type Database = {
 					},
 				];
 			};
-			data_sync_logs: {
-				Row: {
-					account_id: string;
-					completed_at: string | null;
-					duplicates_found: number | null;
-					errors_encountered: string[] | null;
-					id: string;
-					started_at: string | null;
-					status: string | null;
-					sync_type: string | null;
-					transactions_processed: number | null;
-				};
-				Insert: {
-					account_id: string;
-					completed_at?: string | null;
-					duplicates_found?: number | null;
-					errors_encountered?: string[] | null;
-					id?: string;
-					started_at?: string | null;
-					status?: string | null;
-					sync_type?: string | null;
-					transactions_processed?: number | null;
-				};
-				Update: {
-					account_id?: string;
-					completed_at?: string | null;
-					duplicates_found?: number | null;
-					errors_encountered?: string[] | null;
-					id?: string;
-					started_at?: string | null;
-					status?: string | null;
-					sync_type?: string | null;
-					transactions_processed?: number | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "data_sync_logs_account_id_fkey";
-						columns: ["account_id"];
-						isOneToOne: false;
-						referencedRelation: "financial_accounts";
-						referencedColumns: ["id"];
-					},
-				];
-			};
 			expense_splits: {
 				Row: {
 					amount: number;
@@ -233,6 +100,75 @@ export type Database = {
 						columns: ["expense_id"];
 						isOneToOne: false;
 						referencedRelation: "expenses";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			expense_splitting_rules: {
+				Row: {
+					apply_to_existing_transactions: boolean | null;
+					category_match: string | null;
+					created_at: string | null;
+					created_by: string;
+					household_id: string;
+					id: string;
+					is_active: boolean;
+					max_amount: number | null;
+					merchant_pattern: string | null;
+					min_amount: number | null;
+					priority: number;
+					rule_name: string;
+					rule_type: string;
+					split_percentage: Json;
+					updated_at: string | null;
+				};
+				Insert: {
+					apply_to_existing_transactions?: boolean | null;
+					category_match?: string | null;
+					created_at?: string | null;
+					created_by: string;
+					household_id: string;
+					id?: string;
+					is_active?: boolean;
+					max_amount?: number | null;
+					merchant_pattern?: string | null;
+					min_amount?: number | null;
+					priority?: number;
+					rule_name: string;
+					rule_type?: string;
+					split_percentage?: Json;
+					updated_at?: string | null;
+				};
+				Update: {
+					apply_to_existing_transactions?: boolean | null;
+					category_match?: string | null;
+					created_at?: string | null;
+					created_by?: string;
+					household_id?: string;
+					id?: string;
+					is_active?: boolean;
+					max_amount?: number | null;
+					merchant_pattern?: string | null;
+					min_amount?: number | null;
+					priority?: number;
+					rule_name?: string;
+					rule_type?: string;
+					split_percentage?: Json;
+					updated_at?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "expense_splitting_rules_created_by_fkey";
+						columns: ["created_by"];
+						isOneToOne: false;
+						referencedRelation: "profiles";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "expense_splitting_rules_household_id_fkey";
+						columns: ["household_id"];
+						isOneToOne: false;
+						referencedRelation: "households";
 						referencedColumns: ["id"];
 					},
 				];
@@ -284,116 +220,6 @@ export type Database = {
 					},
 					{
 						foreignKeyName: "expenses_household_id_fkey";
-						columns: ["household_id"];
-						isOneToOne: false;
-						referencedRelation: "households";
-						referencedColumns: ["id"];
-					},
-				];
-			};
-			financial_accounts: {
-				Row: {
-					account_name: string;
-					account_type: string;
-					connection_status: string | null;
-					created_at: string | null;
-					currency: string | null;
-					current_balance: number;
-					encrypted_access_token: string | null;
-					id: string;
-					institution_name: string;
-					is_manual: boolean;
-					is_shared: boolean;
-					last_synced: string | null;
-					shared_households: Json | null;
-					sharing_level: string | null;
-					truelayer_account_id: string | null;
-					truelayer_connection_id: string | null;
-					updated_at: string | null;
-					user_id: string;
-				};
-				Insert: {
-					account_name: string;
-					account_type: string;
-					connection_status?: string | null;
-					created_at?: string | null;
-					currency?: string | null;
-					current_balance?: number;
-					encrypted_access_token?: string | null;
-					id?: string;
-					institution_name: string;
-					is_manual?: boolean;
-					is_shared?: boolean;
-					last_synced?: string | null;
-					shared_households?: Json | null;
-					sharing_level?: string | null;
-					truelayer_account_id?: string | null;
-					truelayer_connection_id?: string | null;
-					updated_at?: string | null;
-					user_id: string;
-				};
-				Update: {
-					account_name?: string;
-					account_type?: string;
-					connection_status?: string | null;
-					created_at?: string | null;
-					currency?: string | null;
-					current_balance?: number;
-					encrypted_access_token?: string | null;
-					id?: string;
-					institution_name?: string;
-					is_manual?: boolean;
-					is_shared?: boolean;
-					last_synced?: string | null;
-					shared_households?: Json | null;
-					sharing_level?: string | null;
-					truelayer_account_id?: string | null;
-					truelayer_connection_id?: string | null;
-					updated_at?: string | null;
-					user_id?: string;
-				};
-				Relationships: [];
-			};
-			household_invitations: {
-				Row: {
-					accepted_at: string | null;
-					created_at: string | null;
-					email: string;
-					expires_at: string;
-					household_id: string;
-					id: string;
-					invited_by: string;
-					resend_count: number;
-					status: string;
-					token: string;
-				};
-				Insert: {
-					accepted_at?: string | null;
-					created_at?: string | null;
-					email: string;
-					expires_at: string;
-					household_id: string;
-					id?: string;
-					invited_by: string;
-					resend_count?: number;
-					status?: string;
-					token: string;
-				};
-				Update: {
-					accepted_at?: string | null;
-					created_at?: string | null;
-					email?: string;
-					expires_at?: string;
-					household_id?: string;
-					id?: string;
-					invited_by?: string;
-					resend_count?: number;
-					status?: string;
-					token?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "household_invitations_household_id_fkey";
 						columns: ["household_id"];
 						isOneToOne: false;
 						referencedRelation: "households";
@@ -460,127 +286,6 @@ export type Database = {
 					name?: string;
 					settlement_day?: number | null;
 					updated_at?: string | null;
-				};
-				Relationships: [];
-			};
-			notification_preferences: {
-				Row: {
-					created_at: string;
-					email_notifications: boolean;
-					household_id: string;
-					id: string;
-					in_app_notifications: boolean;
-					large_transaction_threshold: number;
-					updated_at: string;
-					user_id: string;
-					weekly_digest_enabled: boolean;
-				};
-				Insert: {
-					created_at?: string;
-					email_notifications?: boolean;
-					household_id: string;
-					id?: string;
-					in_app_notifications?: boolean;
-					large_transaction_threshold?: number;
-					updated_at?: string;
-					user_id: string;
-					weekly_digest_enabled?: boolean;
-				};
-				Update: {
-					created_at?: string;
-					email_notifications?: boolean;
-					household_id?: string;
-					id?: string;
-					in_app_notifications?: boolean;
-					large_transaction_threshold?: number;
-					updated_at?: string;
-					user_id?: string;
-					weekly_digest_enabled?: boolean;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "notification_preferences_household_id_fkey";
-						columns: ["household_id"];
-						isOneToOne: false;
-						referencedRelation: "households";
-						referencedColumns: ["id"];
-					},
-				];
-			};
-			notifications: {
-				Row: {
-					actor_id: string | null;
-					created_at: string;
-					household_id: string;
-					id: string;
-					is_read: boolean;
-					message: string;
-					metadata: Json | null;
-					read_at: string | null;
-					recipient_id: string;
-					title: string;
-					type: string;
-				};
-				Insert: {
-					actor_id?: string | null;
-					created_at?: string;
-					household_id: string;
-					id?: string;
-					is_read?: boolean;
-					message: string;
-					metadata?: Json | null;
-					read_at?: string | null;
-					recipient_id: string;
-					title: string;
-					type: string;
-				};
-				Update: {
-					actor_id?: string | null;
-					created_at?: string;
-					household_id?: string;
-					id?: string;
-					is_read?: boolean;
-					message?: string;
-					metadata?: Json | null;
-					read_at?: string | null;
-					recipient_id?: string;
-					title?: string;
-					type?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "notifications_household_id_fkey";
-						columns: ["household_id"];
-						isOneToOne: false;
-						referencedRelation: "households";
-						referencedColumns: ["id"];
-					},
-				];
-			};
-			oauth_states: {
-				Row: {
-					created_at: string | null;
-					expires_at: string;
-					id: string;
-					provider_id: string;
-					state_token: string;
-					user_id: string;
-				};
-				Insert: {
-					created_at?: string | null;
-					expires_at: string;
-					id?: string;
-					provider_id: string;
-					state_token: string;
-					user_id: string;
-				};
-				Update: {
-					created_at?: string | null;
-					expires_at?: string;
-					id?: string;
-					provider_id?: string;
-					state_token?: string;
-					user_id?: string;
 				};
 				Relationships: [];
 			};
@@ -655,146 +360,368 @@ export type Database = {
 					},
 				];
 			};
-			transaction_processing_metadata: {
+		};
+		Views: {
+			[_ in never]: never;
+		};
+		Functions: {
+			[_ in never]: never;
+		};
+		Enums: {
+			[_ in never]: never;
+		};
+		CompositeTypes: {
+			[_ in never]: never;
+		};
+	};
+	storage: {
+		Tables: {
+			buckets: {
 				Row: {
-					duplicate_cluster_id: string | null;
-					fingerprint: string;
+					allowed_mime_types: string[] | null;
+					avif_autodetection: boolean | null;
+					created_at: string | null;
+					file_size_limit: number | null;
 					id: string;
-					processed_at: string | null;
-					processing_status: string | null;
-					transaction_id: string;
+					name: string;
+					owner: string | null;
+					owner_id: string | null;
+					public: boolean | null;
+					type: Database["storage"]["Enums"]["buckettype"];
+					updated_at: string | null;
 				};
 				Insert: {
-					duplicate_cluster_id?: string | null;
-					fingerprint: string;
-					id?: string;
-					processed_at?: string | null;
-					processing_status?: string | null;
-					transaction_id: string;
+					allowed_mime_types?: string[] | null;
+					avif_autodetection?: boolean | null;
+					created_at?: string | null;
+					file_size_limit?: number | null;
+					id: string;
+					name: string;
+					owner?: string | null;
+					owner_id?: string | null;
+					public?: boolean | null;
+					type?: Database["storage"]["Enums"]["buckettype"];
+					updated_at?: string | null;
 				};
 				Update: {
-					duplicate_cluster_id?: string | null;
-					fingerprint?: string;
+					allowed_mime_types?: string[] | null;
+					avif_autodetection?: boolean | null;
+					created_at?: string | null;
+					file_size_limit?: number | null;
 					id?: string;
-					processed_at?: string | null;
-					processing_status?: string | null;
-					transaction_id?: string;
+					name?: string;
+					owner?: string | null;
+					owner_id?: string | null;
+					public?: boolean | null;
+					type?: Database["storage"]["Enums"]["buckettype"];
+					updated_at?: string | null;
 				};
 				Relationships: [];
 			};
-			transaction_sharing_history: {
+			buckets_analytics: {
 				Row: {
-					action: string;
-					changed_at: string | null;
-					changed_by: string;
-					household_id: string;
+					created_at: string;
+					format: string;
 					id: string;
-					transaction_id: string;
+					type: Database["storage"]["Enums"]["buckettype"];
+					updated_at: string;
 				};
 				Insert: {
-					action: string;
-					changed_at?: string | null;
-					changed_by: string;
-					household_id: string;
-					id?: string;
-					transaction_id: string;
+					created_at?: string;
+					format?: string;
+					id: string;
+					type?: Database["storage"]["Enums"]["buckettype"];
+					updated_at?: string;
 				};
 				Update: {
-					action?: string;
-					changed_at?: string | null;
-					changed_by?: string;
-					household_id?: string;
+					created_at?: string;
+					format?: string;
 					id?: string;
-					transaction_id?: string;
+					type?: Database["storage"]["Enums"]["buckettype"];
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
+			iceberg_namespaces: {
+				Row: {
+					bucket_id: string;
+					created_at: string;
+					id: string;
+					name: string;
+					updated_at: string;
+				};
+				Insert: {
+					bucket_id: string;
+					created_at?: string;
+					id?: string;
+					name: string;
+					updated_at?: string;
+				};
+				Update: {
+					bucket_id?: string;
+					created_at?: string;
+					id?: string;
+					name?: string;
+					updated_at?: string;
 				};
 				Relationships: [
 					{
-						foreignKeyName: "transaction_sharing_history_household_id_fkey";
-						columns: ["household_id"];
+						foreignKeyName: "iceberg_namespaces_bucket_id_fkey";
+						columns: ["bucket_id"];
 						isOneToOne: false;
-						referencedRelation: "households";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "transaction_sharing_history_transaction_id_fkey";
-						columns: ["transaction_id"];
-						isOneToOne: false;
-						referencedRelation: "transactions";
+						referencedRelation: "buckets_analytics";
 						referencedColumns: ["id"];
 					},
 				];
 			};
-			transactions: {
+			iceberg_tables: {
 				Row: {
-					account_id: string;
-					amount: number;
-					category: string | null;
-					created_at: string | null;
-					currency: string;
-					date: string;
-					description: string | null;
+					bucket_id: string;
+					created_at: string;
 					id: string;
-					is_shared_expense: boolean | null;
-					manual_override: boolean | null;
-					merchant_name: string | null;
-					shared_at: string | null;
-					shared_by: string | null;
-					shared_with_household_id: string | null;
-					transaction_type: string | null;
-					truelayer_transaction_id: string | null;
+					location: string;
+					name: string;
+					namespace_id: string;
+					updated_at: string;
+				};
+				Insert: {
+					bucket_id: string;
+					created_at?: string;
+					id?: string;
+					location: string;
+					name: string;
+					namespace_id: string;
+					updated_at?: string;
+				};
+				Update: {
+					bucket_id?: string;
+					created_at?: string;
+					id?: string;
+					location?: string;
+					name?: string;
+					namespace_id?: string;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "iceberg_tables_bucket_id_fkey";
+						columns: ["bucket_id"];
+						isOneToOne: false;
+						referencedRelation: "buckets_analytics";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "iceberg_tables_namespace_id_fkey";
+						columns: ["namespace_id"];
+						isOneToOne: false;
+						referencedRelation: "iceberg_namespaces";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			migrations: {
+				Row: {
+					executed_at: string | null;
+					hash: string;
+					id: number;
+					name: string;
+				};
+				Insert: {
+					executed_at?: string | null;
+					hash: string;
+					id: number;
+					name: string;
+				};
+				Update: {
+					executed_at?: string | null;
+					hash?: string;
+					id?: number;
+					name?: string;
+				};
+				Relationships: [];
+			};
+			objects: {
+				Row: {
+					bucket_id: string | null;
+					created_at: string | null;
+					id: string;
+					last_accessed_at: string | null;
+					level: number | null;
+					metadata: Json | null;
+					name: string | null;
+					owner: string | null;
+					owner_id: string | null;
+					path_tokens: string[] | null;
+					updated_at: string | null;
+					user_metadata: Json | null;
+					version: string | null;
+				};
+				Insert: {
+					bucket_id?: string | null;
+					created_at?: string | null;
+					id?: string;
+					last_accessed_at?: string | null;
+					level?: number | null;
+					metadata?: Json | null;
+					name?: string | null;
+					owner?: string | null;
+					owner_id?: string | null;
+					path_tokens?: string[] | null;
+					updated_at?: string | null;
+					user_metadata?: Json | null;
+					version?: string | null;
+				};
+				Update: {
+					bucket_id?: string | null;
+					created_at?: string | null;
+					id?: string;
+					last_accessed_at?: string | null;
+					level?: number | null;
+					metadata?: Json | null;
+					name?: string | null;
+					owner?: string | null;
+					owner_id?: string | null;
+					path_tokens?: string[] | null;
+					updated_at?: string | null;
+					user_metadata?: Json | null;
+					version?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "objects_bucketId_fkey";
+						columns: ["bucket_id"];
+						isOneToOne: false;
+						referencedRelation: "buckets";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			prefixes: {
+				Row: {
+					bucket_id: string;
+					created_at: string | null;
+					level: number;
+					name: string;
 					updated_at: string | null;
 				};
 				Insert: {
-					account_id: string;
-					amount: number;
-					category?: string | null;
+					bucket_id: string;
 					created_at?: string | null;
-					currency: string;
-					date: string;
-					description?: string | null;
-					id?: string;
-					is_shared_expense?: boolean | null;
-					manual_override?: boolean | null;
-					merchant_name?: string | null;
-					shared_at?: string | null;
-					shared_by?: string | null;
-					shared_with_household_id?: string | null;
-					transaction_type?: string | null;
-					truelayer_transaction_id?: string | null;
+					level?: number;
+					name: string;
 					updated_at?: string | null;
 				};
 				Update: {
-					account_id?: string;
-					amount?: number;
-					category?: string | null;
+					bucket_id?: string;
 					created_at?: string | null;
-					currency?: string;
-					date?: string;
-					description?: string | null;
-					id?: string;
-					is_shared_expense?: boolean | null;
-					manual_override?: boolean | null;
-					merchant_name?: string | null;
-					shared_at?: string | null;
-					shared_by?: string | null;
-					shared_with_household_id?: string | null;
-					transaction_type?: string | null;
-					truelayer_transaction_id?: string | null;
+					level?: number;
+					name?: string;
 					updated_at?: string | null;
 				};
 				Relationships: [
 					{
-						foreignKeyName: "transactions_account_id_fkey";
-						columns: ["account_id"];
+						foreignKeyName: "prefixes_bucketId_fkey";
+						columns: ["bucket_id"];
 						isOneToOne: false;
-						referencedRelation: "financial_accounts";
+						referencedRelation: "buckets";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			s3_multipart_uploads: {
+				Row: {
+					bucket_id: string;
+					created_at: string;
+					id: string;
+					in_progress_size: number;
+					key: string;
+					owner_id: string | null;
+					upload_signature: string;
+					user_metadata: Json | null;
+					version: string;
+				};
+				Insert: {
+					bucket_id: string;
+					created_at?: string;
+					id: string;
+					in_progress_size?: number;
+					key: string;
+					owner_id?: string | null;
+					upload_signature: string;
+					user_metadata?: Json | null;
+					version: string;
+				};
+				Update: {
+					bucket_id?: string;
+					created_at?: string;
+					id?: string;
+					in_progress_size?: number;
+					key?: string;
+					owner_id?: string | null;
+					upload_signature?: string;
+					user_metadata?: Json | null;
+					version?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "s3_multipart_uploads_bucket_id_fkey";
+						columns: ["bucket_id"];
+						isOneToOne: false;
+						referencedRelation: "buckets";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			s3_multipart_uploads_parts: {
+				Row: {
+					bucket_id: string;
+					created_at: string;
+					etag: string;
+					id: string;
+					key: string;
+					owner_id: string | null;
+					part_number: number;
+					size: number;
+					upload_id: string;
+					version: string;
+				};
+				Insert: {
+					bucket_id: string;
+					created_at?: string;
+					etag: string;
+					id?: string;
+					key: string;
+					owner_id?: string | null;
+					part_number: number;
+					size?: number;
+					upload_id: string;
+					version: string;
+				};
+				Update: {
+					bucket_id?: string;
+					created_at?: string;
+					etag?: string;
+					id?: string;
+					key?: string;
+					owner_id?: string | null;
+					part_number?: number;
+					size?: number;
+					upload_id?: string;
+					version?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey";
+						columns: ["bucket_id"];
+						isOneToOne: false;
+						referencedRelation: "buckets";
 						referencedColumns: ["id"];
 					},
 					{
-						foreignKeyName: "transactions_shared_with_household_id_fkey";
-						columns: ["shared_with_household_id"];
+						foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey";
+						columns: ["upload_id"];
 						isOneToOne: false;
-						referencedRelation: "households";
+						referencedRelation: "s3_multipart_uploads";
 						referencedColumns: ["id"];
 					},
 				];
@@ -804,35 +731,155 @@ export type Database = {
 			[_ in never]: never;
 		};
 		Functions: {
-			bulk_update_transaction_sharing: {
-				Args: {
-					p_changed_by: string;
-					p_household_id: string;
-					p_is_shared: boolean;
-					p_transaction_ids: string[];
-				};
+			add_prefixes: {
+				Args: { _bucket_id: string; _name: string };
+				Returns: undefined;
+			};
+			can_insert_object: {
+				Args: { bucketid: string; metadata: Json; name: string; owner: string };
+				Returns: undefined;
+			};
+			delete_leaf_prefixes: {
+				Args: { bucket_ids: string[]; names: string[] };
+				Returns: undefined;
+			};
+			delete_prefix: {
+				Args: { _bucket_id: string; _name: string };
+				Returns: boolean;
+			};
+			extension: { Args: { name: string }; Returns: string };
+			filename: { Args: { name: string }; Returns: string };
+			foldername: { Args: { name: string }; Returns: string[] };
+			get_level: { Args: { name: string }; Returns: number };
+			get_prefix: { Args: { name: string }; Returns: string };
+			get_prefixes: { Args: { name: string }; Returns: string[] };
+			get_size_by_bucket: {
+				Args: never;
 				Returns: {
-					error_message: string;
-					success: boolean;
-					transaction_id: string;
+					bucket_id: string;
+					size: number;
 				}[];
 			};
-			is_household_member: {
-				Args: { household_id_param: string; user_id_param: string };
-				Returns: boolean;
-			};
-			update_transaction_sharing: {
+			list_multipart_uploads_with_delimiter: {
 				Args: {
-					p_changed_by: string;
-					p_household_id: string;
-					p_is_shared: boolean;
-					p_transaction_id: string;
+					bucket_id: string;
+					delimiter_param: string;
+					max_keys?: number;
+					next_key_token?: string;
+					next_upload_token?: string;
+					prefix_param: string;
 				};
-				Returns: boolean;
+				Returns: {
+					created_at: string;
+					id: string;
+					key: string;
+				}[];
+			};
+			list_objects_with_delimiter: {
+				Args: {
+					bucket_id: string;
+					delimiter_param: string;
+					max_keys?: number;
+					next_token?: string;
+					prefix_param: string;
+					start_after?: string;
+				};
+				Returns: {
+					id: string;
+					metadata: Json;
+					name: string;
+					updated_at: string;
+				}[];
+			};
+			lock_top_prefixes: {
+				Args: { bucket_ids: string[]; names: string[] };
+				Returns: undefined;
+			};
+			operation: { Args: never; Returns: string };
+			search: {
+				Args: {
+					bucketname: string;
+					levels?: number;
+					limits?: number;
+					offsets?: number;
+					prefix: string;
+					search?: string;
+					sortcolumn?: string;
+					sortorder?: string;
+				};
+				Returns: {
+					created_at: string;
+					id: string;
+					last_accessed_at: string;
+					metadata: Json;
+					name: string;
+					updated_at: string;
+				}[];
+			};
+			search_legacy_v1: {
+				Args: {
+					bucketname: string;
+					levels?: number;
+					limits?: number;
+					offsets?: number;
+					prefix: string;
+					search?: string;
+					sortcolumn?: string;
+					sortorder?: string;
+				};
+				Returns: {
+					created_at: string;
+					id: string;
+					last_accessed_at: string;
+					metadata: Json;
+					name: string;
+					updated_at: string;
+				}[];
+			};
+			search_v1_optimised: {
+				Args: {
+					bucketname: string;
+					levels?: number;
+					limits?: number;
+					offsets?: number;
+					prefix: string;
+					search?: string;
+					sortcolumn?: string;
+					sortorder?: string;
+				};
+				Returns: {
+					created_at: string;
+					id: string;
+					last_accessed_at: string;
+					metadata: Json;
+					name: string;
+					updated_at: string;
+				}[];
+			};
+			search_v2: {
+				Args: {
+					bucket_name: string;
+					levels?: number;
+					limits?: number;
+					prefix: string;
+					sort_column?: string;
+					sort_column_after?: string;
+					sort_order?: string;
+					start_after?: string;
+				};
+				Returns: {
+					created_at: string;
+					id: string;
+					key: string;
+					last_accessed_at: string;
+					metadata: Json;
+					name: string;
+					updated_at: string;
+				}[];
 			};
 		};
 		Enums: {
-			[_ in never]: never;
+			buckettype: "STANDARD" | "ANALYTICS";
 		};
 		CompositeTypes: {
 			[_ in never]: never;
@@ -961,7 +1008,15 @@ export type CompositeTypes<
 		: never;
 
 export const Constants = {
+	graphql_public: {
+		Enums: {},
+	},
 	public: {
 		Enums: {},
+	},
+	storage: {
+		Enums: {
+			buckettype: ["STANDARD", "ANALYTICS"],
+		},
 	},
 } as const;

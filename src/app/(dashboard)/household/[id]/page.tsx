@@ -115,24 +115,24 @@ export default function HouseholdDetailPage({
 						<UserPlus className="mr-2 h-4 w-4" />
 						<span className="hidden sm:inline">Invite</span>
 					</Button>
-				<Link
-					href={`/household/${params.id}/rules`}
-					className="flex-1 md:flex-none"
-				>
-					<Button variant="outline" size="sm" className="w-full">
-						<FileText className="mr-2 h-4 w-4" />
-						<span className="hidden sm:inline">Rules</span>
-					</Button>
-				</Link>
-				<Link
-					href={`/household/${params.id}/settings`}
-					className="flex-1 md:flex-none"
-				>
-					<Button variant="outline" size="sm" className="w-full">
-						<Settings className="mr-2 h-4 w-4" />
-						<span className="hidden sm:inline">Settings</span>
-					</Button>
-				</Link>
+					<Link
+						href={`/household/${params.id}/rules`}
+						className="flex-1 md:flex-none"
+					>
+						<Button variant="outline" size="sm" className="w-full">
+							<FileText className="mr-2 h-4 w-4" />
+							<span className="hidden sm:inline">Rules</span>
+						</Button>
+					</Link>
+					<Link
+						href={`/household/${params.id}/settings`}
+						className="flex-1 md:flex-none"
+					>
+						<Button variant="outline" size="sm" className="w-full">
+							<Settings className="mr-2 h-4 w-4" />
+							<span className="hidden sm:inline">Settings</span>
+						</Button>
+					</Link>
 				</div>
 			</div>
 

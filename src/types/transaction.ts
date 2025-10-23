@@ -2,18 +2,8 @@
  * Transaction-related TypeScript interfaces and types
  */
 
-export type TransactionCategory =
-	| "groceries"
-	| "utilities"
-	| "entertainment"
-	| "transport"
-	| "dining"
-	| "shopping"
-	| "healthcare"
-	| "housing"
-	| "income"
-	| "transfer"
-	| "other";
+// Using string instead of strict enum to support any TrueLayer category
+export type TransactionCategory = string;
 
 export interface Transaction {
 	id: string;
@@ -30,6 +20,10 @@ export interface Transaction {
 	shared_by?: string; // NEW: who shared it
 	splitting_rule_id?: string;
 	manual_override: boolean;
+	// Story 4.2: Automatic categorization fields
+	confidence_score?: number | null; // 0-100, NULL = not categorized
+	original_rule_id?: string | null; // Original rule before override
+	split_details?: TransactionSplit | null; // For partially shared transactions
 	created_at: string;
 }
 
@@ -99,4 +93,92 @@ export interface TransactionSharingHistoryFilters {
 	start_date?: string;
 	end_date?: string;
 	action?: "shared" | "unshared";
+}
+
+// Story 4.2: Transaction Categorization Types
+
+/**
+ * Split transaction details for partially shared expenses
+ * Example: £100 total -> £80 shared, £20 personal
+ */
+export interface TransactionSplit {
+	personal_amount: number; // Amount that is NOT shared
+	shared_amount: number; // Amount that IS shared
+	split_percentage: Record<string, number>; // user_id -> percentage for shared amount
+}
+
+/**
+ * Transaction override history
+ */
+export interface TransactionOverride {
+	id: string;
+	transaction_id: string;
+	original_rule_id?: string | null;
+	override_by: string;
+	override_at: string;
+	old_is_shared_expense: boolean;
+	new_is_shared_expense: boolean;
+	old_split_percentage?: Record<string, number>;
+	new_split_percentage?: Record<string, number>;
+	override_reason?: string;
+}
+
+/**
+ * Rule feedback for analytics
+ */
+export interface RuleFeedback {
+	id: string;
+	transaction_id: string;
+	rule_id?: string;
+	household_id: string;
+	user_action: "accepted" | "rejected" | "overridden";
+	original_confidence_score?: number;
+	override_details?: any;
+	created_at: string;
+}
+
+/**
+ * Uncategorized transaction queue item
+ */
+export interface UncategorizedQueueItem {
+	transaction: Transaction;
+	suggested_rule?: {
+		id: string;
+		rule_name: string;
+		split_percentage: Record<string, number>;
+	};
+	suggested_confidence?: number;
+	requires_review_reason: string; // "No matching rule" | "Low confidence" | "Default rule applied"
+}
+
+/**
+ * Confidence level enum for display
+ */
+export type ConfidenceLevel = "high" | "medium" | "low" | "none";
+
+/**
+ * Request to override transaction categorization
+ */
+export interface TransactionOverrideRequest {
+	is_shared_expense: boolean;
+	split_percentage?: Record<string, number>;
+	reason?: string;
+}
+
+/**
+ * Request to split a transaction
+ */
+export interface TransactionSplitRequest {
+	personal_amount: number;
+	shared_amount: number;
+	split_percentage: Record<string, number>;
+}
+
+/**
+ * Batch categorization request
+ */
+export interface BatchCategorizationRequest {
+	transaction_ids: string[];
+	action: "mark_personal" | "apply_rule";
+	rule_id?: string;
 }

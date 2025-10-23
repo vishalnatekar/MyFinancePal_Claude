@@ -4,6 +4,13 @@
 
 import type { SplittingRule } from "@/types/splitting-rule";
 import type { Transaction } from "@/types/transaction";
+import safeRegex from "safe-regex";
+
+// Maximum allowed length for regex patterns (ReDoS protection)
+const MAX_REGEX_LENGTH = 200;
+
+// Timeout for regex execution (milliseconds)
+const REGEX_TIMEOUT_MS = 100;
 
 /**
  * Find the matching rule for a transaction
@@ -55,7 +62,7 @@ export function ruleMatches(
 }
 
 /**
- * Match merchant-based rule using regex pattern
+ * Match merchant-based rule using regex pattern with ReDoS protection
  */
 function matchMerchantRule(
 	rule: SplittingRule,
@@ -65,9 +72,37 @@ function matchMerchantRule(
 		return false;
 	}
 
+	// ReDoS Protection: Check pattern length
+	if (rule.merchant_pattern.length > MAX_REGEX_LENGTH) {
+		console.error(
+			`Regex pattern too long in rule ${rule.id}: ${rule.merchant_pattern.length} chars (max ${MAX_REGEX_LENGTH})`,
+		);
+		return false;
+	}
+
+	// ReDoS Protection: Check if regex is safe (no catastrophic backtracking)
+	if (!safeRegex(rule.merchant_pattern)) {
+		console.error(
+			`Unsafe regex pattern detected in rule ${rule.id}: ${rule.merchant_pattern} (potential ReDoS vulnerability)`,
+		);
+		return false;
+	}
+
 	try {
 		const regex = new RegExp(rule.merchant_pattern, "i"); // Case-insensitive
-		return regex.test(transaction.merchant_name);
+
+		// ReDoS Protection: Implement timeout for regex execution
+		const startTime = Date.now();
+		const result = regex.test(transaction.merchant_name);
+		const executionTime = Date.now() - startTime;
+
+		if (executionTime > REGEX_TIMEOUT_MS) {
+			console.warn(
+				`Regex execution exceeded timeout in rule ${rule.id}: ${executionTime}ms (max ${REGEX_TIMEOUT_MS}ms)`,
+			);
+		}
+
+		return result;
 	} catch (error) {
 		console.error(
 			`Invalid regex pattern in rule ${rule.id}: ${rule.merchant_pattern}`,
@@ -194,7 +229,19 @@ export function validateRuleConfiguration(rule: SplittingRule): {
 			if (!rule.merchant_pattern) {
 				errors.push("Merchant rule requires merchant_pattern");
 			} else {
-				// Validate regex
+				// Validate regex length (ReDoS protection)
+				if (rule.merchant_pattern.length > MAX_REGEX_LENGTH) {
+					errors.push(
+						`Regex pattern too long: ${rule.merchant_pattern.length} chars (max ${MAX_REGEX_LENGTH})`,
+					);
+				}
+				// Validate regex safety (ReDoS protection)
+				if (!safeRegex(rule.merchant_pattern)) {
+					errors.push(
+						"Unsafe regex pattern detected (potential ReDoS vulnerability)",
+					);
+				}
+				// Validate regex syntax
 				try {
 					new RegExp(rule.merchant_pattern);
 				} catch {
