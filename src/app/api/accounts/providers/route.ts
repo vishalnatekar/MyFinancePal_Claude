@@ -35,12 +35,19 @@ export const GET = withAuth(async (request: NextRequest, user: User) => {
 			providers = await trueLayerService.getProviders();
 		}
 
-		// Filter to UK providers with account capabilities
-		const filteredProviders = providers.filter(
-			(provider) =>
-				provider.country_code === "GB" &&
-				provider.capabilities?.accounts === true,
-		);
+		// Filter to providers with account or card capabilities
+		const filteredProviders = providers.filter((provider) => {
+			const scopes = Array.isArray(provider.scopes) ? provider.scopes : [];
+			const supportsAccounts =
+				provider.capabilities?.accounts === true ||
+				scopes.includes("accounts") ||
+				scopes.includes("balance") ||
+				scopes.includes("transactions");
+			const supportsCards =
+				provider.capabilities?.cards === true ||
+				scopes.some((scope) => scope === "cards" || scope.startsWith("cards."));
+			return supportsAccounts || supportsCards;
+		});
 
 		return NextResponse.json({
 			providers: filteredProviders,

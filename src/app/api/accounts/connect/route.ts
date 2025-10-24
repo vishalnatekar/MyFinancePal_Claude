@@ -70,6 +70,47 @@ export async function POST(request: NextRequest) {
 
 		const { providerId, institutionName } = validationResult.data;
 
+		// Fetch provider details to determine supported scopes
+		const provider = await trueLayerService.getProviderById(providerId);
+		if (!provider) {
+			return NextResponse.json(
+				{
+					error: "provider_not_found",
+					message: "Selected provider is not supported.",
+				},
+				{ status: 404 },
+			);
+		}
+
+		const providerScopes = Array.isArray(provider.scopes) ? provider.scopes : [];
+		const scopes = new Set<string>(["info", "offline_access"]);
+
+		// Only add scopes that the provider actually advertises
+		for (const scope of providerScopes) {
+			scopes.add(scope);
+		}
+
+		// Verify provider supports at least accounts or cards
+		const supportsAccounts =
+			providerScopes.includes("accounts") ||
+			providerScopes.includes("balance") ||
+			providerScopes.includes("transactions") ||
+			provider.capabilities?.accounts === true;
+		const supportsCards =
+			providerScopes.some((scope) => scope.startsWith("cards")) ||
+			provider.capabilities?.cards === true;
+
+		if (!supportsAccounts && !supportsCards) {
+			return NextResponse.json(
+				{
+					error: "unsupported_provider",
+					message:
+						"This provider does not expose account or card data via TrueLayer.",
+				},
+				{ status: 400 },
+			);
+		}
+
 		// Generate secure state token
 		console.log("🔐 Generating OAuth state token for user:", userId);
 		const state = await oauthStateManager.generateState(userId, providerId);
@@ -85,11 +126,20 @@ export async function POST(request: NextRequest) {
 			providerId,
 			redirectUri,
 			state,
+			Array.from(scopes),
 		);
 
+		console.log("Provider supports accounts:", supportsAccounts);
+		console.log("Provider supports cards:", supportsCards);
+		console.log("Provider scopes:", providerScopes.join(", "));
+		console.log("Requested scopes:", Array.from(scopes).join(" "));
 		console.log("Initiating TrueLayer OAuth flow:");
 		console.log("- User ID:", userId);
 		console.log("- Provider ID:", providerId);
+		console.log(
+			"- Institution:",
+			institutionName || provider.display_name || "Unknown provider",
+		);
 		console.log("- Redirect URI:", redirectUri);
 		console.log("- State:", `${state.substring(0, 10)}...`);
 		console.log("- Full Auth URL:", authUrl);

@@ -21,16 +21,19 @@ export interface TrueLayerProvider {
 	icon_uri?: string;
 	country: string; // TrueLayer uses country, not country_code
 	country_code?: string; // Keep for backward compatibility
+	provider_type?: string;
+	release_status?: string;
+	supported_products?: string[];
 	auth_type?: string;
 	scopes: string[]; // TrueLayer uses scopes array instead of capabilities object
 	provider_scope_mappings?: Record<string, string[]>;
 	// Legacy capabilities field for backward compatibility
 	capabilities?: {
-		accounts: boolean;
-		transactions: boolean;
-		balance: boolean;
-		cards: boolean;
-		identity: boolean;
+		accounts?: boolean;
+		transactions?: boolean;
+		balance?: boolean;
+		cards?: boolean;
+		identity?: boolean;
 	};
 }
 
@@ -102,6 +105,34 @@ export interface TrueLayerTransaction {
 	};
 }
 
+export interface TrueLayerCard {
+	card_id: string;
+	card_type: "CREDIT" | "DEBIT";
+	display_name: string;
+	currency: string;
+	partial_card_number: string;
+	name_on_card?: string;
+	valid_from?: string;
+	valid_to?: string;
+	provider: {
+		display_name: string;
+		provider_id: string;
+		logo_uri: string;
+	};
+}
+
+export interface TrueLayerCardBalance {
+	currency: string;
+	available: number;
+	current: number;
+	credit_limit?: number;
+	last_statement_balance?: number;
+	last_statement_date?: string;
+	payment_due?: number;
+	payment_due_date?: string;
+	update_timestamp: string;
+}
+
 export interface TrueLayerCardTransaction {
 	transaction_id: string;
 	timestamp: string;
@@ -128,4 +159,16 @@ export interface TrueLayerTransactionsResponse {
 
 export interface TrueLayerProvidersResponse {
 	results: TrueLayerProvider[];
+}
+
+export interface TrueLayerCardsResponse {
+	results: TrueLayerCard[];
+}
+
+export interface TrueLayerCardBalanceResponse {
+	results: TrueLayerCardBalance[];
+}
+
+export interface TrueLayerCardTransactionsResponse {
+	results: TrueLayerCardTransaction[];
 }

@@ -119,11 +119,24 @@ export async function GET(request: NextRequest) {
 			const accounts = await trueLayerService.getAccounts(access_token);
 			console.log("✅ Fetched", accounts.length, "accounts from TrueLayer");
 
+			// Fetch card data from TrueLayer
+			console.log("📡 Step 2b: Fetching cards from TrueLayer...");
+			let cards = [];
+			try {
+				cards = await trueLayerService.getCards(access_token);
+				console.log("✅ Fetched", cards.length, "cards from TrueLayer");
+			} catch (cardError) {
+				console.warn("⚠️  No cards found or cards not enabled:", cardError);
+				// Continue without cards - not all providers support cards
+			}
+
 			// Get provider information for each account
 			console.log(
 				"📡 Step 3: Fetching balances for",
 				accounts.length,
-				"accounts...",
+				"accounts and",
+				cards.length,
+				"cards...",
 			);
 			const accountsWithBalances = await Promise.all(
 				accounts.map(async (account) => {
@@ -156,6 +169,39 @@ export async function GET(request: NextRequest) {
 				}),
 			);
 			console.log("✅ All balances fetched");
+
+			// Fetch balances for cards
+			const cardsWithBalances = await Promise.all(
+				cards.map(async (card) => {
+					try {
+						const balance = await trueLayerService.getCardBalance(
+							card.card_id,
+							access_token,
+						);
+						console.log(
+							`✅ Card balance fetched for ${card.display_name}:`,
+							balance.current,
+							balance.currency,
+						);
+						return { card, balance };
+					} catch (err) {
+						console.warn(
+							`⚠️  Failed to get balance for card ${card.card_id}:`,
+							err,
+						);
+						return {
+							card,
+							balance: {
+								current: 0,
+								available: 0,
+								currency: card.currency,
+								update_timestamp: new Date().toISOString(),
+							},
+						};
+					}
+				}),
+			);
+			console.log("✅ All card balances fetched");
 
 			// Store financial accounts in database using data processor
 			const financialAccounts = accountsWithBalances.map(
@@ -192,12 +238,48 @@ export async function GET(request: NextRequest) {
 				},
 			);
 
+			// Process cards as financial accounts
+			const financialCards = cardsWithBalances.map(({ card, balance }) => {
+				// Cards are stored as credit/debit accounts
+				const accountType = card.card_type === "CREDIT" ? "credit" : "checking";
+
+				// Normalize balance using data processor
+				const normalizedBalance = trueLayerDataProcessor.normalizeAmount(
+					balance.current,
+				);
+
+				return {
+					user_id: userId,
+					truelayer_account_id: card.card_id,
+					truelayer_connection_id: `${providerId}_${userId}`, // Unique connection identifier
+					account_type: accountType,
+					account_name:
+						card.display_name || `${card.card_type} Card ${card.partial_card_number}`,
+					institution_name: card.provider?.display_name || "Unknown Provider",
+					current_balance: normalizedBalance,
+					is_shared: false,
+					is_manual: false,
+					connection_status: "active" as "active" | "expired" | "failed",
+					encrypted_access_token: CryptoService.encrypt(
+						JSON.stringify({
+							access_token,
+							refresh_token,
+							expires_at: Date.now() + expires_in * 1000,
+						}),
+					),
+					last_synced: new Date().toISOString(),
+				};
+			});
+
+			// Combine accounts and cards
+			const allFinancialAccounts = [...financialAccounts, ...financialCards];
+
 			console.log(
-				`💾 Step 4: Creating ${financialAccounts.length} accounts in database for user ${userId}`,
+				`💾 Step 4: Creating ${allFinancialAccounts.length} accounts (${financialAccounts.length} accounts + ${financialCards.length} cards) in database for user ${userId}`,
 			);
 			console.log(
 				"Account data to be inserted:",
-				financialAccounts.map((a) => ({
+				allFinancialAccounts.map((a) => ({
 					name: a.account_name,
 					type: a.account_type,
 					balance: a.current_balance,
@@ -208,7 +290,7 @@ export async function GET(request: NextRequest) {
 			// Use upsert with ignoreDuplicates to update existing accounts
 			const { data: createdAccounts, error: dbError } = await supabaseAdmin
 				.from("financial_accounts")
-				.upsert(financialAccounts, {
+				.upsert(allFinancialAccounts, {
 					onConflict: "truelayer_account_id",
 					ignoreDuplicates: false,
 				})
@@ -249,13 +331,31 @@ export async function GET(request: NextRequest) {
 						twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
 						const from = twoYearsAgo.toISOString().split("T")[0];
 
-						const transactions = await trueLayerService.getAccountTransactions(
-							account.truelayer_account_id || "",
-							access_token,
-							from,
-							undefined,
-							500, // Get up to 500 transactions
-						);
+						// Determine if this is a card or account based on the original data
+						const isCard = cards.some((c) => c.card_id === account.truelayer_account_id);
+
+						let transactions: any[] = [];
+						if (isCard) {
+							// Fetch card transactions
+							const cardTxns = await trueLayerService.getCardTransactions(
+								account.truelayer_account_id || "",
+								access_token,
+								from,
+								undefined,
+								500, // Get up to 500 transactions
+							);
+							transactions = cardTxns;
+						} else {
+							// Fetch account transactions
+							const accountTxns = await trueLayerService.getAccountTransactions(
+								account.truelayer_account_id || "",
+								access_token,
+								from,
+								undefined,
+								500, // Get up to 500 transactions
+							);
+							transactions = accountTxns;
+						}
 
 						console.log(
 							`✅ Fetched ${transactions.length} transactions for ${account.account_name}`,

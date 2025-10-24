@@ -13,9 +13,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { trueLayerService } from "@/services/truelayer-service";
 import type { TrueLayerProvider } from "@/types/truelayer";
-import { AlertCircle, Building, Loader2, Search } from "lucide-react";
+import { AlertCircle, Building, CreditCard, Loader2, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 const LOADING_SKELETON_KEYS = [
@@ -26,6 +25,31 @@ const LOADING_SKELETON_KEYS = [
 	"provider-skeleton-5",
 	"provider-skeleton-6",
 ];
+
+const ACCOUNT_SCOPE_KEYS = new Set(["accounts", "balance", "transactions"]);
+
+const CARD_SCOPE_PREFIX = "cards";
+
+function supportsAccounts(provider: TrueLayerProvider): boolean {
+	const scopes = provider.scopes || [];
+	return (
+		scopes.some((scope) => ACCOUNT_SCOPE_KEYS.has(scope)) ||
+		provider.capabilities?.accounts === true
+	);
+}
+
+function supportsCards(provider: TrueLayerProvider): boolean {
+	const scopes = provider.scopes || [];
+	return (
+		scopes.some((scope) =>
+			scope === CARD_SCOPE_PREFIX || scope.startsWith(`${CARD_SCOPE_PREFIX}.`),
+		) || provider.capabilities?.cards === true
+	);
+}
+
+function getProviderStatus(provider: TrueLayerProvider): string {
+	return provider.release_status?.toLowerCase() || "active";
+}
 
 interface InstitutionSelectorProps {
 	onConnectionSuccess: () => void;
@@ -51,10 +75,12 @@ export function InstitutionSelector({
 				setIsLoading(true);
 				setError(null);
 
-				// Fetch TrueLayer providers via our server-side API (avoids CORS)
-				try {
-					console.log("Fetching providers from server-side API...");
-					const response = await fetch("/api/truelayer/providers");
+					// Fetch TrueLayer providers via our server-side API (avoids CORS)
+					try {
+						console.log("Fetching providers from server-side API...");
+						const response = await fetch("/api/truelayer/providers", {
+							cache: "no-store",
+						});
 
 					if (!response.ok) {
 						throw new Error(`API request failed: ${response.status}`);
@@ -64,7 +90,7 @@ export function InstitutionSelector({
 
 					if (data.success) {
 						console.log(
-							`Successfully loaded ${data.ukTotal} UK providers out of ${data.total} total`,
+							`Successfully loaded ${data.supportedTotal} supported providers out of ${data.total} total`,
 						);
 						setProviders(data.providers);
 					} else {
@@ -203,6 +229,7 @@ export function InstitutionSelector({
 				credentials: "same-origin", // Include cookies for authentication
 				body: JSON.stringify({
 					providerId: provider.provider_id,
+					institutionName: provider.display_name,
 				}),
 			});
 
@@ -228,10 +255,13 @@ export function InstitutionSelector({
 	const getStatusColor = (status: string) => {
 		switch (status) {
 			case "active":
+			case "live":
 				return "bg-green-500";
 			case "beta":
+			case "sandbox":
 				return "bg-yellow-500";
 			case "deprecated":
+			case "retired":
 				return "bg-red-500";
 			default:
 				return "bg-gray-500";
@@ -267,12 +297,12 @@ export function InstitutionSelector({
 		<div className="space-y-4">
 			{/* Search Input */}
 			<div className="space-y-2">
-				<Label htmlFor="search">Search for your bank or institution</Label>
+		<Label htmlFor="search">Search for your bank or card provider</Label>
 				<div className="relative">
 					<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 					<Input
 						id="search"
-						placeholder="e.g. Monzo, Barclays, Halifax..."
+				placeholder="e.g. Monzo, American Express, Barclays..."
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
 						className="pl-8"
@@ -305,7 +335,36 @@ export function InstitutionSelector({
 						</CardContent>
 					</Card>
 				) : (
-					filteredProviders.map((provider) => (
+				filteredProviders.map((provider) => {
+					const hasAccounts = supportsAccounts(provider);
+					const hasCards = supportsCards(provider);
+					const status = getProviderStatus(provider);
+					const scopeBadges: JSX.Element[] = [];
+					if (hasAccounts) {
+						scopeBadges.push(
+							<Badge key="accounts" variant="outline" className="text-xs">
+								Accounts
+							</Badge>,
+						);
+					}
+					if (hasCards) {
+						scopeBadges.push(
+							<Badge
+								key="cards"
+								variant="outline"
+								className="text-xs flex items-center gap-1"
+							>
+								<CreditCard className="h-3 w-3" />
+								Cards
+							</Badge>,
+						);
+					}
+					const logoSrc =
+						provider.logo_url || provider.logo_uri || provider.icon_uri || "";
+					const regionLabel =
+						provider.country_code?.toUpperCase() || provider.country?.toUpperCase();
+
+					return (
 						<Card
 							key={provider.provider_id}
 							className={`transition-all hover:shadow-md cursor-pointer ${
@@ -317,39 +376,38 @@ export function InstitutionSelector({
 							<CardHeader className="pb-3">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center space-x-3">
-										<img
-											src={
-												provider.logo_url ||
-												provider.logo_uri ||
-												provider.icon_uri
-											}
-											alt={`${provider.display_name} logo`}
-											className="w-10 h-10 rounded-full bg-gray-100"
-										/>
+										<div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+											{logoSrc ? (
+												<img
+													src={logoSrc}
+													alt={`${provider.display_name} logo`}
+													className="w-full h-full object-contain"
+												/>
+											) : hasCards ? (
+												<CreditCard className="h-5 w-5 text-muted-foreground" />
+											) : (
+												<Building className="h-5 w-5 text-muted-foreground" />
+											)}
+										</div>
 										<div>
 											<CardTitle className="text-base">
 												{provider.display_name}
 											</CardTitle>
-											<CardDescription className="flex items-center gap-2">
-												Bank
+											<CardDescription className="flex flex-wrap items-center gap-2 text-xs">
 												<Badge
 													variant="secondary"
-													className={`${getStatusColor("active")} text-white text-xs`}
+													className={`${getStatusColor(status)} text-white capitalize`}
 												>
-													Active
+													{status === "active" ? "Live" : status}
 												</Badge>
+												{scopeBadges}
+												{regionLabel && <span>{regionLabel}</span>}
 											</CardDescription>
 										</div>
 									</div>
 									<Button
 										onClick={() => handleConnect(provider)}
-										disabled={
-											isConnecting ||
-											!(
-												provider.scopes?.includes("accounts") ||
-												provider.capabilities?.accounts
-											)
-										}
+										disabled={isConnecting || (!hasAccounts && !hasCards)}
 										size="sm"
 									>
 										{isConnecting &&
@@ -365,7 +423,8 @@ export function InstitutionSelector({
 								</div>
 							</CardHeader>
 						</Card>
-					))
+					);
+				})
 				)}
 			</div>
 

@@ -2,6 +2,9 @@ import type { FinancialAccount } from "@/types/account";
 import type {
 	TrueLayerAccount,
 	TrueLayerBalance,
+	TrueLayerCard,
+	TrueLayerCardBalance,
+	TrueLayerCardTransaction,
 	TrueLayerTransaction,
 } from "@/types/truelayer";
 import { TransactionCategorizationService } from "./transaction-categorization-service";
@@ -28,6 +31,32 @@ export class TrueLayerDataProcessor {
 			account_type: this.normalizeAccountType(rawAccount.account_type),
 			account_name: rawAccount.display_name,
 			institution_name: rawAccount.provider.display_name,
+			current_balance: this.normalizeAmount(balance.current),
+			is_shared: false,
+			last_synced: new Date().toISOString(),
+			is_manual: false,
+			connection_status: "active",
+			encrypted_access_token: encryptedAccessToken,
+		};
+	}
+
+	/**
+	 * Process raw TrueLayer card data into internal FinancialAccount model
+	 */
+	async processCardData(
+		rawCard: TrueLayerCard,
+		balance: TrueLayerCardBalance,
+		userId: string,
+		connectionId: string,
+		encryptedAccessToken: string,
+	): Promise<Omit<FinancialAccount, "id" | "created_at" | "updated_at">> {
+		return {
+			user_id: userId,
+			truelayer_account_id: rawCard.card_id,
+			truelayer_connection_id: connectionId,
+			account_type: rawCard.card_type === "CREDIT" ? "credit" : "checking",
+			account_name: rawCard.display_name || `${rawCard.card_type} Card`,
+			institution_name: rawCard.provider.display_name,
 			current_balance: this.normalizeAmount(balance.current),
 			is_shared: false,
 			last_synced: new Date().toISOString(),
@@ -70,6 +99,38 @@ export class TrueLayerDataProcessor {
 	}
 
 	/**
+	 * Process raw TrueLayer card transaction data
+	 */
+	async processCardTransactionData(
+		rawTransaction: TrueLayerCardTransaction,
+		accountId: string,
+	): Promise<ProcessedTransaction> {
+		const normalizedAmount = this.normalizeTransactionAmount(
+			rawTransaction.amount,
+			rawTransaction.transaction_type,
+		);
+
+		return {
+			account_id: accountId,
+			truelayer_transaction_id: rawTransaction.transaction_id,
+			amount: normalizedAmount,
+			merchant_name: rawTransaction.merchant_name || null,
+			category: this.normalizeCategory(
+				"",
+				rawTransaction.merchant_name,
+				normalizedAmount,
+				rawTransaction.description,
+			),
+			date: this.normalizeDate(rawTransaction.timestamp),
+			description: rawTransaction.description,
+			currency: rawTransaction.currency,
+			transaction_type: rawTransaction.transaction_type,
+			is_shared_expense: false,
+			manual_override: false,
+		};
+	}
+
+	/**
 	 * Process batch of transactions
 	 */
 	async processTransactionBatch(
@@ -78,6 +139,18 @@ export class TrueLayerDataProcessor {
 	): Promise<ProcessedTransaction[]> {
 		return Promise.all(
 			rawTransactions.map((tx) => this.processTransactionData(tx, accountId)),
+		);
+	}
+
+	/**
+	 * Process batch of card transactions
+	 */
+	async processCardTransactionBatch(
+		rawTransactions: TrueLayerCardTransaction[],
+		accountId: string,
+	): Promise<ProcessedTransaction[]> {
+		return Promise.all(
+			rawTransactions.map((tx) => this.processCardTransactionData(tx, accountId)),
 		);
 	}
 
@@ -180,6 +253,59 @@ export class TrueLayerDataProcessor {
 	 * Validate transaction data
 	 */
 	validateTransactionData(transaction: TrueLayerTransaction): boolean {
+		// Check required fields
+		if (!transaction.transaction_id || !transaction.timestamp) {
+			return false;
+		}
+
+		// Check amount is valid
+		if (
+			typeof transaction.amount !== "number" ||
+			!Number.isFinite(transaction.amount)
+		) {
+			return false;
+		}
+
+		// Check currency code
+		if (!transaction.currency || transaction.currency.length !== 3) {
+			return false;
+		}
+
+		// Check transaction type
+		if (
+			transaction.transaction_type !== "DEBIT" &&
+			transaction.transaction_type !== "CREDIT"
+		) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate card balance data
+	 */
+	validateCardBalanceData(balance: TrueLayerCardBalance): boolean {
+		// Check for valid currency
+		if (!balance.currency || balance.currency.length !== 3) {
+			return false;
+		}
+
+		// Check for valid balance values
+		if (
+			typeof balance.current !== "number" ||
+			!Number.isFinite(balance.current)
+		) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate card transaction data
+	 */
+	validateCardTransactionData(transaction: TrueLayerCardTransaction): boolean {
 		// Check required fields
 		if (!transaction.transaction_id || !transaction.timestamp) {
 			return false;

@@ -1,6 +1,8 @@
 import { trueLayerService } from "@/services/truelayer-service";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
 	try {
 		console.log("Fetching TrueLayer providers from server...");
@@ -9,22 +11,30 @@ export async function GET(request: NextRequest) {
 		const allProviders = await trueLayerService.getProviders();
 		console.log(`Retrieved ${allProviders.length} total providers`);
 
-		// Filter for UK providers that support accounts (exclude mock/test providers)
-		const ukProviders = allProviders.filter(
-			(provider) =>
-				(provider.country === "uk" || provider.country_code === "GB") &&
-				(provider.scopes?.includes("accounts") ||
-					provider.capabilities?.accounts === true) &&
-				provider.provider_id !== "mock", // Exclude TrueLayer's mock test provider
-		);
+		// Filter for providers that support accounts OR cards (exclude mock/test providers)
+		const supportedProviders = allProviders
+			.filter((provider) => provider.provider_id !== "mock")
+			.filter((provider) => {
+				const scopes = Array.isArray(provider.scopes) ? provider.scopes : [];
+				const supportsAccounts =
+					scopes.includes("accounts") ||
+					scopes.includes("balance") ||
+					scopes.includes("transactions") ||
+					provider.capabilities?.accounts === true;
+				const supportsCards =
+					scopes.some((scope) => scope.startsWith("cards")) ||
+					provider.capabilities?.cards === true;
 
-		console.log(`Filtered to ${ukProviders.length} UK providers`);
+				return supportsAccounts || supportsCards;
+			});
+
+		console.log(`Filtered to ${supportedProviders.length} supported providers`);
 
 		return NextResponse.json({
 			success: true,
-			providers: ukProviders,
+			providers: supportedProviders,
 			total: allProviders.length,
-			ukTotal: ukProviders.length,
+			supportedTotal: supportedProviders.length,
 		});
 	} catch (error) {
 		console.error("Error fetching TrueLayer providers:", error);

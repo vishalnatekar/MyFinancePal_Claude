@@ -34,6 +34,7 @@ describe("TrueLayerService", () => {
 			const state = "test-state-123";
 
 			const authUrl = service.generateAuthUrl(providerId, redirectUri, state);
+			const parsed = new URL(authUrl);
 
 			expect(authUrl).toContain("https://auth.truelayer.com");
 			expect(authUrl).toContain(`client_id=${config.truelayer.clientId}`);
@@ -42,6 +43,9 @@ describe("TrueLayerService", () => {
 			);
 			expect(authUrl).toContain(`providers=${providerId}`);
 			expect(authUrl).toContain(`state=${state}`);
+			expect(parsed.searchParams.get("scope")).toBe(
+				"info offline_access accounts balance transactions",
+			);
 			// Note: enable_mock is commented out in service for production readiness
 		});
 
@@ -59,6 +63,30 @@ describe("TrueLayerService", () => {
 
 			// Restore original environment
 			(config.truelayer as any).environment = originalEnv;
+		});
+
+		it("should include custom scopes when provided", () => {
+			const providerId = "cards-amex";
+			const redirectUri = "https://localhost:3000/callback";
+			const scopes = [
+				"info",
+				"offline_access",
+				"cards",
+				"cards.balance",
+				"cards.transactions",
+			];
+
+			const authUrl = service.generateAuthUrl(
+				providerId,
+				redirectUri,
+				undefined,
+				scopes,
+			);
+			const parsed = new URL(authUrl);
+
+			expect(parsed.searchParams.get("scope")).toBe(
+				"info offline_access cards cards.balance cards.transactions",
+			);
 		});
 	});
 
@@ -166,6 +194,7 @@ describe("TrueLayerService", () => {
 					icon_uri: "https://truelayer.com/icons/monzo.png",
 					country_code: "GB",
 					auth_type: "oauth",
+					scopes: ["accounts", "balance", "transactions"],
 					capabilities: {
 						accounts: true,
 						transactions: true,
@@ -188,15 +217,149 @@ describe("TrueLayerService", () => {
 					ok: true,
 					json: jest.fn().mockResolvedValue(mockTokenResponse),
 				})
-				// Mock the providers call
+				// Base providers call
 				.mockResolvedValueOnce({
 					ok: true,
 					json: jest.fn().mockResolvedValue(mockProviders),
+				})
+				// Card providers call (none returned)
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue([]),
 				});
 
 			const result = await service.getProviders();
 
 			expect(result).toEqual(mockProviders);
+		});
+
+		it("should include card providers when available", async () => {
+			const mockTokenResponse = {
+				access_token: "test-token",
+				token_type: "bearer",
+				expires_in: 3600,
+			};
+
+			const baseProviders = [
+				{
+					provider_id: "ob-monzo",
+					display_name: "Monzo",
+					scopes: ["accounts", "balance"],
+				},
+			];
+
+			const cardProviders = [
+				{
+					provider_id: "cards-amex",
+					display_name: "American Express",
+					scopes: ["cards", "cards.balance", "cards.transactions"],
+				},
+			];
+
+			(fetch as jest.Mock)
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue(mockTokenResponse),
+				})
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue(baseProviders),
+				})
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue(cardProviders),
+				});
+
+			const result = await service.getProviders();
+
+			expect(result).toHaveLength(2);
+			expect(result).toEqual([
+				{ ...baseProviders[0], scopes: baseProviders[0].scopes },
+				{ ...cardProviders[0], scopes: cardProviders[0].scopes },
+			]);
+		});
+
+		it("should continue when card providers fetch fails", async () => {
+			const mockTokenResponse = {
+				access_token: "test-token",
+				token_type: "bearer",
+				expires_in: 3600,
+			};
+
+			const baseProviders = [
+				{
+					provider_id: "ob-monzo",
+					display_name: "Monzo",
+					scopes: ["accounts"],
+				},
+			];
+
+			const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+			(fetch as jest.Mock)
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue(mockTokenResponse),
+				})
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue(baseProviders),
+				})
+				.mockResolvedValueOnce({
+					ok: false,
+					status: 403,
+					json: jest.fn().mockResolvedValue({
+						error: "forbidden",
+						error_description: "Cards not enabled",
+					}),
+				});
+
+			const result = await service.getProviders();
+
+			expect(result).toEqual([
+				{ ...baseProviders[0], scopes: baseProviders[0].scopes },
+			]);
+
+			warnSpy.mockRestore();
+		});
+
+		it("should return provider by id", async () => {
+			const mockProviders = [
+				{
+					provider_id: "cards-amex",
+					display_name: "American Express",
+					logo_uri: "https://example.com/amex.svg",
+					country_code: "US",
+					scopes: ["cards", "cards.balance"],
+					capabilities: {
+						cards: true,
+					},
+				},
+			];
+
+			const mockTokenResponse = {
+				access_token: "test-token",
+				token_type: "bearer",
+				expires_in: 3600,
+			};
+
+			(fetch as jest.Mock)
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue(mockTokenResponse),
+				})
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue([]),
+				})
+				.mockResolvedValueOnce({
+					ok: true,
+					json: jest.fn().mockResolvedValue(mockProviders),
+				});
+
+			const provider = await service.getProviderById("cards-amex");
+
+			expect(provider).toEqual(mockProviders[0]);
 		});
 	});
 
