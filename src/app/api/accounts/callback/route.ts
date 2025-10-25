@@ -114,12 +114,18 @@ export async function GET(request: NextRequest) {
 				"seconds",
 			);
 
-			// Fetch account data from TrueLayer
+			// Fetch account data from TrueLayer (if token has account scope)
 			console.log("📡 Step 2: Fetching accounts from TrueLayer...");
-			const accounts = await trueLayerService.getAccounts(access_token);
-			console.log("✅ Fetched", accounts.length, "accounts from TrueLayer");
+			let accounts = [];
+			try {
+				accounts = await trueLayerService.getAccounts(access_token);
+				console.log("✅ Fetched", accounts.length, "accounts from TrueLayer");
+			} catch (accountError) {
+				console.warn("⚠️  No accounts found or accounts not enabled:", accountError);
+				// Continue without accounts - provider might be card-only (e.g., American Express)
+			}
 
-			// Fetch card data from TrueLayer
+			// Fetch card data from TrueLayer (if token has card scope)
 			console.log("📡 Step 2b: Fetching cards from TrueLayer...");
 			let cards = [];
 			try {
@@ -128,6 +134,18 @@ export async function GET(request: NextRequest) {
 			} catch (cardError) {
 				console.warn("⚠️  No cards found or cards not enabled:", cardError);
 				// Continue without cards - not all providers support cards
+			}
+
+			// Ensure we got at least accounts or cards
+			if (accounts.length === 0 && cards.length === 0) {
+				console.error("❌ No accounts or cards found from TrueLayer");
+				const redirectUrl = new URL("/accounts", config.app.url);
+				redirectUrl.searchParams.set("error", "no_data");
+				redirectUrl.searchParams.set(
+					"message",
+					"No accounts or cards found. Please try a different provider.",
+				);
+				return NextResponse.redirect(redirectUrl);
 			}
 
 			// Get provider information for each account
