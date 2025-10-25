@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
 
 			// Fetch account data from TrueLayer (if token has account scope)
 			console.log("📡 Step 2: Fetching accounts from TrueLayer...");
-			let accounts = [];
+			let accounts: any[] = [];
 			try {
 				accounts = await trueLayerService.getAccounts(access_token);
 				console.log("✅ Fetched", accounts.length, "accounts from TrueLayer");
@@ -127,10 +127,11 @@ export async function GET(request: NextRequest) {
 
 			// Fetch card data from TrueLayer (if token has card scope)
 			console.log("📡 Step 2b: Fetching cards from TrueLayer...");
-			let cards = [];
+			let cards: any[] = [];
 			try {
 				cards = await trueLayerService.getCards(access_token);
 				console.log("✅ Fetched", cards.length, "cards from TrueLayer");
+				console.log("Card details:", JSON.stringify(cards, null, 2));
 			} catch (cardError) {
 				console.warn("⚠️  No cards found or cards not enabled:", cardError);
 				// Continue without cards - not all providers support cards
@@ -192,8 +193,9 @@ export async function GET(request: NextRequest) {
 			const cardsWithBalances = await Promise.all(
 				cards.map(async (card) => {
 					try {
+						const cardId = card.account_id || card.card_id;
 						const balance = await trueLayerService.getCardBalance(
-							card.card_id,
+							cardId,
 							access_token,
 						);
 						console.log(
@@ -204,7 +206,7 @@ export async function GET(request: NextRequest) {
 						return { card, balance };
 					} catch (err) {
 						console.warn(
-							`⚠️  Failed to get balance for card ${card.card_id}:`,
+							`⚠️  Failed to get balance for card ${card.account_id || card.card_id}:`,
 							err,
 						);
 						return {
@@ -266,9 +268,11 @@ export async function GET(request: NextRequest) {
 					balance.current,
 				);
 
+				const cardId = card.account_id || card.card_id;
+
 				return {
 					user_id: userId,
-					truelayer_account_id: card.card_id,
+					truelayer_account_id: cardId,
 					truelayer_connection_id: `${providerId}_${userId}`, // Unique connection identifier
 					account_type: accountType,
 					account_name:
@@ -350,7 +354,7 @@ export async function GET(request: NextRequest) {
 						const from = twoYearsAgo.toISOString().split("T")[0];
 
 						// Determine if this is a card or account based on the original data
-						const isCard = cards.some((c) => c.card_id === account.truelayer_account_id);
+						const isCard = cards.some((c) => (c.account_id || c.card_id) === account.truelayer_account_id);
 
 						let transactions: any[] = [];
 						if (isCard) {

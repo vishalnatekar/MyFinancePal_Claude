@@ -106,7 +106,8 @@ export interface TrueLayerTransaction {
 }
 
 export interface TrueLayerCard {
-	card_id: string;
+	account_id: string; // TrueLayer uses account_id for cards too
+	card_id?: string; // Legacy field name
 	card_type: "CREDIT" | "DEBIT";
 	display_name: string;
 	currency: string;
